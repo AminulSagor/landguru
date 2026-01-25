@@ -48,16 +48,20 @@ const Button = ({
     className.includes("border-");
 
   const baseClasses =
-    "flex items-center justify-center gap-2 cursor-pointer active:scale-[0.97] shadow-xs ease-in-out transition-all";
+    "flex items-center justify-center gap-2 active:scale-[0.97] shadow-xs ease-in-out transition-all";
 
   const variantClass = hasCustomColor ? "" : variantStyles[variant];
   const sizeClass = sizeStyles[size];
   const shapeClass = shapeStyles[shape];
+  const cursorClass = disabled
+    ? "cursor-not-allowed opacity-60"
+    : "cursor-pointer active:scale-[0.97]";
+
   return (
     <button
       type={type}
       disabled={disabled}
-      className={`${baseClasses} ${sizeClass} ${variantClass} ${shapeClass} ${className}`}
+      className={`${baseClasses} ${sizeClass} ${variantClass} ${shapeClass} ${cursorClass} ${className}`}
       onClick={onClick}
     >
       {children}

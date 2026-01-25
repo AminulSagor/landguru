@@ -8,18 +8,24 @@ import {
   PathValue,
   RegisterOptions,
 } from "react-hook-form";
-import { ChangeEvent } from "react";
+import { ChangeEvent, ReactNode } from "react";
 
 interface HookFormTextareaInputProps<TFieldValues extends FieldValues> {
   name: Path<TFieldValues>;
   control: Control<TFieldValues>;
   defaultValue?: PathValue<TFieldValues, Path<TFieldValues>>;
-  label?: string;
+  label?: string | ReactNode;
   placeholder?: string;
   disabled?: boolean;
   rows?: number;
   rules?: RegisterOptions<TFieldValues, Path<TFieldValues>>;
+
+  /** wrapper */
   className?: string;
+
+  /** textarea element */
+  inputClassName?: string;
+
   onChange?: (value: string) => void;
 }
 
@@ -33,6 +39,7 @@ export const HookFormTextareaInput = <TFieldValues extends FieldValues>({
   rows = 4,
   rules,
   className,
+  inputClassName,
   onChange,
 }: HookFormTextareaInputProps<TFieldValues>) => {
   const {
@@ -52,9 +59,9 @@ export const HookFormTextareaInput = <TFieldValues extends FieldValues>({
   };
 
   return (
-    <div className="space-y-1">
+    <div className={`space-y-1 ${className ?? ""}`}>
       {label && (
-        <p className="text-base font-medium pb-1">
+        <p className="text-sm font-medium text-black">
           {label}
           {rules?.required && <span className="text-red-500 ml-1">*</span>}
         </p>
@@ -62,20 +69,23 @@ export const HookFormTextareaInput = <TFieldValues extends FieldValues>({
 
       <textarea
         {...field}
+        value={field.value ?? ""}
         rows={rows}
         placeholder={placeholder}
         disabled={disabled}
         onChange={handleChange}
-        className={`
-          w-full border border-gray/30 rounded-lg outline-none
-          px-3 py-2 bg-secondary/10
-          focus-visible:ring-1 focus:ring-gray/40
-          disabled:opacity-50 disabled:cursor-not-allowed
-          ${className ?? ""}
-        `}
+        className={[
+          "w-full border border-gray-300 rounded-lg outline-none bg-white",
+          "px-3 py-2",
+          "focus:border-gray-400 focus:ring-0",
+          "disabled:opacity-50 disabled:cursor-not-allowed",
+          inputClassName ?? "",
+        ].join(" ")}
       />
 
-      {error && <p className="text-red-400 text-sm">{error.message}</p>}
+      {error && (
+        <p className="text-sm font-medium text-red-500">{error.message}</p>
+      )}
     </div>
   );
 };
