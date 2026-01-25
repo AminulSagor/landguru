@@ -8,6 +8,7 @@
   --primary: #1d5bd6;
   --secondary: #dbeafe;
   --gray: #6b7280;
+  --green: #10b981;
 }
 
 @theme inline {
@@ -20,6 +21,7 @@
   --color-primary: var(--primary);
   --color-secondary: var(--secondary);
   --color-gray: var(--gray);
+  --color-green: var(--green);
 }
 
 /* @media (prefers-color-scheme: dark) {
