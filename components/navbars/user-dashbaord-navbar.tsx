@@ -4,7 +4,7 @@ import Link from "next/link";
 
 const UserDashbaordNavbar = () => {
   return (
-    <nav className="py-4 flex items-center justify-between bg-white px-3 md:px-8 lg:px-14 2xl:px-24 shadow-md border-b border-gray/20 fixed w-full z-50">
+    <nav className="py-4 flex items-center justify-between bg-white responsive-padding shadow-md border-b border-gray/20 fixed w-full z-50">
       <div className="flex gap-12">
         <div className="flex items-center gap-2">
           <span className="bg-primary rounded-lg text-white p-2 px-3">
@@ -38,7 +38,7 @@ const UserDashbaordNavbar = () => {
         <div className="flex gap-2 items-center">
           <h1>John Doe</h1>
           <Image
-            src={"/images/auth-home.avif"}
+            src={"/images/avatars/avatar.png"}
             height={28}
             width={28}
             className="rounded-full h-8 w-8 object-cover"

@@ -36,3 +36,40 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+.responsive-padding {
+  padding-left: 0.75rem;  /* px-3 */
+  padding-right: 0.75rem; /* px-3 */
+}
+
+/* Medium screens (>=768px) */
+@media (min-width: 768px) {
+  .responsive-padding {
+    padding-left: 2rem;   /* px-8 */
+    padding-right: 2rem;  /* px-8 */
+  }
+}
+
+/* Large screens (>=1024px) px-14*/
+/* @media (min-width: 1024px) {
+  .responsive-padding {
+    padding-left: 3.5rem; 
+    padding-right: 3.5rem;
+  }
+} */
+
+/* Extra Large screens (>=1280px) */
+@media (min-width: 1280px) {
+  .responsive-padding {
+    padding-left: 5rem; /* same as lg:px-14 */
+    padding-right: 5rem;
+  }
+}
+
+/* 2XL screens (>=1536px) */
+@media (min-width: 1536px) {
+  .responsive-padding {
+    padding-left: 12rem;   /* px-24 */
+    padding-right: 12rem;  
+  }
+}
