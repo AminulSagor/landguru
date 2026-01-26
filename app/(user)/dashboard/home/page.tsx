@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { featuredProperties } from "@/app/(user)/dashboard/dummy-data/property";
 import PropertyCard from "@/components/cards/property-card";
+import Link from "next/link";
 
 const HomePage = () => {
   return (
@@ -17,22 +18,24 @@ const HomePage = () => {
       </p>
 
       {/* dashboard info */}
-      <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-4">
-        <div className="lg:col-span-1">
+      <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-6">
+        <div className="lg:col-span-2">
           <ActionCard
             variant="blue"
             title="Sell Property"
             subtitle="List your asset today"
             icon={<Gift size={18} />}
+            link="/dashboard/create-sell-post"
           />
         </div>
 
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-2">
           <ActionCard
             variant="green"
             title="Request To Buy"
             subtitle="Find your dream space"
             icon={<MapPinPlusInside size={18} />}
+            link=""
           />
         </div>
 
@@ -86,17 +89,17 @@ function StatCard({
   value: number;
 }) {
   return (
-    <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
-      <div className="flex items-start justify-between">
+    <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5 h-full">
+      <div className="flex justify-between">
         <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gray-50 text-gray-700">
           {icon}
         </div>
-        <span className="text-gray-300">›</span>
+        <span className="text-gray">›</span>
       </div>
 
       <div className="mt-6">
         <p className="text-xs text-gray-500">{label}</p>
-        <p className="mt-1 text-xl font-extrabold text-black">{value}</p>
+        <p className="mt-4 text-xl font-extrabold text-black">{value}</p>
       </div>
     </div>
   );
@@ -107,29 +110,33 @@ function ActionCard({
   subtitle,
   icon,
   variant,
+  link,
 }: {
   title: string;
   subtitle: string;
   icon: React.ReactNode;
   variant: "blue" | "green";
+  link: string;
 }) {
   const styles = variant === "blue" ? "bg-blue-600" : "bg-emerald-500";
 
   return (
-    <div
-      className={`relative overflow-hidden rounded-2xl p-6 text-white shadow-sm ${styles}`}
-    >
-      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20">
-        {icon}
-      </div>
+    <Link href={link}>
+      <div
+        className={`relative overflow-hidden rounded-2xl p-6 text-white shadow-sm ${styles}`}
+      >
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20">
+          {icon}
+        </div>
 
-      <div className="mt-10">
-        <p className="text-lg font-extrabold">{title}</p>
-        <p className="text-sm text-white/80">{subtitle}</p>
-      </div>
+        <div className="mt-10">
+          <p className="text-lg font-extrabold">{title}</p>
+          <p className="text-sm text-white/80">{subtitle}</p>
+        </div>
 
-      {/* decorative */}
-      <div className="pointer-events-none absolute -right-10 -bottom-10 h-40 w-40 rounded-full bg-white/10" />
-    </div>
+        {/* decorative */}
+        <div className="pointer-events-none absolute -right-10 -bottom-10 h-40 w-40 rounded-full bg-white/10" />
+      </div>
+    </Link>
   );
 }
