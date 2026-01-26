@@ -27,7 +27,7 @@ export default function LoginPage() {
       {/* Left image */}
       <div className="relative hidden lg:block">
         <Image
-          src="/images/auth-home.avif"
+          src="/images/auth-home.png"
           alt="House"
           fill
           className="object-cover"
