@@ -1,4 +1,4 @@
-import HomePage from "@/app/(user)/dashboard/home/page";
+import HomePage from "@/app/(user)/dashboard/(pages)/home/page";
 import React from "react";
 
 const UserDashbaordPage = () => {

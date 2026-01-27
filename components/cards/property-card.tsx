@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { MapPin } from "lucide-react";
 import { Property } from "@/app/(user)/dashboard/types/property";
+import Link from "next/link";
 
 function formatBDT(n: number) {
   // 20000000 => "2,00,00,000"
@@ -75,7 +76,7 @@ export default function PropertyCard({
             type="button"
             className="text-xs font-semibold text-gray-500 hover:text-gray-700"
           >
-            View Details
+            <Link href={`/dashboard/property-details/${property.id}`}> View Details</Link>
           </button>
         </div>
       </div>

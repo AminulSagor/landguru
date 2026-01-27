@@ -74,6 +74,8 @@ const Page = () => {
 
       <ProcessStepper steps={steps} currentStep={1} orientation="vertical" />
       <ProcessStepper steps={steps} currentStep={2} orientation="horizontal" />
+
+      {/* bedge testing */}
     </div>
   );
 };

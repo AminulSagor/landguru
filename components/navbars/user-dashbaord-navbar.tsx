@@ -19,7 +19,7 @@ const UserDashbaordNavbar = () => {
             <Link href={"/dashboard/home"}>Home</Link>
           </li>
           <li>
-            <Link href={"/dashboard/home"}>Properties</Link>
+            <Link href={"/dashboard/properties"}>Properties</Link>
           </li>
           <li>
             <Link href={"/dashboard/home"}>Appointments</Link>
