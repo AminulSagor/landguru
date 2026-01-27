@@ -69,7 +69,7 @@ body {
 /* 2XL screens (>=1536px) */
 @media (min-width: 1536px) {
   .responsive-padding {
-    padding-left: 12rem;   /* px-24 */
+    padding-left: 11rem;   /* px-24 */
     padding-right: 12rem;  
   }
 }
