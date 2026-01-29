@@ -35,16 +35,18 @@ const UserDashbaordNavbar = () => {
         <Bell />
 
         {/* profile */}
-        <div className="flex gap-2 items-center">
-          <h1>John Doe</h1>
-          <Image
-            src={"/images/avatars/avatar.png"}
-            height={28}
-            width={28}
-            className="rounded-full h-8 w-8 object-cover"
-            alt="Profile-image"
-          />
-        </div>
+        <Link href={"/dashboard/profile"}>
+          <div className="flex gap-2 items-center">
+            <h1>John Doe</h1>
+            <Image
+              src={"/images/avatars/avatar.png"}
+              height={28}
+              width={28}
+              className="rounded-full h-8 w-8 object-cover"
+              alt="Profile-image"
+            />
+          </div>
+        </Link>
       </div>
     </nav>
   );
