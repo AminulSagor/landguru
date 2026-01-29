@@ -1,5 +1,12 @@
-import Select, { SingleValue, StylesConfig } from "react-select";
-import { MdOutlineArrowDropDown, MdClear } from "react-icons/md";
+"use client";
+
+import dynamic from "next/dynamic";
+import type {
+  GroupBase,
+  SingleValue,
+  StylesConfig,
+  ActionMeta,
+} from "react-select";
 import {
   Path,
   Control,
@@ -8,11 +15,22 @@ import {
   FieldValues,
   useController,
 } from "react-hook-form";
+import { MdOutlineArrowDropDown, MdClear } from "react-icons/md";
 
-interface IOption {
+// Option type
+export interface IOption {
   label: string;
   value: string | number;
 }
+
+// Typed Select component (keep generics)
+type SelectProps = import("react-select").Props<IOption, false, GroupBase<IOption>>;
+
+//  Client-only react-select + keep typing
+const Select = dynamic<SelectProps>(
+  () => import("react-select").then((m) => m.default),
+  { ssr: false }
+);
 
 interface HookFormSingleSelectProps<TFieldValues extends FieldValues> {
   name: Path<TFieldValues>;
@@ -48,7 +66,7 @@ export const HookFormSingleSelect = <TFieldValues extends FieldValues>({
     defaultValue,
   });
 
-  // Clear icon component
+  // Clear icon
   const ClearIndicator = ({ clearValue }: { clearValue: () => void }) => (
     <div
       onClick={clearValue}
@@ -63,7 +81,8 @@ export const HookFormSingleSelect = <TFieldValues extends FieldValues>({
     </div>
   );
 
-  const handleChange = (newValue: SingleValue<IOption>) => {
+  // typed change handler (now matches react-select types)
+  const handleChange = (newValue: SingleValue<IOption>, _meta: ActionMeta<IOption>) => {
     fieldOnChange(newValue ?? null);
     onChange?.(newValue ?? null);
   };
@@ -87,7 +106,7 @@ export const HookFormSingleSelect = <TFieldValues extends FieldValues>({
 
       <Select
         isClearable
-        value={value}
+        value={value as IOption | null}
         onChange={handleChange}
         onBlur={onBlur}
         options={options}
@@ -104,11 +123,8 @@ export const HookFormSingleSelect = <TFieldValues extends FieldValues>({
   );
 };
 
-// ============================
-// React Select Custom Styles
-// ============================
-
-const customStyles: StylesConfig<IOption, false> = {
+// typed styles config
+const customStyles: StylesConfig<IOption, false, GroupBase<IOption>> = {
   control: (provided, state) => ({
     ...provided,
     width: "100%",
@@ -117,12 +133,8 @@ const customStyles: StylesConfig<IOption, false> = {
     borderRadius: "0.5rem",
     boxShadow: "none",
     backgroundColor: "#ffffff",
-    border: state.isFocused
-      ? "1px solid #9CA3AF" // gray-400 focus
-      : "1px solid #D1D5DB", // gray-300 normal
-    "&:hover": {
-      borderColor: "#9CA3AF", // gray-400 hover
-    },
+    border: state.isFocused ? "1px solid #9CA3AF" : "1px solid #D1D5DB",
+    "&:hover": { borderColor: "#9CA3AF" },
     opacity: state.isDisabled ? 0.5 : 1,
     cursor: state.isDisabled ? "not-allowed" : "default",
   }),
