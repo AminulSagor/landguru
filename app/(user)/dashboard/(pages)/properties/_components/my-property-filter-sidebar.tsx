@@ -4,6 +4,10 @@ import React from "react";
 import Card from "@/components/cards/card";
 import Button from "@/components/buttons/button";
 import { ListFilter } from "lucide-react";
+import {
+  Category,
+  Status,
+} from "@/app/(user)/dashboard/(pages)/properties/page";
 
 const PROPERTY_TYPES = [
   "Plain Land",
@@ -13,15 +17,21 @@ const PROPERTY_TYPES = [
   "Agro Land",
 ] as const;
 
-type Category = "Sell Posts" | "Buy Posts" | "Offered Posts";
-type Status = "All Status" | "Pending" | "Quoted" | "Active" | "Draft";
+type Props = {
+  category: Category;
+  status: Status;
+  setCategory: (v: Category) => void;
+  setStatus: (v: Status) => void;
+};
 
-export default function MYPropertyFilters() {
+export default function MYPropertyFilters({
+  category,
+  status,
+  setCategory,
+  setStatus,
+}: Props) {
   const [activeType, setActiveType] =
     React.useState<(typeof PROPERTY_TYPES)[number]>("Plain Land");
-
-  const [category, setCategory] = React.useState<Category>("Sell Posts");
-  const [status, setStatus] = React.useState<Status>("All Status");
 
   // demo counts (like ss small badges)
   const counts = {
