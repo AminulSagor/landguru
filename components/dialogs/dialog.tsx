@@ -13,13 +13,14 @@ interface DialogProps {
   className?: string;
   size?: DialogSize;
   position?: DialogPosition;
+  hideClose?: boolean; // optional if you want
 }
 
 const styleSize: Record<DialogSize, string> = {
-  default: "min-w-80",
-  sm: "min-w-sm",
-  md: "min-w-xl",
-  lg: "min-w-2xl",
+  default: "w-[calc(100vw-32px)] max-w-md",
+  sm: "w-[calc(100vw-32px)] max-w-sm",
+  md: "w-[calc(100vw-32px)] max-w-xl",
+  lg: "w-[calc(100vw-32px)] max-w-2xl",
 };
 
 const stylePosition: Record<DialogPosition, string> = {
@@ -28,14 +29,15 @@ const stylePosition: Record<DialogPosition, string> = {
   bottom: "bottom-10 left-1/2 -translate-x-1/2",
 };
 
-const Dialog = ({
+export default function Dialog({
   open,
   onOpenChange,
   children,
-  className,
+  className = "",
   size = "default",
   position = "center",
-}: DialogProps) => {
+  hideClose,
+}: DialogProps) {
   if (!open) return null;
 
   return (
@@ -48,23 +50,28 @@ const Dialog = ({
 
       {/* Dialog */}
       <div
-        className={`absolute p-4 rounded-lg bg-white border border-gray-200
+        className={`absolute rounded-xl bg-white border border-gray/15
         transition-all duration-150
         ${stylePosition[position]}
         ${styleSize[size]}
-        ${className}`}
+        ${className}
+        `}
+        onClick={(e) => e.stopPropagation()}
       >
-        <button
-          className="absolute top-3 right-3 text-gray-500"
-          onClick={() => onOpenChange(false)}
-        >
-          <X size={20} />
-        </button>
+        {/* close */}
+        {!hideClose && (
+          <button
+            className="absolute top-4 right-4 text-gray/60 hover:text-gray"
+            onClick={() => onOpenChange(false)}
+          >
+            <X size={20} />
+          </button>
+        )}
 
-        <div className="mt-4">{children}</div>
+        <div className="p-5 max-h-[calc(100vh-80px)] overflow-y-auto">
+          {children}
+        </div>
       </div>
     </div>
   );
-};
-
-export default Dialog;
+}
