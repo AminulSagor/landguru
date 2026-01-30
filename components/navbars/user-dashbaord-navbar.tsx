@@ -22,10 +22,10 @@ const UserDashbaordNavbar = () => {
             <Link href={"/dashboard/properties"}>Properties</Link>
           </li>
           <li>
-            <Link href={"/dashboard/home"}>Appointments</Link>
+            <Link href={"/dashboard/appointments"}>Appointments</Link>
           </li>
           <li>
-            <Link href={"/dashboard/home"}>My Deals</Link>
+            <Link href={"/dashboard/my-deals"}>My Deals</Link>
           </li>
         </ul>
       </div>
