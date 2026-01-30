@@ -9,6 +9,7 @@ import { useForm } from "react-hook-form";
 import CircleLoader from "@/components/loaders/circle-loader";
 import AuthStepper from "@/components/steppers/auth-stepper";
 import { ProcessStepper } from "@/components/steppers/process-stepper";
+import { Tab, TabConfig } from "@/components/tabs/tab";
 
 const Page = () => {
   const [open, setIsOpen] = useState<boolean>(false);
@@ -25,6 +26,20 @@ const Page = () => {
     { label: "Dhanmondi", value: "dhanmondi" },
     { label: "Gulshan", value: "gulshan" },
     { label: "Mirpur", value: "mirpur" },
+  ];
+
+  type TabKey = "upcomming" | "past";
+  const [tabKey, setTabkey] = useState<TabKey>("upcomming");
+
+  const tabs:TabConfig<TabKey>[] = [
+    {
+      key:'upcomming',
+      label: "Upcomming",
+    },
+    {
+      key: "past",
+      label: "Past",
+    },
   ];
 
   return (
@@ -76,6 +91,9 @@ const Page = () => {
       <ProcessStepper steps={steps} currentStep={2} orientation="horizontal" />
 
       {/* bedge testing */}
+
+      {/* tab */}
+      <Tab tabs={tabs} tabKey={tabKey} onChangeTabKey={setTabkey} />
     </div>
   );
 };
