@@ -11,11 +11,20 @@ import PropertyRequestGrid from "@/app/(user)/dashboard/(pages)/properties/_comp
 import MyPropertyGrid from "@/app/(user)/dashboard/(pages)/properties/_components/my-property-grid";
 import MYPropertyFilters from "@/app/(user)/dashboard/(pages)/properties/_components/my-property-filter-sidebar";
 import { myListingsProperty } from "@/app/(user)/dashboard/dummy-data/my-property-list";
+import { div } from "motion/react-client";
+import BuyPostDataGrid from "@/app/(user)/dashboard/(pages)/properties/_components/buy-post-grid";
+import { demoBuyPosts } from "@/app/(user)/dashboard/dummy-data/buy-post-data";
 
 type TabKey = "for-sale" | "wanted" | "my-posts";
 
+//my post tab types
+export type Category = "Sell Posts" | "Buy Posts" | "Offered Posts";
+export type Status = "All Status" | "Pending" | "Quoted" | "Active" | "Draft";
+
 export default function PropertiesPage() {
   const [activeTab, setActiveTab] = React.useState<TabKey>("for-sale");
+  const [category, setCategory] = React.useState<Category>("Sell Posts");
+  const [status, setStatus] = React.useState<Status>("All Status");
 
   return (
     <div className="w-full py-24">
@@ -53,13 +62,26 @@ export default function PropertiesPage() {
           <div className="grid grid-cols-12 gap-6 md:gap-8">
             {/* LEFT */}
             <div className="col-span-12 md:col-span-4">
-              <MYPropertyFilters />
+              <MYPropertyFilters
+                status={status}
+                category={category}
+                setCategory={setCategory}
+                setStatus={setStatus}
+              />
             </div>
 
             {/* RIGHT */}
-            <div className="col-span-12 md:col-span-8">
-              <MyPropertyGrid items={myListingsProperty} />
-            </div>
+            {category === "Sell Posts" ? (
+              <div className="col-span-12 md:col-span-8">
+                <MyPropertyGrid items={myListingsProperty} />
+              </div>
+            ) : category === "Buy Posts" ? (
+              <div className="col-span-12 md:col-span-8">
+                <BuyPostDataGrid items={demoBuyPosts} />
+              </div>
+            ) : (
+              <div className="col-span-12 md:col-span-8"></div>
+            )}
           </div>
         </div>
       )}
