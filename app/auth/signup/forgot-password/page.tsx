@@ -1,9 +1,11 @@
 "use client";
+import FinalStep from "@/app/auth/signup/forgot-password/_components/final-step";
 import ForgotPasswordStepOne from "@/app/auth/signup/forgot-password/_components/forgot-password-step-one";
+import ForgotPasswordStepThree from "@/app/auth/signup/forgot-password/_components/forgot-password-step-three";
 import ForgotPasswordStepTwo from "@/app/auth/signup/forgot-password/_components/forgot-password-step-two";
 import React from "react";
 
-const TOTAL_STEPS = 3;
+const TOTAL_STEPS = 4;
 
 const ForgotPasswordPage = () => {
   const [step, setStep] = React.useState(1);
@@ -37,6 +39,16 @@ const ForgotPasswordPage = () => {
           }}
         />
       )}
+
+      {step === 3 && (
+        <ForgotPasswordStepThree
+          onNext={next}
+          onBack={back}
+          setPassword={setPassword}
+        />
+      )}
+
+      {step === 4 && <FinalStep />}
     </div>
   );
 };
