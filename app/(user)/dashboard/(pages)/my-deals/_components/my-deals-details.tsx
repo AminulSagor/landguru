@@ -1,12 +1,12 @@
 "use client";
 
 import React, { useState } from "react";
-import MyPropertyMetrics from "@/app/(user)/dashboard/(pages)/my-property-details/[id]/_components/my-property-metrics";
-import RequoteDialog from "@/app/(user)/dashboard/(pages)/my-property-details/[id]/_components/requote-dialog";
-import RequoteSuccessDialog from "@/app/(user)/dashboard/(pages)/my-property-details/[id]/_components/requote-success-dialog";
-import PayDialog from "@/app/(user)/dashboard/(pages)/my-property-details/[id]/_components/pay-dialog";
-import RequoteSubmittedDialog from "@/app/(user)/dashboard/(pages)/my-property-details/[id]/_components/requote-submitted-dialog";
-import PaySuccessDialog from "@/app/(user)/dashboard/(pages)/my-property-details/[id]/_components/pay-successful-dialog";
+import MyPropertyMetrics from "@/app/(user)/dashboard/(pages)/posts/sell/view/_components/my-property-metrics";
+import RequoteDialog from "@/app/(user)/dashboard/(pages)/posts/sell/view/_components/requote-dialog";
+import RequoteSuccessDialog from "@/app/(user)/dashboard/(pages)/posts/sell/view/_components/requote-success-dialog";
+import PayDialog from "@/app/(user)/dashboard/(pages)/posts/sell/view/_components/pay-dialog";
+import RequoteSubmittedDialog from "@/app/(user)/dashboard/(pages)/posts/sell/view/_components/requote-submitted-dialog";
+import PaySuccessDialog from "@/app/(user)/dashboard/(pages)/posts/sell/view/_components/pay-successful-dialog";
 import MyDealsHeader from "@/app/(user)/dashboard/(pages)/my-deals/_components/my-deals-header";
 import {
   boughtDeals,

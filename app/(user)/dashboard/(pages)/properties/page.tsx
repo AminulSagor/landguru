@@ -11,7 +11,6 @@ import PropertyRequestGrid from "@/app/(user)/dashboard/(pages)/properties/_comp
 import MyPropertyGrid from "@/app/(user)/dashboard/(pages)/properties/_components/my-property-grid";
 import MYPropertyFilters from "@/app/(user)/dashboard/(pages)/properties/_components/my-property-filter-sidebar";
 import { myListingsProperty } from "@/app/(user)/dashboard/dummy-data/my-property-list";
-import { div } from "motion/react-client";
 import BuyPostDataGrid from "@/app/(user)/dashboard/(pages)/properties/_components/buy-post-grid";
 import { demoBuyPosts } from "@/app/(user)/dashboard/dummy-data/buy-post-data";
 import OfferPostGrid from "@/app/(user)/dashboard/(pages)/properties/_components/offer-post-grid";

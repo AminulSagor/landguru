@@ -126,7 +126,7 @@ function MyPropertyCard({ item }: { item: ListingCard }) {
       : Number(String(item.price).replace(/[^\d]/g, "")) || 0;
 
   return (
-    <Link href={`/dashboard/my-property-details/${item.id}`}>
+    <Link href={`/dashboard/posts/sell/view/${item.id}`}>
       <div className="overflow-hidden rounded-2xl border border-gray/15 bg-white shadow-xs">
         {/* Image */}
         <div className="relative h-44 w-full bg-secondary">

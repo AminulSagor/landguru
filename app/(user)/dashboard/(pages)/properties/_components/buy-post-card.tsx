@@ -121,7 +121,7 @@ export default function BuyPostCard({
             className="mt-1 flex h-9 w-9 items-center justify-center rounded-full border border-gray/15 bg-white text-gray/70 hover:bg-secondary"
             aria-label="Open details"
           >
-            <Link href={`/dashboard/buy-post-details/${item.id}`}>
+            <Link href={`/dashboard/posts/buy/view/${item.id}`}>
               <ChevronRight size={18} />
             </Link>
           </p>

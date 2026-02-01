@@ -53,7 +53,7 @@ export default function PropertyRequestCard({
         </div>
 
         <Link
-          href={`/dashboard/property-request-details/${item.id}`}
+          href={`/dashboard/properties/request/details/${item.id}`}
           className={cn(
             "mt-1 inline-flex h-9 w-9 items-center justify-center rounded-full",
             "text-gray/60 hover:text-gray",

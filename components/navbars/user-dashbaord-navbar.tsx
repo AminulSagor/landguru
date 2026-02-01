@@ -16,7 +16,7 @@ const UserDashbaordNavbar = () => {
         {/* navlinks */}
         <ul className="gap-4 lg:gap-8  items-center text-base text-gray hidden md:flex">
           <li>
-            <Link href={"/dashboard/home"}>Home</Link>
+            <Link href={"/dashboard"}>Home</Link>
           </li>
           <li>
             <Link href={"/dashboard/properties"}>Properties</Link>

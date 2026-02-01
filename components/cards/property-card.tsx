@@ -76,7 +76,7 @@ export default function PropertyCard({
             type="button"
             className="text-xs font-semibold text-gray-500 hover:text-gray-700"
           >
-            <Link href={`/dashboard/property-details/${property.id}`}> View Details</Link>
+            <Link href={`/dashboard/properties/details/${property.id}`}> View Details</Link>
           </button>
         </div>
       </div>

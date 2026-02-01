@@ -9,12 +9,13 @@ import {
   PlayCircle,
   ChevronUp,
   Clock3,
+  FileText,
   Map,
   Users2,
 } from "lucide-react";
 import PropertyMediaAndLegalDocsSection from "@/app/(user)/dashboard/(pages)/posts/sell/view/_components/PropertyMediaAndLegalDocsSection";
 
-const MyDealsPropertyUnlocked = () => {
+const MyPropertyUnlocked = () => {
   const [open, setOpen] = React.useState({
     risk: true,
     video: true,
@@ -132,7 +133,7 @@ const MyDealsPropertyUnlocked = () => {
   );
 };
 
-export default MyDealsPropertyUnlocked;
+export default MyPropertyUnlocked;
 
 /* ------------------------- sub components (same file) ------------------------- */
 

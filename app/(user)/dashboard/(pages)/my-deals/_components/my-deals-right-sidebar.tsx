@@ -4,9 +4,9 @@ import { FC } from "react";
 import Card from "@/components/cards/card";
 import { MapPin } from "lucide-react";
 import { DealItem } from "@/app/(user)/dashboard/types/deals";
-import LandDiagramCard from "@/app/(user)/dashboard/(pages)/property-details/_components/land-diagram-card";
 import DealFinalAmountCard from "@/app/(user)/dashboard/(pages)/my-deals/_components/deal-final-amount-card";
 import Button from "@/components/buttons/button";
+import LandDiagramCard from "@/app/(user)/dashboard/(pages)/properties/_components/land-diagram-card";
 
 type Props = {
   property: DealItem;

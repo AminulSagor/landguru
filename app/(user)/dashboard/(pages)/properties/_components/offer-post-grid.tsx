@@ -115,7 +115,7 @@ export default function OfferPostGrid({ items }: { items: OfferPostCard[] }) {
 
 function OfferPostCardUI({ item }: { item: OfferPostCard }) {
   return (
-    <Link href={`/dashboard/offer-post-details/${item.id}`}>
+    <Link href={`/dashboard/posts/offered/details/${item.id}`}>
       <div
         className={[
           "relative overflow-hidden rounded-2xl border bg-white shadow-xs transition",
