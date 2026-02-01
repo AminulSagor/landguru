@@ -1,0 +1,45 @@
+import { OfferPostCard } from "@/app/(user)/dashboard/types/offer-post";
+
+export const OFFER_POSTS: OfferPostCard[] = [
+  {
+    id: "POST-1044",
+    title: "Modern Duplex Villa",
+    image: "/images/properties/flat-1.png",
+    category: "FLAT",
+    status: "BUYER_ACCEPTED_OFFER",
+    statusLabel: "Buyer accepted your offer",
+    askingPrice: 4000000,
+    timeAgo: "2h ago",
+    highlight: true,
+  },
+  {
+    id: "POST-1045",
+    title: "Gazipur Water Zone",
+    image: "/images/properties/kurigram.png",
+    category: "FLAT",
+    status: "DRAFT",
+    statusLabel: "DRAFT",
+    askingPrice: 9512000,
+    timeAgo: "2h ago",
+  },
+  {
+    id: "POST-1042",
+    title: "5 Katha Plot in Purbachal",
+    image: "/images/properties/duplex.jpg",
+    category: "FLAT",
+    status: "PENDING_BUYER_REVIEW",
+    statusLabel: "PENDING BUYER REVIEW",
+    askingPrice: 20000000,
+    timeAgo: "2h ago",
+  },
+  {
+    id: "POST-1043",
+    title: "Villa in Kurigram",
+    image: "/images/properties/flat-1.png",
+    category: "FLAT",
+    status: "PENDING_BUYER_REVIEW",
+    statusLabel: "PENDING BUYER REVIEW",
+    askingPrice: 4000000,
+    timeAgo: "2h ago",
+  },
+];
