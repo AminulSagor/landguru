@@ -127,3 +127,72 @@ export const demoBuyPosts: BuyPost[] = [
     action: { kind: "continue_editing" },
   },
 ];
+
+export type BuyPostOffer = {
+  id: string; // "OFFER-1001"
+  title: string;
+  image: string;
+  propertyType: BuyPostPropertyType; // "Flat"
+  askingPrice: number; // 4000000
+  offeredText: string; // "2h ago"
+};
+
+export type BuyPostDetails = BuyPost & {
+  description?: string;
+  totalOffers: number;
+  offers: BuyPostOffer[];
+};
+
+export const demoBuyPostDetails: BuyPostDetails = {
+  id: "BUY-1042",
+  title: "Villa in Banasree",
+  postedText: "2h ago",
+  preferredLocation:
+    "Banasree, Ward No. 25, Dhaka South City Corporation, Khilgaon Thana, Dhaka - 1219, Dhaka Division.",
+  propertyType: "Flat",
+  requiredLandSize: "Min 5 Katha",
+  requiredPlotSize: "Min 5 Katha",
+  distanceFromRoad: "200m - 750m",
+  budgetRange: "৳ 30,00,000 - ৳ 40,00,000",
+  status: "active",
+  accent: "none",
+
+  description:
+    "Client is looking for a ready flat in Dhanmondi area. Must have parking and be above 2nd floor.",
+
+  totalOffers: 5,
+  offers: [
+    {
+      id: "OFFER-1001",
+      title: "Modern Duplex Villa",
+      image: "/images/properties/purbachal.png",
+      propertyType: "Flat",
+      askingPrice: 4000000,
+      offeredText: "2h ago",
+    },
+    {
+      id: "OFFER-1002",
+      title: "5 Katha Plot in Purbachal",
+      image: "/images/properties/purbachal.png",
+      propertyType: "Flat",
+      askingPrice: 4000000,
+      offeredText: "2h ago",
+    },
+    {
+      id: "OFFER-1003",
+      title: "Gazipur Water Zone",
+      image: "/images/properties/purbachal.png",
+      propertyType: "Flat",
+      askingPrice: 4000000,
+      offeredText: "2h ago",
+    },
+    {
+      id: "OFFER-1004",
+      title: "Luxurious Apartment in Gulshan",
+      image: "/images/properties/purbachal.png",
+      propertyType: "Flat",
+      askingPrice: 3800000,
+      offeredText: "5h ago",
+    },
+  ],
+};

@@ -14,6 +14,8 @@ import { myListingsProperty } from "@/app/(user)/dashboard/dummy-data/my-propert
 import { div } from "motion/react-client";
 import BuyPostDataGrid from "@/app/(user)/dashboard/(pages)/properties/_components/buy-post-grid";
 import { demoBuyPosts } from "@/app/(user)/dashboard/dummy-data/buy-post-data";
+import OfferPostGrid from "@/app/(user)/dashboard/(pages)/properties/_components/offer-post-grid";
+import { OFFER_POSTS } from "@/app/(user)/dashboard/dummy-data/offer-post-data";
 
 type TabKey = "for-sale" | "wanted" | "my-posts";
 
@@ -80,7 +82,9 @@ export default function PropertiesPage() {
                 <BuyPostDataGrid items={demoBuyPosts} />
               </div>
             ) : (
-              <div className="col-span-12 md:col-span-8"></div>
+              <div className="col-span-12 md:col-span-8">
+                <OfferPostGrid items={OFFER_POSTS} />
+              </div>
             )}
           </div>
         </div>

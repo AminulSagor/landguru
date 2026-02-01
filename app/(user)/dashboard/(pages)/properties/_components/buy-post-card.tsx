@@ -18,6 +18,7 @@ import {
   BuyPost,
   BuyPostStatus,
 } from "@/app/(user)/dashboard/dummy-data/buy-post-data";
+import Link from "next/link";
 
 function StatusText({ status }: { status: BuyPostStatus }) {
   if (status === "active") {
@@ -116,14 +117,14 @@ export default function BuyPostCard({
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={() => onOpen?.(item)}
+          <p
             className="mt-1 flex h-9 w-9 items-center justify-center rounded-full border border-gray/15 bg-white text-gray/70 hover:bg-secondary"
             aria-label="Open details"
           >
-            <ChevronRight size={18} />
-          </button>
+            <Link href={`/dashboard/buy-post-details/${item.id}`}>
+              <ChevronRight size={18} />
+            </Link>
+          </p>
         </div>
 
         {/* info grid */}
