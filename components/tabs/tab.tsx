@@ -2,7 +2,7 @@
 
 export type TabConfig<TabKey extends string> = {
   key: TabKey;
-  label: string;
+  label: React.ReactNode;
 };
 
 type TabProps<TabKey extends string> = {
@@ -17,13 +17,19 @@ export const Tab = <TabKey extends string>({
   onChangeTabKey,
 }: TabProps<TabKey>) => {
   return (
-    <div className="grid grid-cols-2 bg-gray/20 rounded-lg py-1 px-2 text-center">
+    <div
+      className="grid bg-gray/10 rounded-xl p-1"
+      style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}
+    >
       {tabs.map((tab) => {
         const isActive = tab.key === tabKey;
+
         return (
           <button
-            key={tab.key}
-            className={`flex px-2 w-full py-2 rounded-lg items-center justify-center cursor-pointer ${isActive && "bg-primary text-white"}`}
+            key={String(tab.key)}
+            className={`flex w-full items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition-all ${
+              isActive ? "bg-primary text-white shadow-sm" : "text-gray/70 hover:bg-white"
+            }`}
             onClick={() => onChangeTabKey(tab.key)}
           >
             {tab.label}
