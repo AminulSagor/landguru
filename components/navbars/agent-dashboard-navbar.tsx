@@ -18,7 +18,7 @@ const AgentDashbaordNavbar = () => {
     },
     {
       name: "My Task",
-      link: "/agent/dashboard/task",
+      link: "/agent/dashboard/tasks",
     },
     {
       name: "Appointments",
