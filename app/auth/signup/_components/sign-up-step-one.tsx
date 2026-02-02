@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import Card from "@/components/cards/card";
 import Button from "@/components/buttons/button";
-import { HookFormBDPhoneInput } from "@/app/auth/login/_components/HookFormBDPhoneInput";
+import { HookFormBDPhoneInput } from "@/components/inputs/HookFormBDPhoneInput";
 import AuthStepper from "@/components/steppers/auth-stepper";
 import { SignUpStepOneForm } from "@/interfaces/auth";
 

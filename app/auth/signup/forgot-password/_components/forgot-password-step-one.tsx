@@ -6,7 +6,7 @@ import Card from "@/components/cards/card";
 import Button from "@/components/buttons/button";
 import { SignUpStepOneForm } from "@/interfaces/auth";
 import AuthStepper from "@/components/steppers/auth-stepper";
-import { HookFormBDPhoneInput } from "@/app/auth/login/_components/HookFormBDPhoneInput";
+import { HookFormBDPhoneInput } from "@/components/inputs/HookFormBDPhoneInput";
 
 type Props = {
   onNext: () => void;

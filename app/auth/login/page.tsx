@@ -1,7 +1,7 @@
 "use client";
 
-import { HookFormBDPhoneInput } from "@/app/auth/login/_components/HookFormBDPhoneInput";
-import { HookFormPasswordInput } from "@/app/auth/login/_components/HookFormPasswordInput";
+import { HookFormBDPhoneInput } from "@/components/inputs/HookFormBDPhoneInput";
+import { HookFormPasswordInput } from "@/components/inputs/HookFormPasswordInput";
 import Button from "@/components/buttons/button";
 import CircleLoader from "@/components/loaders/circle-loader";
 import { LoginFormValues } from "@/interfaces/auth";
