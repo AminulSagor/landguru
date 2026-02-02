@@ -68,7 +68,7 @@ export default function LoginPage() {
 
               <div className="flex justify-end">
                 <Link
-                  href="/auth/signup/forgot-password"
+                  href="/agent/auth/forgot-password"
                   className="text-sm text-primary"
                 >
                   Forgot password ? Contact Support
