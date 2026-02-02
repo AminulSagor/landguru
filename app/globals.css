@@ -9,6 +9,7 @@
   --secondary: #dbeafe;
   --gray: #6b7280;
   --green: #10b981;
+  --pumpkin: #f15c11;
 }
 
 @theme inline {
@@ -22,6 +23,7 @@
   --color-secondary: var(--secondary);
   --color-gray: var(--gray);
   --color-green: var(--green);
+  --color-pumpkin: var(--pumpkin);
 }
 
 /* @media (prefers-color-scheme: dark) {
@@ -38,15 +40,15 @@ body {
 }
 
 .responsive-padding {
-  padding-left: 0.75rem;  /* px-3 */
+  padding-left: 0.75rem; /* px-3 */
   padding-right: 0.75rem; /* px-3 */
 }
 
 /* Medium screens (>=768px) */
 @media (min-width: 768px) {
   .responsive-padding {
-    padding-left: 2rem;   /* px-8 */
-    padding-right: 2rem;  /* px-8 */
+    padding-left: 2rem; /* px-8 */
+    padding-right: 2rem; /* px-8 */
   }
 }
 
@@ -69,7 +71,7 @@ body {
 /* 2XL screens (>=1536px) */
 @media (min-width: 1536px) {
   .responsive-padding {
-    padding-left: 11rem;   /* px-24 */
-    padding-right: 12rem;  
+    padding-left: 11rem; /* px-24 */
+    padding-right: 12rem;
   }
 }
