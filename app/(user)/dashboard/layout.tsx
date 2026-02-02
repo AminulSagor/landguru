@@ -1,4 +1,4 @@
-import UserDashbaordFooter from "@/components/footers/user-dashboard-footer";
+import UserDashbaordFooter from "@/components/footers/footer";
 import UserDashbaordNavbar from "@/components/navbars/user-dashbaord-navbar";
 import React from "react";
 
