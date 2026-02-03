@@ -27,7 +27,7 @@ export const Tab = <TabKey extends string>({
         return (
           <button
             key={String(tab.key)}
-            className={`flex w-full items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition-all ${
+            className={`flex w-full items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm lg:text-base transition-all ${
               isActive ? "bg-primary text-white shadow-sm" : "text-gray/70 hover:bg-white"
             }`}
             onClick={() => onChangeTabKey(tab.key)}
