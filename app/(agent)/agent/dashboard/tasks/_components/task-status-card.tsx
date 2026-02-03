@@ -20,23 +20,30 @@ function StatusStep({
     state === "done"
       ? "bg-green text-white border-green"
       : state === "active"
-        ? "bg-primary text-white border-primary"
-        : "bg-gray/10 text-gray/40 border-gray/15";
+      ? "bg-primary text-white border-primary"
+      : "bg-gray/10 text-gray/40 border-gray/15";
 
   const text =
     state === "done"
       ? "text-green"
       : state === "active"
-        ? "text-primary"
-        : "text-gray/40";
+      ? "text-primary"
+      : "text-gray/40";
 
   return (
-    <div className="flex flex-col items-center gap-2">
-      <div
-        className={`h-9 w-9 rounded-full border flex items-center justify-center ${wrap}`}
-      >
-        {icon}
+    <div className="flex flex-col items-center gap-2 relative z-10">
+      {/* step circle */}
+      <div className="relative">
+        {/* solid mask to block the line underneath */}
+        <div className="absolute inset-0 rounded-full bg-white z-0" />
+
+        <div
+          className={`relative z-10 h-9 w-9 rounded-full border flex items-center justify-center ${wrap}`}
+        >
+          {icon}
+        </div>
       </div>
+
       <p className={`text-[11px] font-semibold ${text}`}>{label}</p>
     </div>
   );
@@ -61,15 +68,16 @@ export default function TaskStatusCard({
 
       <div className="mt-4 relative">
         {/* base line */}
-        <div className="absolute left-0 right-0 top-[18px] h-[2px] bg-gray/15" />
+        <div className="absolute left-0 right-0 top-[18px] h-[2px] bg-gray/15 z-0" />
 
         {/* progress line */}
         <div
-          className={`absolute left-0 top-[18px] h-[2px] ${progressLineClass}`}
+          className={`absolute left-0 top-[18px] h-[2px] ${progressLineClass} z-0`}
           style={{ width: progressWidth }}
         />
 
-        <div className="grid grid-cols-3">
+        {/* steps */}
+        <div className="grid grid-cols-3 relative z-10">
           <StatusStep
             label="Accepted"
             state={stepState.accepted}
