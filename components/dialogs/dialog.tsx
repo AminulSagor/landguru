@@ -3,7 +3,7 @@
 import { X } from "lucide-react";
 import React from "react";
 
-type DialogSize = "default" | "sm" | "md" | "lg";
+type DialogSize = "default" | "sm" | "md" | "lg"|'xl';
 type DialogPosition = "center" | "top" | "bottom";
 
 interface DialogProps {
@@ -21,6 +21,7 @@ const styleSize: Record<DialogSize, string> = {
   sm: "w-[calc(100vw-32px)] max-w-sm",
   md: "w-[calc(100vw-32px)] max-w-xl",
   lg: "w-[calc(100vw-32px)] max-w-2xl",
+  xl: "w-[calc(100vw-32px)] max-w-4xl",
 };
 
 const stylePosition: Record<DialogPosition, string> = {
