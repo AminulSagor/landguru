@@ -27,7 +27,7 @@ export const adminSideBarItems: SidebarItems[] = [
   },
   {
     name: "Quote / Request",
-    url: "/admin/dashboard/quotes",
+    url: "/admin/dashboard/quote-requote",
     icon: <FileSignature />,
   },
   {
@@ -76,7 +76,7 @@ export const SuperAdminSideBarItems: SidebarItems[] = [
   },
   {
     name: "Quote / Requote",
-    url: "/admin/dashboard/quotes",
+    url: "/admin/dashboard/quote-requote",
     icon: <Repeat />,
   },
   {
