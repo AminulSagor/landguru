@@ -4,6 +4,8 @@ import { FileText } from "lucide-react";
 import Card from "@/components/cards/card";
 import Button from "@/components/buttons/button";
 import { PropertyDetails } from "@/app/(admin)/admin/types/property.types";
+import { useState } from "react";
+import OrganizeVerifyDocumentsDialog from "@/app/(admin)/admin/dashboard/(pages)/property-posts/details/_components/organize-verify-document-dialog";
 
 function DocTile({ name, sizeLabel }: { name: string; sizeLabel: string }) {
   return (
@@ -22,6 +24,7 @@ export default function DocumentsCard({
 }: {
   data: PropertyDetails["documents"];
 }) {
+  const [open, setOpen] = useState(false);
   return (
     <Card>
       <div className="flex items-center justify-between gap-4">
@@ -29,7 +32,7 @@ export default function DocumentsCard({
 
         {/*  disabled look  when false */}
         {data.canReorganize ? (
-          <Button size="sm" variant="primary">
+          <Button size="sm" variant="primary" onClick={() => setOpen(true)}>
             Reorganize Documents
           </Button>
         ) : (
@@ -57,7 +60,7 @@ export default function DocumentsCard({
                 {sec.title}
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {sec.items.map((d,index) => (
+                {sec.items.map((d, index) => (
                   <DocTile key={index} name={d.name} sizeLabel={d.sizeLabel} />
                 ))}
               </div>
@@ -65,6 +68,9 @@ export default function DocumentsCard({
           ))}
         </div>
       )}
+
+      {/* organize dialog */}
+      <OrganizeVerifyDocumentsDialog open={open} onOpenChange={setOpen} />
     </Card>
   );
 }
