@@ -12,8 +12,6 @@ import {
   BuyRequestTagIconKey,
 } from "@/app/(admin)/admin/types/buy-request.types";
 
-
-
 export default function BuyRequestRow({
   item,
   checked,
@@ -24,35 +22,28 @@ export default function BuyRequestRow({
   onToggle: () => void;
 }) {
   return (
-    <Card >
-      <div
-        className="hidden lg:grid items-start gap-2 xl:gap-4"
-        style={{
-          gridTemplateColumns:
-            "28px minmax(220px, 260px) minmax(260px, 520px) minmax(230px, 1fr) 120px",
-        }}
-      >
+    <Card>
+      <div className="hidden lg:grid lg:grid-cols-12 gap-4 w-full">
         {/* checkbox */}
-        <div className="pt-2 flex justify-center">
+        <div className="pt-2 flex gap-2 lg:col-span-4">
           <input
             type="checkbox"
             checked={checked}
             onChange={onToggle}
             className="h-4 w-4 accent-primary"
           />
-        </div>
-
-        {/* USER PROFILE */}
-        <div className="pr-2 min-w-0">
-          <UserProfileCell
-            user={item.user}
-            id={item.id}
-            createdAgo={item.createdAgo}
-          />
+          {/* USER PROFILE */}
+          <div className="">
+            <UserProfileCell
+              user={item.user}
+              id={item.id}
+              createdAgo={item.createdAgo}
+            />
+          </div>
         </div>
 
         {/* REQUIREMENTS & LOCATION */}
-        <div className="min-w-0 pr-2">
+        <div className="lg:col-span-4">
           <p className="text-base font-extrabold text-gray">{item.title}</p>
 
           <div className="mt-2 flex items-center gap-2 min-w-0">
@@ -62,7 +53,7 @@ export default function BuyRequestRow({
             </p>
           </div>
 
-          <div className="mt-3 grid grid-cols-2 gap-3 w-54">
+          <div className="mt-3 grid grid-cols-2 gap-3 max-w-66">
             {item.tags.map((t, idx) => (
               <ReqBox
                 key={`${item.id}-req-${idx}`}
@@ -76,14 +67,14 @@ export default function BuyRequestRow({
         </div>
 
         {/* DESCRIPTION */}
-        <div className="min-w-0 pr-2 pt-1">
+        <div className="lg:col-span-2 flex items-center justify-center">
           <p className="text-xs font-semibold leading-5 text-light-gray line-clamp-4">
             {item.description}
           </p>
         </div>
 
         {/* ACTIONS */}
-        <div className="flex justify-end">
+        <div className="flex justify-end lg:col-span-2">
           <ActionsCell
             status={item.statusLabel}
             onApprove={() => alert(`Approve: ${item.id} (demo)`)}
@@ -167,7 +158,6 @@ export default function BuyRequestRow({
     </Card>
   );
 }
-
 
 function ReqBox({
   icon,

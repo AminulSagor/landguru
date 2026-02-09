@@ -83,23 +83,28 @@ export default function BuyRequestList() {
       />
 
       <div className="mt-4 space-y-4">
-        <div
-          className="hidden lg:grid items-center rounded-xl mt-10  px-5 text-[11px] font-semibold text-light-gray"
-          style={{ gridTemplateColumns: "28px 260px 350px 1fr 200px" }}
-        >
-          <div className="flex items-center justify-center">
+        <div className="hidden lg:grid grid-cols-12 mt-10 px-5 gap-4 text-[11px] font-semibold">
+          <div className="col-span-4 flex items-center gap-2">
             <input
               type="checkbox"
               checked={allChecked}
               onChange={() => {}}
               className="h-4 w-4 accent-primary"
             />
+            <p className="text-gray">USER PROFILE</p>
           </div>
 
-          <p className="text-gray">USER PROFILE</p>
-          <p className="text-gray pl-10">REQUIREMENTS &amp; LOCATION</p>
-          <p className="text-gray pl-10 text-center">DESCRIPTION</p>
-          <p className="text-right text-gray">ACTIONS</p>
+          <div className="col-span-4 flex items-center text-gray">
+            REQUIREMENTS & LOCATION
+          </div>
+
+          <div className="col-span-2 flex items-center text-gray">
+            DESCRIPTION
+          </div>
+
+          <div className="col-span-2 flex items-center justify-end text-gray">
+            ACTIONS
+          </div>
         </div>
 
         {filtered.map((r) => (
