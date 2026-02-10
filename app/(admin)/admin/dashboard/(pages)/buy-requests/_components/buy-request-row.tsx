@@ -1,7 +1,5 @@
-// app/(admin)/admin/dashboard/(pages)/buy-request/_components/buy-request-row.tsx
 "use client";
 
-import React from "react";
 import Image from "next/image";
 import { Check, Phone, Clock, MapPin, Home, Ruler, Wallet } from "lucide-react";
 import Card from "@/components/cards/card";
@@ -16,22 +14,28 @@ export default function BuyRequestRow({
   item,
   checked,
   onToggle,
+  setApproved,
+  setPostId,
 }: {
   item: BuyRequestItem;
   checked: boolean;
   onToggle: () => void;
+  setApproved: (v: boolean) => void;
+  setPostId: (v: string | null) => void;
 }) {
   return (
     <Card>
       <div className="hidden lg:grid lg:grid-cols-12 gap-4 w-full">
         {/* checkbox */}
-        <div className="pt-2 flex gap-2 lg:col-span-4">
-          <input
-            type="checkbox"
-            checked={checked}
-            onChange={onToggle}
-            className="h-4 w-4 accent-primary"
-          />
+        <div className=" flex gap-2 lg:col-span-4">
+          <div className="pt-2">
+            <input
+              type="checkbox"
+              checked={checked}
+              onChange={onToggle}
+              className="h-4 w-4 accent-primary"
+            />
+          </div>
           {/* USER PROFILE */}
           <div className="">
             <UserProfileCell
@@ -77,7 +81,10 @@ export default function BuyRequestRow({
         <div className="flex justify-end lg:col-span-2">
           <ActionsCell
             status={item.statusLabel}
-            onApprove={() => alert(`Approve: ${item.id} (demo)`)}
+            onApprove={() => {
+              setApproved(true);
+              setPostId(item.id);
+            }}
             onReject={() => alert(`Reject: ${item.id} (demo)`)}
           />
         </div>
