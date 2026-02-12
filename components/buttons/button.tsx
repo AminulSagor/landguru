@@ -1,12 +1,13 @@
 "use client";
 import React from "react";
 
-type ButtonSize = "sm" | "md" | "lg";
+type ButtonSize = "sm" | "md" | "lg" | "base";
 type ButtonVariant = "primary" | "secondary";
 type ButtonShape = "default" | "pill";
 
 const sizeStyles: Record<ButtonSize, string> = {
   sm: "px-2 py-1 text-xs",
+  base: "px-3 py-2 text-sm",
   md: "px-4 py-2 text-base",
   lg: "px-6 py-3 text-lg",
 };
