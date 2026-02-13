@@ -1,7 +1,14 @@
+"use client";
 import { Sandwich } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const AuthNavbar = () => {
+  const path = usePathname();
+  const nextPath =
+    path === "/auth/agent/forgot-password"
+      ? "/auth/agent/login"
+      : "/auth/user/login";
   return (
     <div className="flex items-center justify-between bg-[#F8F9FA] py-3">
       <div className="flex items-center gap-2">
@@ -13,7 +20,7 @@ const AuthNavbar = () => {
 
       <p className="text-center text-sm text-gray">
         Already have an account? 
-        <Link href="/auth/login" className="text-primary font-semibold">
+        <Link href={nextPath} className="text-primary font-semibold">
           Login
         </Link>
       </p>

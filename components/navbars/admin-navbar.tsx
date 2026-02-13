@@ -1,7 +1,7 @@
 "use client";
 
-import NotificationsPopover from "@/app/(admin)/admin/dashboard/_components/notifications-popover";
-import AdminProfilePopover from "@/app/(admin)/admin/dashboard/_components/profile-popover";
+import NotificationsPopover from "@/app/(dashboard)/admin/(pages)/dashboard/_components/notifications-popover";
+import AdminProfilePopover from "@/app/(dashboard)/admin/(pages)/dashboard/_components/profile-popover";
 import Button from "@/components/buttons/button";
 import { useScreenSize } from "@/hooks/useScreenSize";
 import { ChevronDown, PanelRight } from "lucide-react";
@@ -15,7 +15,7 @@ type Props = {
 const AdminNavbar = ({ onOpenChange, openSidebar }: Props) => {
   const width = useScreenSize();
   const redirectProfile = () => {
-    redirect("/admin/dashboard/profile");
+    redirect("/admin/profile");
   };
 
   return (

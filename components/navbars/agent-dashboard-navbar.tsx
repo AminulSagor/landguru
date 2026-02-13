@@ -1,30 +1,13 @@
 "use client";
+import { AGENT_LINKS } from "@/constants/navigation-links";
 import { Bell, Sandwich } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-type Path = {
-  name: string;
-  link: string;
-};
-
 const AgentDashbaordNavbar = () => {
   const route = usePathname();
-  const paths: Path[] = [
-    {
-      name: "Home",
-      link: "/agent/dashboard",
-    },
-    {
-      name: "My Task",
-      link: "/agent/dashboard/tasks",
-    },
-    {
-      name: "Appointments",
-      link: "/agent/dashboard/appointment",
-    },
-  ];
+
   return (
     <nav className="flex py-4 lg:py-0 items-center justify-between bg-white responsive-padding shadow-md border-b border-gray/20 fixed w-full z-50">
       <div className="flex gap-12">
@@ -37,7 +20,7 @@ const AgentDashbaordNavbar = () => {
 
         {/* navlinks */}
         <ul className="gap-4 lg:gap-8  items-center text-base text-gray hidden md:flex">
-          {paths.map((path) => {
+          {AGENT_LINKS.map((path) => {
             const isActive = path.link === route;
             return (
               <li
@@ -53,12 +36,12 @@ const AgentDashbaordNavbar = () => {
 
       {/* setting area */}
       <div className="flex items-center gap-3 text-base">
-        <Link href={"/agent/dashboard/notifications"}>
+        <Link href={"/agent/notifications"}>
           <Bell />
         </Link>
 
         {/* profile */}
-        <Link href={"/agent/dashboard/profile"}>
+        <Link href={"/agent/profile"}>
           <div className="flex gap-2 items-center">
             <h1>John Doe</h1>
             <Image
