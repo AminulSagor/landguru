@@ -104,7 +104,7 @@ export const ADMIN_LINKS: SidebarLink[] = [
   },
   {
     name: "Reset Requests",
-    link: "/admin/reset-requests",
+    link: "/admin/reset-requests/agent",
     icon: <RotateCcw />,
   },
 ];
