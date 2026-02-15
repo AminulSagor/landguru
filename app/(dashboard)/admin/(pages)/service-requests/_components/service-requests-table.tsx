@@ -216,7 +216,7 @@ export default function ServiceRequestsTable({
       <div className="w-full overflow-x-auto">
         <table className="w-full min-w-300">
           <thead>
-            <tr className="bg-secondary text-xs font-semibold text-gray">
+            <tr className="bg-secondary/50 text-xs font-semibold text-gray">
               <th className="px-6 py-4 text-left">SERVICE NAME &amp; ID</th>
               <th className="px-6 py-4 text-left">
                 PARENT POST &amp; LOCATION

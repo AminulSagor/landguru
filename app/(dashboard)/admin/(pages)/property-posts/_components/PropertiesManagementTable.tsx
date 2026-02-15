@@ -116,11 +116,11 @@ function ProgressBar({ done, total }: { done: number; total: number }) {
 
 export default function PropertiesManagementTable() {
   return (
-    <Card className="rounded-2xl p-0 overflow-hidden">
+    <div className="rounded-lg p-0 overflow-hidden border border-gray/20 bg-white">
       <div className="w-full overflow-x-auto">
-        <table className="w-full min-w-295 border-collapse">
+        <table className="w-full min-w-360">
           <thead>
-            <tr className="bg-secondary">
+            <tr className="bg-secondary/60">
               {[
                 "PROPERTY",
                 "DETAILS",
@@ -132,7 +132,11 @@ export default function PropertiesManagementTable() {
               ].map((h) => (
                 <th
                   key={h}
-                  className="px-6 py-4 text-left text-xs font-extrabold text-gray tracking-wider"
+                  className={`px-6 py-4 text-xs font-extrabold text-gray tracking-wider ${
+                    h === "ACTIONS" || h === "STATUS"
+                      ? "text-center"
+                      : "text-left"
+                  }`}
                 >
                   {h}
                 </th>
@@ -154,7 +158,7 @@ export default function PropertiesManagementTable() {
               return (
                 <tr
                   key={`${r.id}-${idx}`}
-                  className="border-t border-gray/15 hover:bg-secondary"
+                  className="border-t border-gray/15 hover:bg-secondary/70"
                 >
                   {/* PROPERTY (thumb) */}
                   <td className="px-6 py-6 align-top">
@@ -381,6 +385,6 @@ export default function PropertiesManagementTable() {
           </button>
         </div>
       </div>
-    </Card>
+    </div>
   );
 }

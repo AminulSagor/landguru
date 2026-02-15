@@ -13,7 +13,7 @@ const page = () => {
       {currentUser === "admin" ? (
         <div className="space-y-6">
           <AdminStaticOverview />
-          <div className="grid lg:grid-cols-12 gap-4">
+          <div className="grid lg:grid-cols-12 gap-6">
             <div className="col-span-12 lg:col-span-8">
               <AdminRecentActivityTask />
             </div>

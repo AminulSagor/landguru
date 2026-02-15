@@ -12,6 +12,8 @@ import { LayoutDashboard, PanelRight } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cloneElement, JSX } from "react";
+import { BsBuildingsFill } from "react-icons/bs";
+import { PiBuildingApartmentThin } from "react-icons/pi";
 
 type Props = {
   openSidebar: boolean;
@@ -119,7 +121,7 @@ const AdminSidebar = ({ onOpenChange, openSidebar }: Props) => {
           <div className="flex items-center gap-2 h-16 border-b border-gray/10 mb-4">
             <div className="flex items-center gap-2">
               <span className="bg-primary rounded-lg text-white p-2">
-                <LayoutDashboard size={18} />
+                <BsBuildingsFill  size={18} className="text-white"/>
               </span>
               <span className="text-base font-bold">LandGuru</span>
             </div>
