@@ -94,12 +94,12 @@ export const ADMIN_LINKS: SidebarLink[] = [
   },
   {
     name: "Agent List",
-    link: "/admin/agents",
+    link: "/admin/roles/agent",
     icon: <Users />,
   },
   {
     name: "User Management",
-    link: "/admin/users",
+    link: "/admin/roles/user",
     icon: <UserCog />,
   },
   {
@@ -156,17 +156,17 @@ export const SUPER_ADMIN_LINKS: SectionedSidebarLink[] = [
     items: [
       {
         name: "Admin List",
-        link: "/admin/admins",
+        link: "/admin/roles/admin",
         icon: <ShieldCheck />,
       },
       {
         name: "Agent List",
-        link: "/admin/agents",
+        link: "/admin/roles/agent",
         icon: <Users />,
       },
       {
         name: "User Mgmt",
-        link: "/admin/users",
+        link: "/admin/roles/user",
         icon: <UserCog />,
       },
     ],
@@ -191,20 +191,20 @@ export const SUPER_ADMIN_LINKS: SectionedSidebarLink[] = [
     items: [
       {
         name: "Services",
-        link: "/admin/options/services",
+        link: "/admin/manage/services",
         // No icon for these
       },
       {
         name: "Locations",
-        link: "/admin/options/locations",
+        link: "/admin/manage/locations",
       },
       {
         name: "Agent Roles",
-        link: "/admin/options/agent-roles",
+        link: "/admin/manage/agent-roles",
       },
       {
         name: "Land Types",
-        link: "/admin/options/land-types",
+        link: "/admin/manage/land-types",
       },
     ],
   },
