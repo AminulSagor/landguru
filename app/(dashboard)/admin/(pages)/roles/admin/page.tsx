@@ -13,6 +13,7 @@ import AdminStats from "@/app/(dashboard)/admin/(pages)/roles/admin/_components/
 import AdminToolbar from "@/app/(dashboard)/admin/(pages)/roles/admin/_components/admin-toolbar";
 import AdminTable from "@/app/(dashboard)/admin/(pages)/roles/admin/_components/admin-table";
 import BulkActionBar from "@/app/(dashboard)/admin/(pages)/roles/admin/_components/bulk-action-bar";
+import AdminOnBoardDialog from "@/app/(dashboard)/admin/(pages)/roles/admin/_components/admin-onboard-dialog";
 
 export default function AdminManageAdminsPage() {
   const [rows, setRows] = useState<AdminRow[]>(demoAdmins);
@@ -38,7 +39,7 @@ export default function AdminManageAdminsPage() {
     });
   }, [rows, tab, query]);
 
-  const visible = filtered; // screenshot shows 3 rows
+  const visible = filtered;
 
   const allVisibleSelected =
     visible.length > 0 && visible.every((r) => selectedIds.includes(r.id));
@@ -62,11 +63,17 @@ export default function AdminManageAdminsPage() {
     }
   }
 
+  const [openOnBoardDialog, setOnBoardDialog] = useState(false);
+
   return (
     <div className="space-y-4">
       {/* top right action */}
       <div className="flex justify-end">
-        <Button variant="primary" size="base" onClick={() => {}}>
+        <Button
+          variant="primary"
+          size="base"
+          onClick={() => setOnBoardDialog(true)}
+        >
           <Plus className="h-4 w-4" />
           Onboard New Admin
         </Button>
@@ -140,6 +147,11 @@ export default function AdminManageAdminsPage() {
             ),
           )
         }
+      />
+
+      <AdminOnBoardDialog
+        onOpenChange={setOnBoardDialog}
+        open={openOnBoardDialog}
       />
     </div>
   );
