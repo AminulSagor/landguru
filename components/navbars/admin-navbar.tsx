@@ -1,10 +1,7 @@
-"use client";
-
 import NotificationsPopover from "@/app/(dashboard)/admin/(pages)/dashboard/_components/notifications-popover";
 import AdminProfilePopover from "@/app/(dashboard)/admin/(pages)/dashboard/_components/profile-popover";
-import Button from "@/components/buttons/button";
-import { useScreenSize } from "@/hooks/useScreenSize";
-import { ChevronDown, PanelRight } from "lucide-react";
+import CreateNewPopover from "@/components/sidebars/create-new-popover";
+import { PanelRight } from "lucide-react";
 import { redirect } from "next/navigation";
 
 type Props = {
@@ -13,7 +10,6 @@ type Props = {
 };
 
 const AdminNavbar = ({ onOpenChange, openSidebar }: Props) => {
-  const width = useScreenSize();
   const redirectProfile = () => {
     redirect("/admin/profile");
   };
@@ -33,12 +29,7 @@ const AdminNavbar = ({ onOpenChange, openSidebar }: Props) => {
       </div>
 
       <div className="flex items-center gap-3 md:gap-8">
-        <Button size={width > 425 ? "md" : "sm"}>
-          + Create new{" "}
-          <span>
-            <ChevronDown size={18} />
-          </span>
-        </Button>
+        <CreateNewPopover />
 
         <NotificationsPopover />
 

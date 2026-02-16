@@ -96,7 +96,7 @@ export default function NotificationsPopover() {
         <div className="rounded-2xl border border-gray/15 bg-white shadow-xl overflow-hidden">
           {/* header */}
           <div className="flex items-center justify-between px-5 py-4">
-            <h3 className="text-base font-extrabold text-gray">
+            <h3 className="text-base">
               Notifications <span className="text-primary">(4)</span>
             </h3>
             <button className="text-sm font-semibold text-primary">
@@ -105,7 +105,7 @@ export default function NotificationsPopover() {
           </div>
 
           {/* tabs */}
-          <div className="flex gap-6 px-5 pb-3 text-sm font-semibold text-gray/60 border-b border-gray/10">
+          <div className="flex gap-6 px-5 pb-3 text-sm border-b border-gray/10">
             <span className="text-primary border-b-2 border-primary pb-2">
               All
             </span>
@@ -132,13 +132,13 @@ export default function NotificationsPopover() {
 
                 <div className="flex-1">
                   <div className="flex justify-between gap-3">
-                    <h4 className="text-sm font-extrabold text-gray">
+                    <h4 className="text-sm">
                       {n.title}
                     </h4>
-                    <span className="text-xs text-gray/40">{n.time}</span>
+                    <span className="text-xs">{n.time}</span>
                   </div>
 
-                  <p className="mt-1 text-sm font-semibold text-gray/60">
+                  <p className="mt-1 text-sm text-gray">
                     {n.description}
                   </p>
 
@@ -161,7 +161,7 @@ export default function NotificationsPopover() {
 
           {/* footer */}
           <div className="border-t border-gray/10 px-5 py-4">
-            <button className="w-full rounded-lg border border-gray/15 py-2 text-sm font-extrabold text-gray hover:bg-gray/5">
+            <button className="w-full rounded-lg border border-gray/40 py-2 text-sm font-extrabold text-gray hover:bg-gray/5">
               View All Notification History
             </button>
           </div>

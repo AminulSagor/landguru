@@ -15,7 +15,7 @@ type Props = {
 };
 
 export default function AdminProfilePopover({
-  name = "Admin",
+  name,
   zone = "Banani Zone",
   avatarSrc = "/images/avatars/avatar.png",
   onProfileSettings,
@@ -38,7 +38,7 @@ export default function AdminProfilePopover({
           alt="admin-profile-image"
           className="rounded-full"
         />
-        <h1 className="text-sm font-semibold text-gray">{name}</h1>
+        <h1 className="text-base text-gray">{name}</h1>
       </button>
 
       {/* hover bridge */}
@@ -87,7 +87,7 @@ export default function AdminProfilePopover({
             <div className="text-gray/40">
               <UserCog size={22} />
             </div>
-            <div className="text-base font-semibold text-gray/70">
+            <div className="text-sm font-semibold text-gray">
               Profile Settings
             </div>
           </button>
@@ -102,7 +102,7 @@ export default function AdminProfilePopover({
             <div className="text-red">
               <LogOut size={22} />
             </div>
-            <div className="text-base font-extrabold text-red">Logout</div>
+            <div className="text-sm font-extrabold text-red">Logout</div>
           </button>
         </div>
       </div>

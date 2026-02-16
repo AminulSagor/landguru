@@ -232,14 +232,14 @@ export default function ServiceRequestsTable({
             {items.map((it) => (
               <tr key={it.id} className="border-t border-gray/15">
                 <td className="px-6 py-5">
-                  <div className="font-semibold text-black">
+                  <div className="text-sm text-black">
                     {it.serviceName}
                   </div>
                   <div className="mt-1 text-xs text-gray">#{it.id}</div>
                 </td>
 
                 <td className="px-6 py-5">
-                  <div className="font-semibold text-primary">
+                  <div className="text-primary">
                     #{it.parentPostId}
                   </div>
                   <div className="mt-1 flex items-center gap-2 text-xs text-gray">
@@ -252,7 +252,7 @@ export default function ServiceRequestsTable({
                   {it.assignedAgent?.name ? (
                     <div className="flex items-center gap-3">
                       <Avatar name={it.assignedAgent.name} />
-                      <div className="font-semibold text-black">
+                      <div className=" text-black">
                         {it.assignedAgent.name}
                       </div>
                     </div>
@@ -268,7 +268,7 @@ export default function ServiceRequestsTable({
                 <td className="px-6 py-5 text-cente">
                   {it.latestWorkLog ? (
                     <div>
-                      <div className="font-semibold text-black">
+                      <div className="text-base text-black">
                         {it.latestWorkLog.title}
                       </div>
                       <div className="mt-1 text-xs text-gray">

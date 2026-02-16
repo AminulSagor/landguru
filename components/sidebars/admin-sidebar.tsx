@@ -4,7 +4,6 @@ import {
   ADMIN_LINKS,
   SUPER_ADMIN_LINKS,
   type SidebarLink,
-  type SectionedSidebarLink,
 } from "@/constants/navigation-links";
 import { currentUser, User } from "@/helpers/helpers";
 import { useScreenSize } from "@/hooks/useScreenSize";
@@ -13,7 +12,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cloneElement, JSX } from "react";
 import { BsBuildingsFill } from "react-icons/bs";
-import { PiBuildingApartmentThin } from "react-icons/pi";
+import { ChevronDown, ChevronUp } from "lucide-react";
+import { useState } from "react";
 
 type Props = {
   openSidebar: boolean;
@@ -25,6 +25,14 @@ const AdminSidebar = ({ onOpenChange, openSidebar }: Props) => {
   const isMobile = width <= 768;
   const user: User = currentUser;
   const path = usePathname();
+
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({
+    "Manage Options": true,
+  });
+
+  const toggleSection = (key: string) => {
+    setOpenSections((p) => ({ ...p, [key]: !p[key] }));
+  };
 
   // Function to render icon with consistent size
   const renderIcon = (icon: JSX.Element | undefined) => {
@@ -48,7 +56,7 @@ const AdminSidebar = ({ onOpenChange, openSidebar }: Props) => {
               className={`flex gap-3 items-center px-4 py-2.5 text-sm rounded-lg transition-all duration-200 ${
                 isActive
                   ? "bg-secondary text-primary font-semibold"
-                  : "text-gray hover:bg-gray/5"
+                  : "text-gray hover:bg-secondary"
               }`}
             >
               <span className="text-current">{renderIcon(item.icon)}</span>
@@ -62,38 +70,84 @@ const AdminSidebar = ({ onOpenChange, openSidebar }: Props) => {
 
   // Render super admin links with sections
   const renderSuperAdminLinks = () => (
-    <div className="space-y-6">
-      {SUPER_ADMIN_LINKS.map((section: SectionedSidebarLink, index) => (
-        <div key={section.section || index}>
-          {section.section && (
-            <h3 className="text-xs font-medium text-gray-400 uppercase tracking-wider px-4 mb-2">
-              {section.section}
-            </h3>
-          )}
-          <ul className="space-y-1">
-            {section.items.map((item: SidebarLink) => {
-              const isActive = item.link === path;
-              return (
-                <li key={item.link}>
-                  <Link
-                    href={item.link}
-                    className={`flex gap-3 items-center px-4 py-2.5 text-sm rounded-lg transition-all duration-200 ${
-                      isActive
-                        ? "bg-secondary text-primary font-semibold"
-                        : "text-gray hover:bg-gray/5"
-                    }`}
-                  >
-                    <span className="text-current">
-                      {renderIcon(item.icon)}
-                    </span>
-                    <span>{item.name}</span>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      ))}
+    <div>
+      {SUPER_ADMIN_LINKS.map((section, index) => {
+        const title = section.section || `section-${index}`;
+        const isManage =
+          section.collapsible && section.section === "Manage Options";
+        const isOpen = openSections[title] ?? true;
+
+        return (
+          <div
+            key={title}
+            className="pb-4 mb-4 border-b border-gray/10 last:border-b-0 last:mb-0 last:pb-0"
+          >
+            {/* Section header */}
+            {section.section && !isManage && (
+              <h3 className="text-xs font-medium text-gray-400 uppercase tracking-wider px-4 mb-2">
+                {section.section}
+              </h3>
+            )}
+
+            {/* Manage Options accordion header */}
+            {isManage && (
+              <button
+                type="button"
+                onClick={() => toggleSection(title)}
+                className={[
+                  "w-full flex items-center justify-between",
+                  "px-4 py-2.5 rounded-lg text-sm font-semibold",
+                  "text-gray hover:bg-gray/5 transition-colors",
+                ].join(" ")}
+              >
+                <span>{section.section}</span>
+                {isOpen ? (
+                  <ChevronUp className="w-4 h-4" />
+                ) : (
+                  <ChevronDown className="w-4 h-4" />
+                )}
+              </button>
+            )}
+
+            {/* Items */}
+            <ul
+              className={[
+                "space-y-1",
+                isManage && !isOpen ? "hidden" : "",
+              ].join(" ")}
+            >
+              {section.items.map((item) => {
+                const isActive = item.link === path;
+
+                // inside Manage Options: indent + no icon like screenshot
+                const isManageItem = isManage;
+
+                return (
+                  <li key={item.link}>
+                    <Link
+                      href={item.link}
+                      className={[
+                        "flex gap-3 items-center text-sm rounded-lg transition-all duration-200",
+                        isManageItem ? "pl-10 pr-4 py-2" : "px-4 py-2.5",
+                        isActive
+                          ? "bg-secondary text-primary font-semibold"
+                          : "text-gray hover:bg-secondary",
+                      ].join(" ")}
+                    >
+                      {!isManageItem && (
+                        <span className="text-current">
+                          {renderIcon(item.icon)}
+                        </span>
+                      )}
+                      <span>{item.name}</span>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        );
+      })}
     </div>
   );
 
@@ -121,7 +175,7 @@ const AdminSidebar = ({ onOpenChange, openSidebar }: Props) => {
           <div className="flex items-center gap-2 h-16 border-b border-gray/10 mb-4">
             <div className="flex items-center gap-2">
               <span className="bg-primary rounded-lg text-white p-2">
-                <BsBuildingsFill  size={18} className="text-white"/>
+                <BsBuildingsFill size={18} className="text-white" />
               </span>
               <span className="text-base font-bold">LandGuru</span>
             </div>

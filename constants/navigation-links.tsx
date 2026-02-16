@@ -112,12 +112,13 @@ export const ADMIN_LINKS: SidebarLink[] = [
 // Super Admin Dashboard Links (with sections)
 export type SectionedSidebarLink = {
   section?: string;
+  collapsible?: boolean;
   items: SidebarLink[];
 };
 
 export const SUPER_ADMIN_LINKS: SectionedSidebarLink[] = [
   {
-    section: "Main",
+    section: "",
     items: [
       {
         name: "Dashboard",
@@ -152,7 +153,7 @@ export const SUPER_ADMIN_LINKS: SectionedSidebarLink[] = [
     ],
   },
   {
-    section: "People",
+    section: "",
     items: [
       {
         name: "Admin List",
@@ -188,6 +189,7 @@ export const SUPER_ADMIN_LINKS: SectionedSidebarLink[] = [
   },
   {
     section: "Manage Options",
+    collapsible: true,
     items: [
       {
         name: "Services",
