@@ -17,6 +17,7 @@ export default function AdminRowItem({
   onEdit,
   onKey,
   onDelete,
+  onClick,
 }: {
   row: AdminRow;
   selected: boolean;
@@ -25,6 +26,7 @@ export default function AdminRowItem({
   onEdit: () => void;
   onKey: () => void;
   onDelete: () => void;
+  onClick: () => void;
 }) {
   const initials = row.name
     .split(" ")
@@ -55,7 +57,7 @@ export default function AdminRowItem({
         : "text-[#EF4444]";
 
   return (
-    <tr className="border-b border-gray/10 bg-white">
+    <tr className="border-b border-gray/10 bg-white" onClick={onClick}>
       <td className="px-5 py-5 align-middle">
         <input type="checkbox" checked={selected} onChange={onToggle} />
       </td>
@@ -64,7 +66,12 @@ export default function AdminRowItem({
       <td className="px-5 py-5 align-middle">
         <div className="flex items-center gap-3">
           <div className="rounded-full bg-secondary flex items-center justify-center overflow-hidden">
-            <Image src={IMAGE.avatar} height={35} width={35} alt="admin-image" />
+            <Image
+              src={IMAGE.avatar}
+              height={35}
+              width={35}
+              alt="admin-image"
+            />
           </div>
           <div>
             <p className="text-sm font-semibold">{row.name}</p>

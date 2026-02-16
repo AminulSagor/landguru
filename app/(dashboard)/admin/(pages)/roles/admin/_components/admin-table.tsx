@@ -1,5 +1,6 @@
 import AdminRowItem from "@/app/(dashboard)/admin/(pages)/roles/admin/_components/admin-row";
 import { AdminRow } from "@/app/(dashboard)/admin/types/admin-list-type";
+import { useRouter } from "next/navigation";
 
 export default function AdminTable({
   rows,
@@ -22,6 +23,10 @@ export default function AdminTable({
   onKey: (id: string) => void;
   onDelete: (id: string) => void;
 }) {
+  const router = useRouter();
+  const onDetailsPage = () => {
+    router.push("/admin/roles/admin/details/1234");
+  };
   return (
     <div className="w-full overflow-x-auto">
       <table className="w-full border-collapse">
@@ -69,6 +74,7 @@ export default function AdminTable({
               onEdit={() => onEdit(r.id)}
               onKey={() => onKey(r.id)}
               onDelete={() => onDelete(r.id)}
+              onClick={onDetailsPage}
             />
           ))}
         </tbody>
