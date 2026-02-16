@@ -1,4 +1,5 @@
 import { Property } from "@/app/(dashboard)/user/types/property";
+import { IMAGE } from "@/constants/image-paths";
 
 export const featuredProperties: Property[] = [
   {
@@ -6,7 +7,7 @@ export const featuredProperties: Property[] = [
     title: "5 Katha Plot in Purbachal",
     locationText: "Sector 4, Dhaka",
     price: 20000000,
-    coverImage: "/images/properties/land-1.png",
+    coverImage: IMAGE.property,
     tag: "Plain Land",
     mode: "Sell Post",
     verified: true,
@@ -16,7 +17,7 @@ export const featuredProperties: Property[] = [
     title: "Luxury 3 Bed Apartment",
     locationText: "Gulshan 2, Dhaka",
     price: 8075000,
-    coverImage: "/images/properties/flat-1.png",
+    coverImage: IMAGE.property,
     tag: "Flat",
     mode: "Sell Post",
     verified: true,
@@ -26,7 +27,7 @@ export const featuredProperties: Property[] = [
     title: "Gazipur Water Zone",
     locationText: "Gazipur, Dhaka",
     price: 9512000,
-    coverImage: "/images/properties/water-1.png",
+    coverImage: IMAGE.property,
     tag: "Water Land",
     mode: "Sell Post",
     verified: true,
@@ -37,7 +38,7 @@ export const featuredProperties: Property[] = [
     title: "5 Katha Plot in Purbachal",
     locationText: "Sector 4, Dhaka",
     price: 20000000,
-    coverImage: "/images/properties/land-1.png",
+    coverImage: IMAGE.property,
     tag: "Plain Land",
     mode: "Sell Post",
     verified: true,
@@ -47,7 +48,7 @@ export const featuredProperties: Property[] = [
     title: "Luxury 3 Bed Apartment",
     locationText: "Gulshan 2, Dhaka",
     price: 8075000,
-    coverImage: "/images/properties/flat-1.png",
+    coverImage: IMAGE.property,
     tag: "Flat",
     mode: "Sell Post",
     verified: true,
@@ -57,7 +58,7 @@ export const featuredProperties: Property[] = [
     title: "Gazipur Water Zone",
     locationText: "Gazipur, Dhaka",
     price: 9512000,
-    coverImage: "/images/properties/water-1.png",
+    coverImage: IMAGE.property,
     tag: "Water Land",
     mode: "Sell Post",
     verified: true,

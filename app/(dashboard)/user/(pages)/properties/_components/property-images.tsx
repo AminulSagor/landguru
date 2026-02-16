@@ -1,19 +1,21 @@
 import { Property } from "@/app/(dashboard)/user/types/property";
 import Card from "@/components/cards/card";
 import Image from "next/image";
-import React from "react";
 
 const PropertyImages = ({ property }: { property: Property }) => {
   return (
     <div>
       <div className="overflow-hidden">
-        <Image
-          src={property.coverImage}
-          className="w-full h-105 rounded-xl"
-          alt={property.title}
-          height={100}
-          width={100}
-        />
+        <div className="h-105 rounded-lg overflow-hidden relative">
+          <Image
+            src={property.coverImage}
+            alt={property.title}
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, 50vw"
+            priority
+          />
+        </div>
       </div>
 
       {/* thumbnails */}

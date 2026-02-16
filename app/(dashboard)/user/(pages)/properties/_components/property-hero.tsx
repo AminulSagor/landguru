@@ -4,6 +4,7 @@ import React from "react";
 import { ArrowLeft, CheckCircle2, Lock } from "lucide-react";
 import { Property } from "@/app/(dashboard)/user/types/property";
 import Button from "@/components/buttons/button";
+import { useRouter } from "next/navigation";
 
 type Props = {
   property: Property;
@@ -11,9 +12,13 @@ type Props = {
 };
 
 const PropertyHero = ({ property, onRequest }: Props) => {
+  const router = useRouter();
   return (
     <div>
-      <button className="mb-4 flex items-center gap-2 text-sm font-semibold text-black/50 hover:text-black">
+      <button
+        className="mb-4 flex items-center gap-2 text-sm font-semibold text-black/50 hover:text-black"
+        onClick={() => router.back()}
+      >
         <ArrowLeft size={16} /> Back to Listings
       </button>
 
