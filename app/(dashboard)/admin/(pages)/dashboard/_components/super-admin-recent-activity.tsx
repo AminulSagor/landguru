@@ -83,7 +83,7 @@ export default function SuperAdminRecentActivity() {
   return (
     <div className="space-y-4">
       {/* header */}
-      <h3 className="text-sm font-extrabold text-gray">
+      <h3 className="text-base">
         Recent Admin Activity
       </h3>
 
@@ -94,7 +94,7 @@ export default function SuperAdminRecentActivity() {
           return (
             <div
               key={i}
-              className="flex items-start gap-4 rounded-xl border border-gray/10 bg-white p-4"
+              className="flex items-start gap-4 rounded-xl border border-gray/15 bg-white p-4"
             >
               <div
                 className={cn(
@@ -107,7 +107,7 @@ export default function SuperAdminRecentActivity() {
 
               <div className="flex-1">
                 <div className="flex items-center justify-between">
-                  <p className="text-sm font-bold text-gray">{a.title}</p>
+                  <p className="text-sm">{a.title}</p>
                   <span className="text-xs font-semibold text-gray/40">
                     {a.time}
                   </span>
@@ -125,7 +125,7 @@ export default function SuperAdminRecentActivity() {
       {/* footer */}
       <Button
         variant="secondary"
-        className="w-full border border-dashed border-gray/30 text-sm font-semibold"
+        className="w-full border border-dashed border-gray text-sm"
       >
         View Activity History
       </Button>

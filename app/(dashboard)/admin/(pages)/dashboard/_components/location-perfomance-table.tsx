@@ -16,11 +16,41 @@ type LocationRow = {
 };
 
 const demoRows: LocationRow[] = [
-  { zone: "Dhaka North", admin: "Rahim Ahmed", posts: 1204, revenue: "৳ 1.2 Cr", status: "active" },
-  { zone: "Dhaka South", admin: "Selim Khan", posts: 980, revenue: "৳ 85 Lakh", status: "active" },
-  { zone: "Chittagong", admin: "Kamal Hossain", posts: 450, revenue: "৳ 45 Lakh", status: "warning" },
-  { zone: "Sylhet", admin: "Nora Islam", posts: 320, revenue: "৳ 30 Lakh", status: "active" },
-  { zone: "Rajshahi", admin: "Tariqul Islam", posts: 150, revenue: "৳ 12 Lakh", status: "inactive" },
+  {
+    zone: "Dhaka North",
+    admin: "Rahim Ahmed",
+    posts: 1204,
+    revenue: "৳ 1.2 Cr",
+    status: "active",
+  },
+  {
+    zone: "Dhaka South",
+    admin: "Selim Khan",
+    posts: 980,
+    revenue: "৳ 85 Lakh",
+    status: "active",
+  },
+  {
+    zone: "Chittagong",
+    admin: "Kamal Hossain",
+    posts: 450,
+    revenue: "৳ 45 Lakh",
+    status: "warning",
+  },
+  {
+    zone: "Sylhet",
+    admin: "Nora Islam",
+    posts: 320,
+    revenue: "৳ 30 Lakh",
+    status: "active",
+  },
+  {
+    zone: "Rajshahi",
+    admin: "Tariqul Islam",
+    posts: 150,
+    revenue: "৳ 12 Lakh",
+    status: "inactive",
+  },
 ];
 
 function StatusPill({ status }: { status: Status }) {
@@ -43,7 +73,7 @@ function StatusPill({ status }: { status: Status }) {
     <span
       className={cn(
         "inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold",
-        map[status].cls
+        map[status].cls,
       )}
     >
       {map[status].label}
@@ -59,7 +89,7 @@ export default function LocationPerformanceTable({
   onViewFullReportHref?: string;
 }) {
   return (
-    <Card className="rounded-2xl border border-gray/15 bg-white p-0">
+    <div className="bg-white border border-gray/15 rounded-lg">
       {/* header */}
       <div className="flex items-center justify-between px-6 py-5">
         <h3 className="text-sm font-extrabold text-gray">
@@ -82,7 +112,7 @@ export default function LocationPerformanceTable({
               {["ZONE", "ADMIN", "POSTS", "REVENUE", "STATUS"].map((h) => (
                 <th
                   key={h}
-                  className="border-t border-gray/10 px-6 py-4 text-left text-xs font-bold tracking-wide text-gray/50"
+                  className="border-t border-gray/10 px-6 py-4 text-left text-xs font-semibold tracking-wide"
                 >
                   {h}
                 </th>
@@ -96,13 +126,11 @@ export default function LocationPerformanceTable({
                 <td className="px-6 py-5 text-sm font-semibold text-gray">
                   {r.zone}
                 </td>
-                <td className="px-6 py-5 text-sm text-gray/60">
-                  {r.admin}
-                </td>
-                <td className="px-6 py-5 text-sm text-gray/60">
+                <td className="px-6 py-5 text-sm ">{r.admin}</td>
+                <td className="px-6 py-5 text-sm">
                   {r.posts.toLocaleString()}
                 </td>
-                <td className="px-6 py-5 text-sm font-semibold text-gray">
+                <td className="px-6 py-5 text-sm">
                   {r.revenue}
                 </td>
                 <td className="px-6 py-5">
@@ -118,6 +146,6 @@ export default function LocationPerformanceTable({
       <div className="px-6 pb-5 pt-3 text-xs text-gray/40 md:hidden">
         Swipe horizontally to view all columns
       </div>
-    </Card>
+    </div>
   );
 }
