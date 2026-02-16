@@ -1,13 +1,16 @@
 "use client";
+import UserMobileDrawer from "@/components/sidebars/user-sidebar";
 import { USER_LINKS } from "@/constants/navigation-links";
 import { Bell, Sandwich } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 import { FaBarsStaggered } from "react-icons/fa6";
 
 const UserDashbaordNavbar = () => {
   const route = usePathname();
+  const [open, setOpen] = useState(false);
 
   return (
     <nav className="py-4 flex lg:py-0 items-center justify-between bg-white responsive-padding shadow-md border-b border-gray/20 fixed w-full z-50">
@@ -57,9 +60,14 @@ const UserDashbaordNavbar = () => {
       </div>
 
       {/* mobile view */}
-      <button className="border p-1 rounded-md border-gray/20 cursor-pointer md:hidden">
+      <button
+        onClick={() => setOpen(true)}
+        className="border p-1 rounded-md border-gray/20 cursor-pointer md:hidden"
+      >
         <FaBarsStaggered size={18} />
       </button>
+
+      <UserMobileDrawer open={open} onOpenChange={setOpen} />
     </nav>
   );
 };
