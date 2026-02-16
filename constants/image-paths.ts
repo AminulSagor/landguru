@@ -1,5 +1,5 @@
 export const IMAGE = {
-  avatar: "/images/properties/demo-property.avif",
-  property: "/images/properties/duplex.jpg",
+  avatar: "/images/avatars/avatar.png",
+  property: "/images/properties/demo-property.avif",
   placeholder: "/images/placeholder-image.png",
 } as const;
