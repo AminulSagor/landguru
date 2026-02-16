@@ -27,7 +27,9 @@ import Button from "@/components/buttons/button";
 import { PropertyRequestDetails } from "@/app/(dashboard)/user/(pages)/properties/request/details/[id]/page";
 
 import PostSubmittedDialog from "@/app/(dashboard)/user/(pages)/properties/_components/post-submitted-dialog";
-import SelectPropertyDialog, { Listing } from "@/app/(dashboard)/user/(pages)/properties/_components/select-property-dialog";
+import SelectPropertyDialog, {
+  Listing,
+} from "@/app/(dashboard)/user/(pages)/properties/_components/select-property-dialog";
 
 export default function RequestPropertyDetailsView({
   request,
@@ -52,7 +54,7 @@ export default function RequestPropertyDetailsView({
     <div className="py-24">
       <div>
         <Link
-          href="/dashboard/properties"
+          href="/user/properties"
           className="inline-flex items-center gap-2 text-sm text-gray hover:opacity-80"
         >
           <ArrowLeft className="h-4 w-4" />
@@ -155,14 +157,15 @@ export default function RequestPropertyDetailsView({
                   <FileText className="mr-2 h-5 w-5" />
                   Offer from your existing Posts
                 </Button>
-
-                <Button
-                  className="mt-4 w-full border border-gray text-primary"
-                  variant="secondary"
-                >
-                  <CirclePlus size={18} />
-                  Create new sell post and offer
-                </Button>
+                <Link href={'/user/posts/sell/create'}>
+                  <Button
+                    className="mt-4 w-full border border-gray text-primary"
+                    variant="secondary"
+                  >
+                    <CirclePlus size={18} />
+                    Create new sell post and offer
+                  </Button>
+                </Link>
 
                 <p className="mt-4 text-center text-xs text-gray/70">
                   By offering, you agree to our{" "}

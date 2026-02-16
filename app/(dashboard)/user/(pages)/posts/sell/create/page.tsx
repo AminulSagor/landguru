@@ -119,11 +119,6 @@ export default function CreateSellPostPage() {
               onBack={goBack}
               onSubmit={async (step4: StepFourValues) => {
                 setData((prev) => ({ ...prev, step4 }));
-
-                // ✅ Later: API call here
-                // await createSellPost({ ...prev, step4 })
-
-                // NOTE: Dialog open is handled inside Step-4 component after this resolves.
               }}
             />
           )}

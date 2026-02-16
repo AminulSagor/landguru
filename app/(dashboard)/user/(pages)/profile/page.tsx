@@ -70,14 +70,14 @@ export default function ProfileOverview({
             icon={<User size={18} />}
             title="Edit Profile Information"
             subTitle="Update your personal details and address"
-            link={"/dashboard/profile/edit-profile"}
+            link={"/user/profile/edit-profile"}
           />
 
           <SettingRow
             icon={<Lock size={18} />}
             title="Change Password"
             subTitle="Update your password and security settings"
-            link="/dashboard/profile/change-password"
+            link="/user/profile/change-password"
           />
 
           {/* Verification Documents */}
