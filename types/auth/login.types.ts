@@ -1,5 +1,11 @@
 export type UserRole = "admin" | "super_admin" | "agent" | "user";
 
+export type LoginForm = {
+  phone: string;
+  password: string;
+  remember: boolean;
+};
+
 export interface LoginPayload {
   phone: string;
   password: string;
