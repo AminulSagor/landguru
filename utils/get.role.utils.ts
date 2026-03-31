@@ -1,6 +1,5 @@
-import { getUserRole } from "@/utils/cookies.utils";
 import { cookies } from "next/headers";
 
-export const currentUser = getUserRole();
+//for server coode use this current user role (admin and super admin only)
 const cookieStore = await cookies();
-export const currentUserServer = cookieStore.get("user_role")?.value ?? null;
+export const currentUser = cookieStore.get("user_role")?.value ?? null;
