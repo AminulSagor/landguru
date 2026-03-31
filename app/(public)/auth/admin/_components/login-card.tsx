@@ -15,13 +15,7 @@ import {
   setToken,
   setUserRole,
 } from "@/utils/cookies.utils";
-import type { ApiError } from "@/types/auth/login.types";
-
-type LoginForm = {
-  phone: string;
-  password: string;
-  remember: boolean;
-};
+import type { ApiError, LoginForm } from "@/types/auth/login.types";
 
 export default function LoginCard() {
   const router = useRouter();
@@ -38,6 +32,7 @@ export default function LoginCard() {
   const [showPass, setShowPass] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
 
+  //submit handler
   const onSubmit = async (data: LoginForm) => {
     try {
       setIsLoading(true);
@@ -61,7 +56,6 @@ export default function LoginCard() {
 
       setToken(response.accessToken, data.remember);
       setUserRole(role, data.remember);
-      
 
       toast.success(response.message || "Login successful");
 
