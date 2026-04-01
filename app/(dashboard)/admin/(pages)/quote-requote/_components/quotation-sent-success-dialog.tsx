@@ -1,22 +1,18 @@
-// app/(admin)/admin/dashboard/(pages)/quote-requote/_components/quotation-sent-success-dialog.tsx
 "use client";
 
 import React from "react";
 import { Check } from "lucide-react";
-import { cn } from "@/lib/utils";
 import Dialog from "@/components/dialogs/dialog";
 import Button from "@/components/buttons/button";
 
 type Props = {
   open: boolean;
   onControl: (v: boolean) => void;
-
-  // you can pass these from your Review dialog after submit
-  postId?: string; // "#POST-1044"
-  sellerName?: string; // "Mr. Rahman"
-  mandatoryFee?: number; // 3000
-  optionalFee?: number; // 3000
-  currencySymbol?: string; // "৳"
+  postId?: string;
+  sellerName?: string;
+  mandatoryFee?: number;
+  optionalFee?: number;
+  currencySymbol?: string;
 };
 
 function money(sym: string, n: number) {
@@ -42,14 +38,11 @@ export default function QuotationSentSuccessDialog({
       className="text-center"
       position="top"
     >
-      {/* icon */}
       <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green/15">
         <Check className="text-green" size={22} />
       </div>
 
-      <p className="mt-4 text-lg font-extrabold">
-        Quotation Sent Successfully
-      </p>
+      <p className="mt-4 text-lg font-extrabold">Quotation Sent Successfully</p>
 
       <p className="mt-2 text-xs font-semibold text-light-gray">
         Your revised counter-offer has been sent to{" "}
@@ -57,7 +50,6 @@ export default function QuotationSentSuccessDialog({
         <span className="font-extrabold text-gray">{postId}</span>.
       </p>
 
-      {/* summary box */}
       <div className="mt-4 rounded-xl border border-gray/15 bg-secondary/40 p-4 text-left">
         <div className="flex items-center justify-between">
           <p className="text-xs font-semibold text-light-gray">Mandatory Fee</p>
@@ -85,7 +77,6 @@ export default function QuotationSentSuccessDialog({
         </div>
       </div>
 
-      {/* button */}
       <Button
         size="md"
         className="mt-5 w-full"

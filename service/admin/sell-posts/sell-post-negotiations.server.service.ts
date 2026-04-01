@@ -2,7 +2,7 @@ import { serviceServer } from "@/service/base/axios.server";
 import type {
   SellPostNegotiationsQueryParams,
   SellPostNegotiationsResponse,
-} from "@/types/admin/sell-post-negotiations.types";
+} from "@/types/admin/quote-requote/sell-post-negotiations.types";
 
 export const getAdminSellPostNegotiationsServer = async (
   params: SellPostNegotiationsQueryParams,

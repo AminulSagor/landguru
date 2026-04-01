@@ -3,7 +3,7 @@
 import React from "react";
 import Button from "@/components/buttons/button";
 import { cn } from "@/lib/utils";
-import type { SellPostNegotiationItem } from "@/types/admin/sell-post-negotiations.types";
+import type { SellPostNegotiationItem } from "@/types/admin/quote-requote/sell-post-negotiations.types";
 import {
   formatCurrency,
   getInitials,
@@ -195,12 +195,22 @@ function RequoteCell({ item }: { item: SellPostNegotiationItem }) {
   );
 }
 
-function ActionCell({ item }: { item: SellPostNegotiationItem }) {
+type ActionCellProps = {
+  item: SellPostNegotiationItem;
+  onReviewRespond: (item: SellPostNegotiationItem) => void;
+};
+
+function ActionCell({ item, onReviewRespond }: ActionCellProps) {
   const isDisabled = !item.isActionRequired;
 
   return (
     <div className="flex min-w-[170px] flex-col gap-2">
-      <Button size="base" className="w-full" disabled={isDisabled}>
+      <Button
+        size="base"
+        className="w-full"
+        disabled={isDisabled}
+        onClick={() => onReviewRespond(item)}
+      >
         Review &amp; Respond
       </Button>
 
@@ -218,10 +228,12 @@ function ActionCell({ item }: { item: SellPostNegotiationItem }) {
 
 type QuoteRequoteItemCardProps = {
   item: SellPostNegotiationItem;
+  onReviewRespond: (item: SellPostNegotiationItem) => void;
 };
 
 export default function QuoteRequoteItemCard({
   item,
+  onReviewRespond,
 }: QuoteRequoteItemCardProps) {
   return (
     <tr className="border-b border-gray/15 last:border-b-0">
@@ -242,7 +254,7 @@ export default function QuoteRequoteItemCard({
       </td>
 
       <td className="px-4 py-4 align-middle">
-        <ActionCell item={item} />
+        <ActionCell item={item} onReviewRespond={onReviewRespond} />
       </td>
     </tr>
   );

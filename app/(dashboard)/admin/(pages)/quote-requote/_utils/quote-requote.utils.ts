@@ -1,7 +1,7 @@
 import type {
   SellPostNegotiationItem,
   SellPostNegotiationTab,
-} from "@/types/admin/sell-post-negotiations.types";
+} from "@/types/admin/quote-requote/sell-post-negotiations.types";
 
 export type QuoteRequoteSortKey = "newest_first" | "oldest_first";
 

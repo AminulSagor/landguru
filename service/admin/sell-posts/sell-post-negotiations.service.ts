@@ -4,7 +4,7 @@ import type {
   SellPostNegotiationSuccessResponse,
   SellPostNegotiationsQueryParams,
   SellPostNegotiationsResponse,
-} from "@/types/admin/sell-post-negotiations.types";
+} from "@/types/admin/quote-requote/sell-post-negotiations.types";
 
 export const getAdminSellPostNegotiations = async (
   params: SellPostNegotiationsQueryParams,

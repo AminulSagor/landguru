@@ -6,7 +6,7 @@ import type {
   SellPostNegotiationItem,
   SellPostNegotiationTab,
   SellPostNegotiationsMeta,
-} from "@/types/admin/sell-post-negotiations.types";
+} from "@/types/admin/quote-requote/sell-post-negotiations.types";
 import type { QuoteRequoteSortKey } from "@/app/(dashboard)/admin/(pages)/quote-requote/_utils/quote-requote.utils";
 import {
   buildQueryString,
@@ -17,7 +17,9 @@ import QuoteRequoteTabs from "@/app/(dashboard)/admin/(pages)/quote-requote/_com
 import QuoteRequoteToolbar from "@/app/(dashboard)/admin/(pages)/quote-requote/_components/quote-requote-toolbar";
 import QuoteRequotePagination from "@/app/(dashboard)/admin/(pages)/quote-requote/_components/quote-requote-pagination";
 import QuoteRequoteItemCard from "@/app/(dashboard)/admin/(pages)/quote-requote/_components/quote-requote-item-card";
+import QuotationSentSuccessDialog from "@/app/(dashboard)/admin/(pages)/quote-requote/_components/quotation-sent-success-dialog";
 import Card from "@/components/cards/card";
+import ReviewQutationDialog from "@/app/(dashboard)/admin/(pages)/quote-requote/_components/review-quotation-dialog";
 
 type QuoteRequoteClientProps = {
   items: SellPostNegotiationItem[];
@@ -26,6 +28,14 @@ type QuoteRequoteClientProps = {
   search: string;
   sort: QuoteRequoteSortKey;
   limit: number;
+};
+
+type SuccessDialogData = {
+  postId: string;
+  sellerName: string;
+  mandatoryFee: number;
+  optionalFee: number;
+  currencySymbol: string;
 };
 
 function EmptyState() {
@@ -40,6 +50,14 @@ function EmptyState() {
   );
 }
 
+const initialSuccessDialogData: SuccessDialogData = {
+  postId: "#POST-1044",
+  sellerName: "Mr. Rahman",
+  mandatoryFee: 3000,
+  optionalFee: 3000,
+  currencySymbol: "৳",
+};
+
 export default function QuoteRequoteClient({
   items,
   meta,
@@ -52,6 +70,12 @@ export default function QuoteRequoteClient({
   const pathname = usePathname();
 
   const [searchInput, setSearchInput] = React.useState(search);
+  const [selectedItem, setSelectedItem] =
+    React.useState<SellPostNegotiationItem | null>(null);
+  const [isReviewDialogOpen, setIsReviewDialogOpen] = React.useState(false);
+  const [isSuccessDialogOpen, setIsSuccessDialogOpen] = React.useState(false);
+  const [successDialogData, setSuccessDialogData] =
+    React.useState<SuccessDialogData>(initialSuccessDialogData);
 
   React.useEffect(() => {
     setSearchInput(search);
@@ -119,82 +143,123 @@ export default function QuoteRequoteClient({
     });
   };
 
+  const handleReviewRespond = (item: SellPostNegotiationItem) => {
+    setSelectedItem(item);
+    setIsReviewDialogOpen(true);
+  };
+
+  const handleReviewDialogControl = (value: boolean) => {
+    setIsReviewDialogOpen(value);
+
+    if (!value) {
+      setSelectedItem(null);
+    }
+  };
+
+  const handleSuccessDialogOpen = (data: SuccessDialogData) => {
+    setSuccessDialogData(data);
+    setIsSuccessDialogOpen(true);
+  };
+
   const startIndex =
     filteredItems.length === 0 ? 0 : (meta.page - 1) * meta.limit + 1;
   const endIndex =
     filteredItems.length === 0 ? 0 : startIndex + filteredItems.length - 1;
 
   return (
-    <div className="w-full space-y-4">
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <div className="min-w-0 flex-1">
-          <QuoteRequoteTabs
-            activeTab={activeTab}
-            activeCount={meta.total}
-            onChange={handleTabChange}
-          />
-        </div>
-
-        <div className="w-full lg:w-auto lg:min-w-[420px]">
-          <QuoteRequoteToolbar
-            searchInput={searchInput}
-            sort={sort}
-            onSearchInputChange={setSearchInput}
-            onSearchSubmit={handleSearchSubmit}
-            onSortToggle={handleSortToggle}
-          />
-        </div>
-      </div>
-
-      <div className="space-y-3">
-        {filteredItems.length === 0 ? (
-          <EmptyState />
-        ) : (
-          <div className="overflow-x-auto rounded-2xl border border-gray/15 bg-white">
-            <table className="min-w-[1100px] w-full border-collapse">
-              <thead>
-                <tr className="border-b border-gray/15 bg-[#F9FAFB]">
-                  <th className="px-4 py-3 text-left text-xs font-bold uppercase text-primary/80">
-                    Post
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold uppercase text-primary/80">
-                    Seller
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold uppercase text-primary/80">
-                    Quote Details
-                  </th>
-                  <th className="px-4 py-3 text-center text-xs font-bold uppercase text-primary/80">
-                    Requotes
-                  </th>
-                  <th className="px-4 py-3 text-center text-xs font-bold uppercase text-primary/80">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {filteredItems.map((item) => (
-                  <QuoteRequoteItemCard key={item.negotiationId} item={item} />
-                ))}
-              </tbody>
-            </table>
+    <>
+      <div className="w-full space-y-4">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="min-w-0 flex-1">
+            <QuoteRequoteTabs
+              activeTab={activeTab}
+              activeCount={meta.total}
+              onChange={handleTabChange}
+            />
           </div>
-        )}
+
+          <div className="w-full lg:w-auto lg:min-w-[420px]">
+            <QuoteRequoteToolbar
+              searchInput={searchInput}
+              sort={sort}
+              onSearchInputChange={setSearchInput}
+              onSearchSubmit={handleSearchSubmit}
+              onSortToggle={handleSortToggle}
+            />
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          {filteredItems.length === 0 ? (
+            <EmptyState />
+          ) : (
+            <div className="overflow-x-auto rounded-2xl border border-gray/15 bg-white">
+              <table className="min-w-[1100px] w-full border-collapse">
+                <thead>
+                  <tr className="border-b border-gray/15 bg-[#F9FAFB]">
+                    <th className="px-4 py-3 text-left text-xs font-bold uppercase text-primary/80">
+                      Post
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-bold uppercase text-primary/80">
+                      Seller
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-bold uppercase text-primary/80">
+                      Quote Details
+                    </th>
+                    <th className="px-4 py-3 text-center text-xs font-bold uppercase text-primary/80">
+                      Requotes
+                    </th>
+                    <th className="px-4 py-3 text-center text-xs font-bold uppercase text-primary/80">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {filteredItems.map((item) => (
+                    <QuoteRequoteItemCard
+                      key={item.negotiationId}
+                      item={item}
+                      onReviewRespond={handleReviewRespond}
+                    />
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        <div className="flex flex-col gap-3 text-xs font-semibold text-primary sm:flex-row sm:items-center sm:justify-between">
+          <p>
+            Showing <span className="font-bold">{startIndex}</span>-
+            <span className="font-bold">{endIndex}</span> of{" "}
+            <span className="font-bold">{filteredItems.length}</span> results
+          </p>
+
+          <QuoteRequotePagination
+            currentPage={meta.page}
+            totalPages={meta.totalPages}
+            onPageChange={handlePageChange}
+          />
+        </div>
       </div>
 
-      <div className="flex flex-col gap-3 text-xs font-semibold text-primary sm:flex-row sm:items-center sm:justify-between">
-        <p>
-          Showing <span className="font-bold">{startIndex}</span>-
-          <span className="font-bold">{endIndex}</span> of{" "}
-          <span className="font-bold">{filteredItems.length}</span> results
-        </p>
+      <ReviewQutationDialog
+        open={isReviewDialogOpen}
+        onControl={handleReviewDialogControl}
+        item={selectedItem}
+        onSuccessDialogOpen={handleSuccessDialogOpen}
+      />
 
-        <QuoteRequotePagination
-          currentPage={meta.page}
-          totalPages={meta.totalPages}
-          onPageChange={handlePageChange}
-        />
-      </div>
-    </div>
+      <QuotationSentSuccessDialog
+        open={isSuccessDialogOpen}
+        onControl={setIsSuccessDialogOpen}
+        postId={successDialogData.postId}
+        sellerName={successDialogData.sellerName}
+        mandatoryFee={successDialogData.mandatoryFee}
+        optionalFee={successDialogData.optionalFee}
+        currencySymbol={successDialogData.currencySymbol}
+      />
+    </>
   );
 }
