@@ -5,12 +5,12 @@ import AssignedLocationCard from "@/app/(dashboard)/admin/(pages)/dashboard/_com
 import LocationPerformanceTable from "@/app/(dashboard)/admin/(pages)/dashboard/_components/location-perfomance-table";
 import SuperAdminRecentActivity from "@/app/(dashboard)/admin/(pages)/dashboard/_components/super-admin-recent-activity";
 import SuperAdminStats from "@/app/(dashboard)/admin/(pages)/dashboard/_components/super-admin-stats";
-import { currentUserServer } from "@/utils/get.role.utils";
+import { currentUser } from "@/utils/get.role.utils";
 
 const page = () => {
   return (
     <>
-      {currentUserServer === "admin" ? (
+      {currentUser === "admin" ? (
         <div className="space-y-6">
           <AdminStaticOverview />
           <div className="grid lg:grid-cols-12 gap-6">
