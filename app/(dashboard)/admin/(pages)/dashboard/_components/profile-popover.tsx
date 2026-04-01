@@ -97,12 +97,12 @@ export default function AdminProfilePopover({
           {/* menu item 2 */}
           <button
             onClick={onLogout}
-            className="w-full flex items-center gap-4 px-5 py-6 text-left hover:bg-red/5"
+            className="w-full flex items-center gap-4 px-5 py-6 text-left hover:bg-red/5 text-red-400 cursor-pointer"
           >
-            <div className="text-red">
+            <div className="cursor-pointer">
               <LogOut size={22} />
             </div>
-            <div className="text-sm font-extrabold text-red">Logout</div>
+            <div className="text-sm font-extrabold">Logout</div>
           </button>
         </div>
       </div>
