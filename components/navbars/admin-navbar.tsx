@@ -1,6 +1,8 @@
 import NotificationsPopover from "@/app/(dashboard)/admin/(pages)/dashboard/_components/notifications-popover";
 import AdminProfilePopover from "@/app/(dashboard)/admin/(pages)/dashboard/_components/profile-popover";
 import CreateNewPopover from "@/components/sidebars/create-new-popover";
+import { getUserRole } from "@/utils/cookies.utils";
+import { logoutUser } from "@/utils/logout.utils";
 import { PanelRight } from "lucide-react";
 import { redirect } from "next/navigation";
 
@@ -10,6 +12,7 @@ type Props = {
 };
 
 const AdminNavbar = ({ onOpenChange, openSidebar }: Props) => {
+  const currentUser = getUserRole();
   const redirectProfile = () => {
     redirect("/admin/profile");
   };
@@ -25,7 +28,9 @@ const AdminNavbar = ({ onOpenChange, openSidebar }: Props) => {
           <PanelRight size={18} />
         </button>
 
-        <h1 className="font-bold text-lg">Dashboard</h1>
+        <h1 className="font-bold text-lg">
+          {currentUser === "admin" ? "Dashboard" : "Super Admin Console"}
+        </h1>
       </div>
 
       <div className="flex items-center gap-3 md:gap-8">
@@ -38,7 +43,7 @@ const AdminNavbar = ({ onOpenChange, openSidebar }: Props) => {
           zone="Banani Zone"
           avatarSrc="/images/avatars/avatar.png"
           onProfileSettings={() => redirectProfile()}
-          onLogout={() => console.log("logout")}
+          onLogout={() => logoutUser()}
         />
       </div>
     </div>
