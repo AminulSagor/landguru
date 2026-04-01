@@ -2,7 +2,7 @@ import { serviceClient } from "@/service/base/axios.client";
 import type {
   PropertyPostsListQueryParams,
   PropertyPostsListResponse,
-} from "@/types/admin/property.types";
+} from "@/types/admin/property-post/property.types";
 
 export const propertyPostsService = {
   async getAdminPropertyPosts(

@@ -8,7 +8,7 @@ import PropertyFiltersBar from "./filter-select";
 import PropertiesManagementTable from "./PropertiesManagementTable";
 
 import { propertyPostsService } from "@/service/admin/property/property-posts.service";
-import type { PropertyPostStatus } from "@/types/admin/property.types";
+import type { PropertyPostStatus } from "@/types/admin/property-post/property.types";
 import {
   buildOptions,
   castPropertyPostStatus,

@@ -1,4 +1,4 @@
-import type { PropertyPostStatus } from "@/types/admin/property.types";
+import type { PropertyPostStatus } from "@/types/admin/property-post/property.types";
 
 export type PaginationItem = number | "ellipsis";
 

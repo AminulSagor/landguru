@@ -1,6 +1,6 @@
 "use client";
 
-import type { PropertyPostItem } from "@/types/admin/property.types";
+import type { PropertyPostItem } from "@/types/admin/property-post/property.types";
 
 import PropertyPostsPagination from "./property-posts-pagination";
 import PropertyPostsTableRow from "./property-posts-table-row";

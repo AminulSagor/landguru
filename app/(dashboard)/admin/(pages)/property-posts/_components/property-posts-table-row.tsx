@@ -5,7 +5,7 @@ import Link from "next/link";
 import { MoreVertical } from "lucide-react";
 
 import Button from "@/components/buttons/button";
-import type { PropertyPostItem } from "@/types/admin/property.types";
+import type { PropertyPostItem } from "@/types/admin/property-post/property.types";
 
 import {
   buildPropertyDetailsHref,
@@ -204,7 +204,9 @@ export default function PropertyPostsTableRow({
             </span>
 
             <span className="text-xs font-semibold text-gray">
-              {progress.total > 0 ? `${progress.done}/${progress.total}` : "0/0"}
+              {progress.total > 0
+                ? `${progress.done}/${progress.total}`
+                : "0/0"}
             </span>
           </div>
 

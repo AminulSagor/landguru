@@ -3,7 +3,7 @@ import axios from "axios";
 import type {
   PropertyPostItem,
   PropertyPostStatus,
-} from "@/types/admin/property.types";
+} from "@/types/admin/property-post/property.types";
 
 export const PAGE_SIZE = 8;
 export const SEARCH_DEBOUNCE_MS = 350;

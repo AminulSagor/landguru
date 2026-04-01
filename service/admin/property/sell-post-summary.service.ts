@@ -1,5 +1,5 @@
 import { serviceServer } from "@/service/base/axios.server";
-import type { AdminSellPostSummaryResponse } from "@/types/admin/sell-post-summary.types";
+import type { AdminSellPostSummaryResponse } from "@/types/admin/property-post/sell-post-summary.types";
 
 export const getAdminSellPostSummaryServer =
   async (): Promise<AdminSellPostSummaryResponse> => {
