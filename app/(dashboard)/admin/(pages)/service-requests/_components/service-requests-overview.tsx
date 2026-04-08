@@ -1,4 +1,3 @@
-// app/(admin)/admin/dashboard/(pages)/service-request/_components/service-requests-overview.tsx
 "use client";
 
 import React from "react";
@@ -10,7 +9,7 @@ import {
   MessageSquareText,
   Table,
 } from "lucide-react";
-import { ServiceRequestOverview } from "@/app/(dashboard)/admin/types/service-request.types";
+import type { ServiceRequestsSummaryData } from "@/types/admin/service-requests/service-requests-summary.types";
 
 function StatIcon({
   tone,
@@ -74,7 +73,7 @@ function StatCard({
   return (
     <Card
       className={cn(
-        "flex items-center justify-between p-4 border border-gray/15 bg-white",
+        "flex items-center justify-between border border-gray/15 bg-white p-4",
         borderCls,
       )}
     >
@@ -91,34 +90,45 @@ function StatCard({
 
 export default function ServiceRequestsOverview({
   stats,
+  isLoading,
 }: {
-  stats: ServiceRequestOverview;
+  stats: ServiceRequestsSummaryData;
+  isLoading?: boolean;
 }) {
+  const totalRequests = isLoading ? "..." : String(stats.totalRequests);
+  const unassigned = isLoading
+    ? "..."
+    : stats.unassigned >= 99
+      ? "99+"
+      : String(stats.unassigned);
+  const inReview = isLoading ? "..." : String(stats.inReview);
+  const completedToday = isLoading ? "..." : String(stats.completedToday);
+
   return (
     <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4">
       <StatCard
         title="Total Requests"
-        value={String(stats.totalRequests)}
+        value={totalRequests}
         tone="neutral"
         icon={<Table className="h-4 w-4" />}
       />
       <StatCard
         title="Unassigned"
-        value={stats.unassigned >= 99 ? "99+" : String(stats.unassigned)}
+        value={unassigned}
         tone="danger"
         rightBorder="danger"
         icon={<AlertTriangle className="h-4 w-4" />}
       />
       <StatCard
         title="In Review"
-        value={String(stats.inReview)}
+        value={inReview}
         tone="primary"
         rightBorder="primary"
         icon={<MessageSquareText className="h-4 w-4" />}
       />
       <StatCard
         title="Completed Today"
-        value={String(stats.completedToday)}
+        value={completedToday}
         tone="success"
         rightBorder="success"
         icon={<CheckCircle2 className="h-4 w-4" />}

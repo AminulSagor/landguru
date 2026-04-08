@@ -2,45 +2,71 @@
 "use client";
 
 import React from "react";
-import Card from "@/components/cards/card";
 import Button from "@/components/buttons/button";
 import { cn } from "@/lib/utils";
-import { MapPin, Plus } from "lucide-react";
-import { ServiceRequestListItem } from "@/app/(dashboard)/admin/types/service-request.types";
+import { MapPin, Plus, Loader2 } from "lucide-react";
+import type { ServiceRequestListItem } from "@/types/admin/service-requests/service-requests-list.types";
 
-function Avatar({ name }: { name: string }) {
+function AgentAvatar({
+  name,
+  photoUrl,
+}: {
+  name: string;
+  photoUrl?: string | null;
+}) {
+  const [failed, setFailed] = React.useState(false);
+
   const initials = name
     .split(" ")
     .slice(0, 2)
-    .map((x) => x[0]?.toUpperCase())
+    .map((value) => value[0]?.toUpperCase())
     .join("");
 
+  if (!photoUrl || failed) {
+    return (
+      <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-secondary text-sm font-semibold text-primary">
+        {initials}
+      </div>
+    );
+  }
+
   return (
-    <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-secondary text-sm font-semibold text-primary">
-      {initials}
-    </div>
+    <img
+      src={photoUrl}
+      alt={name}
+      className="h-9 w-9 shrink-0 rounded-full object-cover"
+      onError={() => setFailed(true)}
+    />
   );
 }
 
 function StatusBadge({ status }: { status: ServiceRequestListItem["status"] }) {
+  const normalizedStatus = status.toUpperCase();
+
   const cfg =
-    status === "submitted_for_review"
+    normalizedStatus === "SUBMITTED"
       ? {
-          label: "Submitted For Review",
+          label: "Submitted",
           cls: "border-primary/15 bg-primary/5 text-primary",
           dot: "bg-primary",
         }
-      : status === "in_progress"
+      : normalizedStatus === "IN_PROGRESS"
         ? {
             label: "In Progress",
             cls: "border-orange-200 bg-orange-50 text-orange-600",
             dot: "bg-orange-500",
           }
-        : {
-            label: "Pending Assignment",
-            cls: "border-gray/15 bg-secondary text-gray",
-            dot: "bg-gray",
-          };
+        : normalizedStatus === "EXPIRED"
+          ? {
+              label: "Expired",
+              cls: "border-red-200 bg-red-50 text-red-500",
+              dot: "bg-red-500",
+            }
+          : {
+              label: "Unassigned",
+              cls: "border-gray/15 bg-secondary text-gray",
+              dot: "bg-gray",
+            };
 
   return (
     <span
@@ -62,7 +88,7 @@ function ActionCell({
   item: ServiceRequestListItem;
   onView: (item: ServiceRequestListItem) => void;
 }) {
-  if (item.status === "submitted_for_review") {
+  if (item.status === "SUBMITTED") {
     return (
       <Button size="sm" className="h-9 px-4" onClick={() => onView(item)}>
         View Details
@@ -70,7 +96,7 @@ function ActionCell({
     );
   }
 
-  if (item.status === "in_progress") {
+  if (item.status === "IN_PROGRESS") {
     return (
       <Button
         size="sm"
@@ -117,15 +143,16 @@ function PageNav({
 }: {
   page: number;
   totalPages: number;
-  onPage: (p: number) => void;
+  onPage: (page: number) => void;
 }) {
-  const safe = (p: number) => Math.max(1, Math.min(totalPages, p));
+  const safePage = (nextPage: number) => Math.max(1, Math.min(totalPages, nextPage));
 
   const items = (() => {
-    if (totalPages <= 7)
-      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    if (totalPages <= 7) {
+      return Array.from({ length: totalPages }, (_, index) => index + 1);
+    }
 
-    const set = new Set<number>([
+    const values = new Set<number>([
       1,
       2,
       totalPages - 1,
@@ -134,43 +161,44 @@ function PageNav({
       page,
       page + 1,
     ]);
-    const arr = [...set]
-      .filter((n) => n >= 1 && n <= totalPages)
-      .sort((a, b) => a - b);
-    return arr;
+
+    return [...values]
+      .filter((value) => value >= 1 && value <= totalPages)
+      .sort((left, right) => left - right);
   })();
 
   return (
     <div className="flex items-center gap-2">
       <button
         type="button"
-        onClick={() => onPage(safe(page - 1))}
-        className="grid h-9 w-9 place-items-center rounded-lg border border-gray/15 bg-white text-gray hover:bg-secondary"
+        onClick={() => onPage(safePage(page - 1))}
+        disabled={page <= 1}
+        className="grid h-9 w-9 place-items-center rounded-lg border border-gray/15 bg-white text-gray hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-50"
       >
         ‹
       </button>
 
       <div className="flex items-center overflow-hidden rounded-lg border border-gray/15 bg-white">
-        {items.map((n, idx) => {
-          const prev = items[idx - 1];
-          const showEllipsis = prev && n - prev > 1;
+        {items.map((value, index) => {
+          const previousValue = items[index - 1];
+          const showEllipsis = previousValue && value - previousValue > 1;
 
           return (
-            <React.Fragment key={n}>
-              {showEllipsis && (
+            <React.Fragment key={value}>
+              {showEllipsis ? (
                 <span className="px-3 py-2 text-sm text-gray">…</span>
-              )}
+              ) : null}
               <button
                 type="button"
-                onClick={() => onPage(n)}
+                onClick={() => onPage(value)}
                 className={cn(
                   "h-9 min-w-9 px-3 text-sm font-semibold",
-                  n === page
+                  value === page
                     ? "bg-primary text-white"
                     : "text-black hover:bg-secondary",
                 )}
               >
-                {n}
+                {value}
               </button>
             </React.Fragment>
           );
@@ -179,8 +207,9 @@ function PageNav({
 
       <button
         type="button"
-        onClick={() => onPage(safe(page + 1))}
-        className="grid h-9 w-9 place-items-center rounded-lg border border-gray/15 bg-white text-gray hover:bg-secondary"
+        onClick={() => onPage(safePage(page + 1))}
+        disabled={page >= totalPages}
+        className="grid h-9 w-9 place-items-center rounded-lg border border-gray/15 bg-white text-gray hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-50"
       >
         ›
       </button>
@@ -193,6 +222,9 @@ export default function ServiceRequestsTable({
   page,
   rowsPerPage,
   totalCount,
+  totalPages,
+  isLoading,
+  isFetching,
   onPageChange,
   onRowsChange,
   onView,
@@ -202,25 +234,26 @@ export default function ServiceRequestsTable({
   page: number;
   rowsPerPage: number;
   totalCount: number;
-  onPageChange: (p: number) => void;
-  onRowsChange: (n: number) => void;
+  totalPages: number;
+  isLoading?: boolean;
+  isFetching?: boolean;
+  onPageChange: (page: number) => void;
+  onRowsChange: (rows: number) => void;
   onView: (item: ServiceRequestListItem) => void;
   onAssignAgent: (item: ServiceRequestListItem) => void;
 }) {
-  const totalPages = Math.max(1, Math.ceil(totalCount / rowsPerPage));
-  const from = (page - 1) * rowsPerPage + 1;
-  const to = Math.min(totalCount, page * rowsPerPage);
+  const safeTotalPages = Math.max(totalPages, 1);
+  const from = totalCount === 0 ? 0 : (page - 1) * rowsPerPage + 1;
+  const to = totalCount === 0 ? 0 : Math.min(totalCount, page * rowsPerPage);
 
   return (
-    <div className="overflow-hidden bg-white rounded-md border border-gray/20">
+    <div className="overflow-hidden rounded-md border border-gray/20 bg-white">
       <div className="w-full overflow-x-auto">
-        <table className="w-full min-w-300">
+        <table className="w-full min-w-[1200px]">
           <thead>
             <tr className="bg-secondary/50 text-xs font-semibold text-gray">
               <th className="px-6 py-4 text-left">SERVICE NAME &amp; ID</th>
-              <th className="px-6 py-4 text-left">
-                PARENT POST &amp; LOCATION
-              </th>
+              <th className="px-6 py-4 text-left">PARENT POST &amp; LOCATION</th>
               <th className="px-6 py-4 text-left">ASSIGNED AGENT</th>
               <th className="px-6 py-4 text-left">STATUS</th>
               <th className="px-6 py-4 text-left">LATEST WORK LOG</th>
@@ -229,90 +262,108 @@ export default function ServiceRequestsTable({
           </thead>
 
           <tbody>
-            {items.map((it) => (
-              <tr key={it.id} className="border-t border-gray/15">
-                <td className="px-6 py-5">
-                  <div className="text-sm text-black">
-                    {it.serviceName}
-                  </div>
-                  <div className="mt-1 text-xs text-gray">#{it.id}</div>
-                </td>
-
-                <td className="px-6 py-5">
-                  <div className="text-primary">
-                    #{it.parentPostId}
-                  </div>
-                  <div className="mt-1 flex items-center gap-2 text-xs text-gray">
-                    <MapPin className="h-4 w-4" />
-                    {it.locationLine}
-                  </div>
-                </td>
-
-                <td className="px-6 py-5">
-                  {it.assignedAgent?.name ? (
-                    <div className="flex items-center gap-3">
-                      <Avatar name={it.assignedAgent.name} />
-                      <div className=" text-black">
-                        {it.assignedAgent.name}
-                      </div>
-                    </div>
-                  ) : (
-                    <AssignAgentPill onClick={() => onAssignAgent(it)} />
-                  )}
-                </td>
-
-                <td className="px-6 py-5">
-                  <StatusBadge status={it.status} />
-                </td>
-
-                <td className="px-6 py-5 text-cente">
-                  {it.latestWorkLog ? (
-                    <div>
-                      <div className="text-base text-black">
-                        {it.latestWorkLog.title}
-                      </div>
-                      <div className="mt-1 text-xs text-gray">
-                        {it.latestWorkLog.timeLabel}
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="text-gray">—</div>
-                  )}
-                </td>
-
-                <td className="px-6 py-5">
-                  <ActionCell item={it} onView={onView} />
+            {isLoading ? (
+              <tr>
+                <td colSpan={6} className="px-6 py-10 text-center text-sm text-gray">
+                  Loading service requests...
                 </td>
               </tr>
-            ))}
+            ) : items.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="px-6 py-10 text-center text-sm text-gray">
+                  No service requests found.
+                </td>
+              </tr>
+            ) : (
+              items.map((item) => (
+                <tr key={item.service.id} className="border-t border-gray/15">
+                  <td className="px-6 py-5">
+                    <div className="text-sm text-black">{item.service.name}</div>
+                    <div className="mt-1 text-xs text-gray">#{item.service.id}</div>
+                  </td>
+
+                  <td className="px-6 py-5">
+                    <div className="text-primary">#{item.parentPost.id}</div>
+                    <div className="mt-1 flex items-center gap-2 text-xs text-gray">
+                      <MapPin className="h-4 w-4" />
+                      {item.parentPost.location}
+                    </div>
+                  </td>
+
+                  <td className="px-6 py-5">
+                    {item.assignedAgent?.name ? (
+                      <div className="flex items-center gap-3">
+                        <AgentAvatar
+                          name={item.assignedAgent.name}
+                          photoUrl={item.assignedAgent.photoUrl}
+                        />
+                        <div className="text-black">{item.assignedAgent.name}</div>
+                      </div>
+                    ) : (
+                      <AssignAgentPill onClick={() => onAssignAgent(item)} />
+                    )}
+                  </td>
+
+                  <td className="px-6 py-5">
+                    <StatusBadge status={item.status} />
+                  </td>
+
+                  <td className="px-6 py-5">
+                    {item.latestWorkLog ? (
+                      <div>
+                        <div className="text-sm text-black">
+                          {item.latestWorkLog.title}
+                        </div>
+                        <div className="mt-1 text-xs text-gray">
+                          {item.latestWorkLog.timeLabel}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-gray">—</div>
+                    )}
+                  </td>
+
+                  <td className="px-6 py-5">
+                    <ActionCell item={item} onView={onView} />
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
 
       <div className="flex flex-col gap-3 border-t border-gray/15 px-6 py-4 lg:flex-row lg:items-center lg:justify-between">
-        <p className="text-sm text-gray">
-          Showing <span className="font-semibold text-black">{from}</span> to{" "}
-          <span className="font-semibold text-black">{to}</span> of{" "}
-          <span className="font-semibold text-black">{totalCount}</span> results
-        </p>
+        <div className="flex items-center gap-2 text-sm text-gray">
+          <span>
+            Showing <span className="font-semibold text-black">{from}</span> to{" "}
+            <span className="font-semibold text-black">{to}</span> of{" "}
+            <span className="font-semibold text-black">{totalCount}</span> results
+          </span>
+          {isFetching && !isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+        </div>
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray">Rows per page:</span>
             <select
               value={rowsPerPage}
-              onChange={(e) => onRowsChange(Number(e.target.value))}
+              onChange={(event) => onRowsChange(Number(event.target.value))}
               className="h-9 rounded-lg border border-gray/15 bg-white px-3 text-sm"
             >
-              {[5, 10, 20].map((n) => (
-                <option key={n} value={n}>
-                  {n}
+              {[5, 10, 20].map((value) => (
+                <option key={value} value={value}>
+                  {value}
                 </option>
               ))}
             </select>
           </div>
 
-          <PageNav page={page} totalPages={totalPages} onPage={onPageChange} />
+          <PageNav
+            page={page}
+            totalPages={safeTotalPages}
+            onPage={onPageChange}
+          />
         </div>
       </div>
     </div>
