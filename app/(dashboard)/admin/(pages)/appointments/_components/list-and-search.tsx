@@ -1,23 +1,35 @@
 import { Logs, Search } from "lucide-react";
-import React from "react";
 
-const ListAndSearch = () => {
+interface ListAndSearchProps {
+  showSearch?: boolean;
+  searchValue: string;
+  onSearchChange: (value: string) => void;
+}
+
+const ListAndSearch = ({
+  showSearch = true,
+  searchValue,
+  onSearchChange,
+}: ListAndSearchProps) => {
   return (
-    <div className="flex gap-6">
-      <button className="border border-gray/20 text-sm rounded-md px-3 py-1 flex items-center gap-2">
+    <div className="flex gap-4">
+      <button className="flex items-center gap-2 rounded-md border border-gray/20 px-3 py-1 text-sm">
         <Logs size={15} />
         <span>List</span>
       </button>
 
-      {/* search option */}
-      <div className="border border-gray/20 rounded-md flex gap-2 items-center px-3">
-        <Search size={18} />
-        <input
-          type="text"
-          placeholder="search..."
-          className="outline-none px-2 py-1 min-w-56 placeholder:text-sm"
-        />
-      </div>
+      {showSearch ? (
+        <div className="flex items-center gap-2 rounded-md border border-gray/20 px-3">
+          <Search size={18} />
+          <input
+            type="text"
+            value={searchValue}
+            onChange={(event) => onSearchChange(event.target.value)}
+            placeholder="Search by property, buyer, owner..."
+            className="min-w-56 px-2 py-2 text-sm outline-none placeholder:text-sm"
+          />
+        </div>
+      ) : null}
     </div>
   );
 };

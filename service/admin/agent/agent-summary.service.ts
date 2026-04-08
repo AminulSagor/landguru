@@ -1,5 +1,6 @@
 import { serviceClient } from "@/service/base/axios.client";
-import type { AgentSummaryResponse } from "@/types/admin/agent-list/agent-list.types";
+import { AgentSummaryResponse } from "@/types/admin/agent-list/agent-summary.types";
+
 
 export const agentSummaryService = {
   async getAdminAgentSummary(): Promise<AgentSummaryResponse> {
