@@ -1,12 +1,9 @@
 import Card from "@/components/cards/card";
 import { Landmark } from "lucide-react";
+import type { AgentDetails } from "@/types/admin/agent-list/details/[id]/agent-details.types";
 
-export default function AgentBankInfoCard() {
-  // Screenshot static
-  const bankName = "DBBL";
-  const accountNo = "123456789123";
-  const swift = "DBBLBDDH";
-  const routing = "123456789123";
+export default function AgentBankInfoCard({ agent }: { agent: AgentDetails }) {
+  const bankInfo = agent?.bankInformation;
 
   return (
     <Card>
@@ -15,24 +12,30 @@ export default function AgentBankInfoCard() {
         <p className="font-semibold text-black">Bank Information</p>
       </div>
 
-      <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="mt-5 grid grid-cols-1 gap-6 md:grid-cols-2">
         <div>
-          <p className="text-xs text-gray uppercase">Bank Name</p>
-          <p className="text-sm text-black mt-1">{bankName}</p>
+          <p className="text-xs uppercase text-gray">Bank Name</p>
+          <p className="mt-1 text-sm text-black">{bankInfo?.bankName ?? "-"}</p>
 
           <div className="mt-5">
-            <p className="text-xs text-gray uppercase">Swift Code</p>
-            <p className="text-sm text-black mt-1">{swift}</p>
+            <p className="text-xs uppercase text-gray">Swift Code</p>
+            <p className="mt-1 text-sm text-black">
+              {bankInfo?.swiftCode ?? "-"}
+            </p>
           </div>
         </div>
 
         <div>
-          <p className="text-xs text-gray uppercase">Bank Account No.</p>
-          <p className="text-sm text-black mt-1">{accountNo}</p>
+          <p className="text-xs uppercase text-gray">Bank Account No.</p>
+          <p className="mt-1 text-sm text-black">
+            {bankInfo?.bankAccountNo ?? "-"}
+          </p>
 
           <div className="mt-5">
-            <p className="text-xs text-gray uppercase">Routing No.</p>
-            <p className="text-sm text-black mt-1">{routing}</p>
+            <p className="text-xs uppercase text-gray">Routing No.</p>
+            <p className="mt-1 text-sm text-black">
+              {bankInfo?.routingNo ?? "-"}
+            </p>
           </div>
         </div>
       </div>
