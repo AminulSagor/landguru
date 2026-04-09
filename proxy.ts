@@ -22,6 +22,30 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL("/auth/user/login", request.url));
   }
 
+  if (pathname === "/admin") {
+    if (role === "admin" || role === "super_admin") {
+      return NextResponse.redirect(new URL("/admin/dashboard", request.url));
+    }
+
+    return NextResponse.redirect(new URL("/", request.url));
+  }
+
+  if (pathname === "/agent") {
+    if (role === "agent") {
+      return NextResponse.redirect(new URL("/agent/dashboard", request.url));
+    }
+
+    return NextResponse.redirect(new URL("/", request.url));
+  }
+
+  if (pathname === "/user") {
+    if (role === "user") {
+      return NextResponse.redirect(new URL("/user/dashboard", request.url));
+    }
+
+    return NextResponse.redirect(new URL("/", request.url));
+  }
+
   if (isAdminRoute && role !== "admin" && role !== "super_admin") {
     return NextResponse.redirect(new URL("/", request.url));
   }
@@ -36,15 +60,15 @@ export function proxy(request: NextRequest) {
 
   if (isAuthRoute && token) {
     if (role === "admin" || role === "super_admin") {
-      return NextResponse.redirect(new URL("/admin", request.url));
+      return NextResponse.redirect(new URL("/admin/dashboard", request.url));
     }
 
     if (role === "agent") {
-      return NextResponse.redirect(new URL("/agent", request.url));
+      return NextResponse.redirect(new URL("/agent/dashboard", request.url));
     }
 
     if (role === "user") {
-      return NextResponse.redirect(new URL("/user", request.url));
+      return NextResponse.redirect(new URL("/user/dashboard", request.url));
     }
   }
 
