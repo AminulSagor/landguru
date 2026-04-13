@@ -1,47 +1,60 @@
-import StatusSwitch from "@/app/(dashboard)/admin/(pages)/manage/_components/status-switch";
 import {
-  AgentRoleIconKey,
-  AgentRoleRow,
-  BadgeColorKey,
-} from "@/app/(dashboard)/admin/types/agent-role.types";
-import {
-  Edit3,
-  Trash2,
-  Scale,
-  Ruler,
-  FilePenLine,
-  Users,
-  Landmark,
-  Key,
-  FileText,
-  Settings,
   Briefcase,
+  Edit3,
+  FilePenLine,
+  FileText,
+  Gavel,
   HardHat,
+  Home,
+  Key,
+  Landmark,
+  Ruler,
+  Settings,
+  Trash2,
+  UserRound,
+  Users,
 } from "lucide-react";
 
-function badgeBg(color: BadgeColorKey) {
+import StatusSwitch from "@/app/(dashboard)/admin/(pages)/manage/_components/status-switch";
+import type {
+  AgentRoleBadgeColor,
+  AgentRoleIconKey,
+  AgentRoleItem,
+} from "@/types/admin/manage/agent-roles/agent-roles-list.types";
+
+function badgeBg(color: AgentRoleBadgeColor) {
   if (color === "purple") return "bg-[#F3E8FF] text-[#6D28D9]";
   if (color === "orange") return "bg-[#FFE8D6] text-[#9A3412]";
   if (color === "teal") return "bg-[#DFF7F2] text-[#0F766E]";
   if (color === "green") return "bg-[#DCFCE7] text-[#166534]";
   if (color === "red") return "bg-[#FEE2E2] text-[#991B1B]";
+  if (color === "indigo") return "bg-[#E0E7FF] text-[#3730A3]";
   return "bg-[#DBEAFE] text-[#1D4ED8]";
 }
 
-function RoleIcon({ k }: { k: AgentRoleIconKey }) {
-  const cls = "h-4 w-4";
-  if (k === "legal") return <Scale className={cls} />;
-  if (k === "survey") return <Ruler className={cls} />;
-  if (k === "deed") return <FilePenLine className={cls} />;
-  if (k === "field") return <Users className={cls} />;
-  if (k === "finance") return <Landmark className={cls} />;
-  if (k === "home") return <Landmark className={cls} />;
-  if (k === "key") return <Key className={cls} />;
-  if (k === "doc") return <FileText className={cls} />;
-  if (k === "gear") return <Settings className={cls} />;
-  if (k === "bag") return <Briefcase className={cls} />;
-  if (k === "helmet") return <HardHat className={cls} />;
-  return <Users className={cls} />;
+function RoleIcon({ iconKey }: { iconKey: AgentRoleIconKey }) {
+  const className = "h-4 w-4";
+
+  if (iconKey === "icon-gavel") return <Gavel className={className} />;
+  if (iconKey === "icon-ruler") return <Ruler className={className} />;
+  if (iconKey === "icon-file-pen-line") {
+    return <FilePenLine className={className} />;
+  }
+  if (iconKey === "icon-users") return <Users className={className} />;
+  if (iconKey === "icon-landmark") return <Landmark className={className} />;
+  if (iconKey === "icon-key") return <Key className={className} />;
+  if (iconKey === "icon-file-text") return <FileText className={className} />;
+  if (iconKey === "icon-settings") return <Settings className={className} />;
+  if (iconKey === "icon-briefcase") {
+    return <Briefcase className={className} />;
+  }
+  if (iconKey === "icon-hard-hat") return <HardHat className={className} />;
+  if (iconKey === "icon-home") return <Home className={className} />;
+  if (iconKey === "icon-user-round") {
+    return <UserRound className={className} />;
+  }
+
+  return <Users className={className} />;
 }
 
 export default function AgentRolesTable({
@@ -49,103 +62,113 @@ export default function AgentRolesTable({
   onToggle,
   onEdit,
   onDelete,
+  isLoading = false,
 }: {
-  rows: AgentRoleRow[];
-  onToggle: (id: string, v: boolean) => void;
-  onEdit: (id: string) => void;
-  onDelete: (id: string) => void;
+  rows: AgentRoleItem[];
+  onToggle: (row: AgentRoleItem, value: boolean) => void;
+  onEdit: (row: AgentRoleItem) => void;
+  onDelete: (row: AgentRoleItem) => void;
+  isLoading?: boolean;
 }) {
   return (
     <div className="w-full overflow-x-auto">
       <table className="w-full border-collapse">
         <thead>
-          <tr className="bg-secondary/20 border-b border-gray/10">
-            <th className="px-5 py-4 text-left text-[11px] font-semibold tracking-widest text-gray w-[16%]">
+          <tr className="border-b border-gray/10 bg-secondary/20">
+            <th className="w-[16%] px-5 py-4 text-left text-[11px] font-semibold tracking-widest text-gray">
               VISUAL IDENTITY
             </th>
-            <th className="px-5 py-4 text-left text-[11px] font-semibold tracking-widest text-gray w-[22%]">
+            <th className="w-[22%] px-5 py-4 text-left text-[11px] font-semibold tracking-widest text-gray">
               ROLE NAME
             </th>
-            <th className="px-5 py-4 text-left text-[11px] font-semibold tracking-widest text-gray w-[16%]">
+            <th className="w-[16%] px-5 py-4 text-left text-[11px] font-semibold tracking-widest text-gray">
               SHORT CODE
             </th>
             <th className="px-5 py-4 text-left text-[11px] font-semibold tracking-widest text-gray">
               DESCRIPTION
             </th>
-            <th className="px-5 py-4 text-left text-[11px] font-semibold tracking-widest text-gray w-[12%]">
+            <th className="w-[12%] px-5 py-4 text-left text-[11px] font-semibold tracking-widest text-gray">
               STATUS
             </th>
-            <th className="px-5 py-4 text-right text-[11px] font-semibold tracking-widest text-gray w-[10%]">
+            <th className="w-[10%] px-5 py-4 text-right text-[11px] font-semibold tracking-widest text-gray">
               ACTIONS
             </th>
           </tr>
         </thead>
 
         <tbody>
-          {rows.map((r) => (
-            <tr key={r.id} className="border-b border-gray/10 bg-white">
-              {/* visual identity */}
-              <td className="px-5 py-5 align-middle">
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`h-10 w-10 rounded-full flex items-center justify-center ${badgeBg(r.badgeColor)}`}
-                  >
-                    <RoleIcon k={r.icon} />
-                  </div>
-                </div>
-              </td>
-
-              {/* role name */}
-              <td className="px-5 py-5 align-middle">
-                <p className="text-sm font-semibold text-primary">
-                  {r.roleName}
-                </p>
-              </td>
-
-              {/* short code */}
-              <td className="px-5 py-5 align-middle">
-                <span className="inline-flex rounded-md bg-gray/10 px-3 py-1 text-xs font-semibold">
-                  {r.shortCode}
-                </span>
-              </td>
-
-              {/* description */}
-              <td className="px-5 py-5 align-middle">
-                <p className="text-sm font-medium text-gray">{r.description}</p>
-              </td>
-
-              {/* status */}
-              <td className="px-5 py-5 align-middle">
-                <StatusSwitch
-                  value={r.isActive}
-                  onChange={(v) => onToggle(r.id, v)}
-                />
-              </td>
-
-              {/* actions */}
-              <td className="px-5 py-5 align-middle">
-                <div className="flex items-center justify-end gap-4">
-                  <button
-                    type="button"
-                    onClick={() => onEdit(r.id)}
-                    className="text-gray hover:text-primary"
-                    aria-label="Edit"
-                  >
-                    <Edit3 className="h-4 w-4" />
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => onDelete(r.id)}
-                    className="text-gray hover:text-primary"
-                    aria-label="Delete"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
+          {isLoading ? (
+            <tr className="bg-white">
+              <td colSpan={6} className="px-5 py-10 text-center text-sm text-gray">
+                Loading agent roles...
               </td>
             </tr>
-          ))}
+          ) : rows.length === 0 ? (
+            <tr className="bg-white">
+              <td colSpan={6} className="px-5 py-10 text-center text-sm text-gray">
+                No agent roles found.
+              </td>
+            </tr>
+          ) : (
+            rows.map((row) => (
+              <tr key={row.id} className="border-b border-gray/10 bg-white">
+                <td className="px-5 py-5 align-middle">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`flex h-10 w-10 items-center justify-center rounded-full ${badgeBg(
+                        row.badgeColor,
+                      )}`}
+                    >
+                      <RoleIcon iconKey={row.icon} />
+                    </div>
+                  </div>
+                </td>
+
+                <td className="px-5 py-5 align-middle">
+                  <p className="text-sm font-semibold text-primary">{row.name}</p>
+                </td>
+
+                <td className="px-5 py-5 align-middle">
+                  <span className="inline-flex rounded-md bg-gray/10 px-3 py-1 text-xs font-semibold">
+                    {row.shortCode}
+                  </span>
+                </td>
+
+                <td className="px-5 py-5 align-middle">
+                  <p className="text-sm font-medium text-gray">{row.description}</p>
+                </td>
+
+                <td className="px-5 py-5 align-middle">
+                  <StatusSwitch
+                    value={row.isActive}
+                    onChange={(value) => onToggle(row, value)}
+                  />
+                </td>
+
+                <td className="px-5 py-5 align-middle">
+                  <div className="flex items-center justify-end gap-4">
+                    <button
+                      type="button"
+                      onClick={() => onEdit(row)}
+                      className="text-gray hover:text-primary"
+                      aria-label="Edit"
+                    >
+                      <Edit3 className="h-4 w-4" />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => onDelete(row)}
+                      className="text-gray hover:text-primary"
+                      aria-label="Delete"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))
+          )}
         </tbody>
       </table>
     </div>
