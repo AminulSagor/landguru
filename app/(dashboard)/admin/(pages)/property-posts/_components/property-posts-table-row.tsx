@@ -88,6 +88,11 @@ function ActionLinkButton({
 export default function PropertyPostsTableRow({
   property,
 }: PropertyPostsTableRowProps) {
+  const sellerName = property.seller.name ?? property.seller.fullName ?? "Unknown Seller";
+  const sellerPhoto = property.seller.photoUrl ?? property.seller.avatar ?? "";
+  const sellerPhone = property.seller.phone ?? "No phone";
+  const sellerId = property.seller.id ?? "N/A";
+
   const detailsHref = buildPropertyDetailsHref(property.id);
   const progress = getProgressSummary(property.servicesProgress);
   const actionConfig = getActionConfig(property.status);
@@ -99,7 +104,7 @@ export default function PropertyPostsTableRow({
     <tr className="border-t border-gray/15 transition-colors hover:bg-secondary/40">
       <td className="px-6 py-6 align-top">
         <div className="h-14 w-14 overflow-hidden rounded-lg border border-gray/15 bg-secondary">
-          {property.photos[0] ? (
+          {property.photos?.[0] ? (
             <Image
               src={property.photos[0]}
               alt={property.title}
@@ -124,7 +129,7 @@ export default function PropertyPostsTableRow({
         </Link>
 
         <p className="mt-1 max-w-[320px] text-xs font-semibold leading-relaxed text-gray">
-          {property.description || "No description available."}
+          {property.description ?? "No description available."}
         </p>
 
         <div className="mt-2 flex flex-wrap items-center gap-2">
@@ -166,10 +171,10 @@ export default function PropertyPostsTableRow({
       <td className="px-6 py-6 align-top">
         <div className="flex items-start gap-3">
           <div className="h-10 w-10 overflow-hidden rounded-full border border-gray/15 bg-secondary">
-            {property.seller.photoUrl ? (
+            {sellerPhoto ? (
               <Image
-                src={property.seller.photoUrl}
-                alt={property.seller.name}
+                src={sellerPhoto}
+                alt={sellerName}
                 width={40}
                 height={40}
                 unoptimized
@@ -183,15 +188,9 @@ export default function PropertyPostsTableRow({
           </div>
 
           <div>
-            <p className="text-xs font-extrabold text-gray">
-              {property.seller.name}
-            </p>
-            <p className="text-xs font-semibold text-gray">
-              {property.seller.phone}
-            </p>
-            <p className="text-xs font-semibold text-gray">
-              ID: {property.seller.id.slice(0, 8)}
-            </p>
+            <p className="text-xs font-extrabold text-gray">{sellerName}</p>
+            <p className="text-xs font-semibold text-gray">{sellerPhone}</p>
+            <p className="text-xs font-semibold text-gray">ID: {sellerId.slice(0, 8)}</p>
           </div>
         </div>
       </td>

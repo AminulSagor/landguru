@@ -41,7 +41,7 @@ function humanizeServiceKey(serviceKey: string) {
 export function getServiceTypeNames(item: PropertyPostItem) {
   const uniqueMap = new Map<string, string>();
 
-  item.serviceAssignments.forEach((assignment) => {
+  (item.serviceAssignments ?? []).forEach((assignment) => {
     const rawValue =
       assignment.serviceName?.trim() ||
       humanizeServiceKey(assignment.serviceKey);
@@ -88,16 +88,22 @@ export function matchesSearch(item: PropertyPostItem, search: string) {
 
   if (!normalizedSearch) return true;
 
+  const sellerName = item.seller.name ?? item.seller.fullName ?? "";
+  const sellerPhone = item.seller.phone ?? "";
+  const sellerId = item.seller.id ?? "";
+  const description = item.description ?? "";
+  const validatedPrice = item.validatedPrice === null ? "" : String(item.validatedPrice);
+
   const searchableText = [
     item.id,
     item.title,
-    item.description,
+    description,
     item.propertyType,
-    item.seller.name,
-    item.seller.phone,
-    item.seller.id,
+    sellerName,
+    sellerPhone,
+    sellerId,
     String(item.askingPrice),
-    item.validatedPrice !== null ? String(item.validatedPrice) : "",
+    validatedPrice,
     String(item.sellableAmount),
     item.sellableUnit,
     String(item.plotSize),

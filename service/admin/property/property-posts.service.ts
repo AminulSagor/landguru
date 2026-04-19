@@ -16,6 +16,8 @@ export const propertyPostsService = {
           limit: params.limit ?? 8,
           ...(params.status ? { status: params.status } : {}),
           ...(params.propertyType ? { propertyType: params.propertyType } : {}),
+          ...(params.serviceType ? { serviceType: params.serviceType } : {}),
+          ...(params.search ? { search: params.search } : {}),
         },
       },
     );

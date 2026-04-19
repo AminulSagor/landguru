@@ -20,7 +20,14 @@ function normalizeCompactNumber(value: number) {
   return fixedValue.replace(/\.00$/, "").replace(/(\.\d*[1-9])0+$/, "$1");
 }
 
-function parseServicesProgress(servicesProgress: string) {
+function parseServicesProgress(servicesProgress?: string | null) {
+  if (!servicesProgress) {
+    return {
+      done: 0,
+      total: 0,
+    };
+  }
+
   const [doneText = "0", totalText = "0"] = servicesProgress.split("/");
 
   const done = Number.parseInt(doneText, 10);
@@ -52,7 +59,9 @@ export function formatCompactBdt(value: number | null) {
   return `৳ ${new Intl.NumberFormat("en-BD").format(value)}`;
 }
 
-export function formatRelativeTime(dateString: string) {
+export function formatRelativeTime(dateString?: string | null) {
+  if (!dateString) return "";
+
   const timestamp = new Date(dateString).getTime();
 
   if (Number.isNaN(timestamp)) return "";
@@ -159,7 +168,7 @@ export function getActionConfig(
 }
 
 export function getProgressSummary(
-  servicesProgress: string,
+  servicesProgress?: string | null,
 ): PropertyProgressSummary {
   const { done, total } = parseServicesProgress(servicesProgress);
 
