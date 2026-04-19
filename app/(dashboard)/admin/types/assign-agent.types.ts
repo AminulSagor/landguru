@@ -5,6 +5,7 @@ export type AssignAgentDocType = "pdf" | "docx";
 export type AssignAgentDocument = {
   id: string;
   fileName: string;
+  fileUrl?: string;
   type: AssignAgentDocType;
   selected: boolean;
 };
@@ -17,17 +18,33 @@ export type AssignAgentAgent = {
   avatarUrl?: string | null;
   online: boolean;
   matchesZone?: boolean;
-  activeJobsLabel: string; // e.g. "Active Jobs: 1 (Low)" or "Active Jobs: 0"
+  activeJobs?: number;
+  activeJobsLabel: string;
   activeTone?: "green" | "orange" | "primary";
+  location?: string;
 };
 
 export type AssignAgentDialogPayload = {
-  postId: string; // "POST-1060"
-  zoneLabel: string; // "Block-C, Banani"
-  serviceTitle: string; // "Pentagraph Map"
+  postId: string;
+  sellPostId: string;
+  assignmentId?: string;
+  serviceKey: string;
+  serviceName: string;
+  zoneLabel: string;
+  serviceTitle: string;
   serviceDesc: string;
   documents: AssignAgentDocument[];
   serviceFeeBDT: number;
-  deadlineLabel: string; // "Oct 28, 2026"
+  deadlineLabel: string;
+  responseDeadlineISO?: string;
+  autoReassign?: boolean;
   agents: AssignAgentAgent[];
+};
+
+export type AssignAgentSubmitPayload = {
+  agentId: string;
+  documents: AssignAgentDocument[];
+  serviceFeeBDT: number;
+  deadlineLabel: string;
+  autoReassign: boolean;
 };

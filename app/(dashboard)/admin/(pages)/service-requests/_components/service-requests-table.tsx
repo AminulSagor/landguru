@@ -62,6 +62,12 @@ function StatusBadge({ status }: { status: ServiceRequestListItem["status"] }) {
               cls: "border-red-200 bg-red-50 text-red-500",
               dot: "bg-red-500",
             }
+          : normalizedStatus === "COMPLETED"
+            ? {
+                label: "Completed",
+                cls: "border-green/25 bg-green/10 text-green",
+                dot: "bg-green",
+              }
           : {
               label: "Unassigned",
               cls: "border-gray/15 bg-secondary text-gray",
@@ -88,7 +94,9 @@ function ActionCell({
   item: ServiceRequestListItem;
   onView: (item: ServiceRequestListItem) => void;
 }) {
-  if (item.status === "SUBMITTED") {
+  const status = item.status.toUpperCase();
+
+  if (status === "SUBMITTED" || status === "COMPLETED") {
     return (
       <Button size="sm" className="h-9 px-4" onClick={() => onView(item)}>
         View Details
@@ -96,7 +104,7 @@ function ActionCell({
     );
   }
 
-  if (item.status === "IN_PROGRESS") {
+  if (status === "IN_PROGRESS") {
     return (
       <Button
         size="sm"
@@ -118,6 +126,23 @@ function ActionCell({
       View Details
     </button>
   );
+}
+
+function formatDateTime(value: string) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  }).format(date);
 }
 
 function AssignAgentPill({ onClick }: { onClick: () => void }) {
@@ -279,11 +304,15 @@ export default function ServiceRequestsTable({
                 <tr key={item.service.id} className="border-t border-gray/15">
                   <td className="px-6 py-5">
                     <div className="text-sm text-black">{item.service.name}</div>
-                    <div className="mt-1 text-xs text-gray">#{item.service.id}</div>
+                    <div className="mt-1 text-xs text-gray">
+                      #{item.service.displayId ?? item.service.id}
+                    </div>
                   </td>
 
                   <td className="px-6 py-5">
-                    <div className="text-primary">#{item.parentPost.id}</div>
+                    <div className="text-primary">
+                      #{item.parentPost.displayId ?? item.parentPost.id}
+                    </div>
                     <div className="mt-1 flex items-center gap-2 text-xs text-gray">
                       <MapPin className="h-4 w-4" />
                       {item.parentPost.location}
@@ -315,7 +344,7 @@ export default function ServiceRequestsTable({
                           {item.latestWorkLog.title}
                         </div>
                         <div className="mt-1 text-xs text-gray">
-                          {item.latestWorkLog.timeLabel}
+                          {formatDateTime(item.latestWorkLog.createdAt)}
                         </div>
                       </div>
                     ) : (

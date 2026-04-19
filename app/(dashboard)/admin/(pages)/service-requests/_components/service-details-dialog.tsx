@@ -114,10 +114,16 @@ export default function ServiceDetailsDialog({
   open,
   onOpenChange,
   details,
+  onRequestRevision,
+  onApprove,
+  isSubmitting,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   details: ServiceDetails;
+  onRequestRevision?: (feedback: string) => void;
+  onApprove?: () => void;
+  isSubmitting?: boolean;
 }) {
   const [feedback, setFeedback] = useState("");
 
@@ -232,9 +238,11 @@ export default function ServiceDetailsDialog({
         <div className="mt-5 flex items-center justify-end gap-3">
           <button
             type="button"
+            onClick={() => onRequestRevision?.(feedback)}
+            disabled={isSubmitting}
             className={cn(
               "h-10 rounded-lg border px-4 text-sm font-semibold transition",
-              "border-red-200 bg-red-50 text-red-600 hover:bg-red-100",
+              "border-red-200 bg-red-50 text-red-600 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60",
             )}
           >
             Send feedback →
@@ -242,8 +250,10 @@ export default function ServiceDetailsDialog({
 
           <button
             type="button"
+            onClick={() => onApprove?.()}
+            disabled={isSubmitting}
             className={cn(
-              "h-10 rounded-lg px-4 text-sm font-semibold text-white transition",
+              "h-10 rounded-lg px-4 text-sm font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-60",
               "bg-green hover:opacity-95",
             )}
           >

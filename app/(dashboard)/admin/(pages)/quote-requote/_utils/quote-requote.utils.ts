@@ -5,6 +5,8 @@ import type {
 
 export type QuoteRequoteSortKey = "newest_first" | "oldest_first";
 
+export const SEARCH_DEBOUNCE_MS = 350;
+
 export const NEGOTIATION_TABS: Array<{
   key: SellPostNegotiationTab;
   label: string;
@@ -110,9 +112,10 @@ export const filterNegotiationItems = (
   return items.filter((item) =>
     [
       item.negotiationId,
-      item.status,
-      item.post.title,
-      item.post.location,
+      item.status ?? "",
+      item.postTitle,
+      item.postLocation ?? "",
+      item.postId,
       item.seller.name,
       item.seller.phone,
     ]

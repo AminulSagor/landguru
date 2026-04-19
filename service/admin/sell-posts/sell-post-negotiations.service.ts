@@ -1,6 +1,7 @@
 import { serviceClient } from "@/service/base/axios.client";
 import type {
   SellPostNegotiationCounterPayload,
+  SellPostNegotiationReviewDetailsResponse,
   SellPostNegotiationSuccessResponse,
   SellPostNegotiationsQueryParams,
   SellPostNegotiationsResponse,
@@ -19,6 +20,17 @@ export const getAdminSellPostNegotiations = async (
       },
     },
   );
+
+  return response.data;
+};
+
+export const getAdminSellPostNegotiationReviewDetails = async (
+  negotiationId: string,
+): Promise<SellPostNegotiationReviewDetailsResponse> => {
+  const response =
+    await serviceClient.get<SellPostNegotiationReviewDetailsResponse>(
+      `/sell-posts/admin/negotiations/${negotiationId}/review`,
+    );
 
   return response.data;
 };

@@ -22,10 +22,10 @@ function money(sym: string, n: number) {
 export default function QuotationSentSuccessDialog({
   open,
   onControl,
-  postId = "#POST-1044",
-  sellerName = "Mr. Rahman",
-  mandatoryFee = 3000,
-  optionalFee = 3000,
+  postId = "",
+  sellerName = "",
+  mandatoryFee = 0,
+  optionalFee = 0,
   currencySymbol = "৳",
 }: Props) {
   const total = mandatoryFee + optionalFee;

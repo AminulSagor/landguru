@@ -88,7 +88,7 @@ function PostCell({ item }: { item: SellPostNegotiationItem }) {
   return (
     <div className="flex min-w-[280px] items-center gap-3">
       <div className="relative h-[54px] w-[54px] shrink-0 overflow-hidden rounded-lg border border-gray/10 bg-secondary">
-        <RemoteImage src={item.post.image} alt={item.post.title} />
+        <RemoteImage src={item.postImage} alt={item.postTitle} />
       </div>
 
       <div className="min-w-0">
@@ -97,11 +97,11 @@ function PostCell({ item }: { item: SellPostNegotiationItem }) {
         </span>
 
         <p className="mt-2 line-clamp-1 text-[15px] font-bold leading-5 text-gray">
-          {item.post.title}
+          {item.postTitle}
         </p>
 
         <p className="mt-1 line-clamp-1 text-xs font-medium text-primary">
-          #{item.post.id}
+          #{item.postId}
         </p>
       </div>
     </div>
@@ -142,7 +142,7 @@ function QuoteCell({ item }: { item: SellPostNegotiationItem }) {
           Admin Last Quote
         </p>
         <p className="mt-0.5 text-lg font-semibold leading-none text-primary">
-          {formatCurrency(item.pricing.adminLastQuote)}
+          {formatCurrency(item.adminLastQuote)}
         </p>
       </div>
 
@@ -151,7 +151,7 @@ function QuoteCell({ item }: { item: SellPostNegotiationItem }) {
           User New Counter
         </p>
         <p className="mt-1 text-[18px] font-extrabold leading-none text-gray">
-          {formatCurrency(item.pricing.userNewCounter)}
+          {formatCurrency(item.userNewCounter)}
         </p>
       </div>
     </div>
@@ -197,11 +197,12 @@ function RequoteCell({ item }: { item: SellPostNegotiationItem }) {
 
 type ActionCellProps = {
   item: SellPostNegotiationItem;
+  isActionRequired: boolean;
   onReviewRespond: (item: SellPostNegotiationItem) => void;
 };
 
-function ActionCell({ item, onReviewRespond }: ActionCellProps) {
-  const isDisabled = !item.isActionRequired;
+function ActionCell({ item, isActionRequired, onReviewRespond }: ActionCellProps) {
+  const isDisabled = !isActionRequired;
 
   return (
     <div className="flex min-w-[170px] flex-col gap-2">
@@ -228,11 +229,13 @@ function ActionCell({ item, onReviewRespond }: ActionCellProps) {
 
 type QuoteRequoteItemCardProps = {
   item: SellPostNegotiationItem;
+  isActionRequired: boolean;
   onReviewRespond: (item: SellPostNegotiationItem) => void;
 };
 
 export default function QuoteRequoteItemCard({
   item,
+  isActionRequired,
   onReviewRespond,
 }: QuoteRequoteItemCardProps) {
   return (
@@ -254,7 +257,11 @@ export default function QuoteRequoteItemCard({
       </td>
 
       <td className="px-4 py-4 align-middle">
-        <ActionCell item={item} onReviewRespond={onReviewRespond} />
+        <ActionCell
+          item={item}
+          isActionRequired={isActionRequired}
+          onReviewRespond={onReviewRespond}
+        />
       </td>
     </tr>
   );

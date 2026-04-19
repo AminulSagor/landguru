@@ -12,8 +12,8 @@ import {
   AssignAgentTab,
   AssignAgentAgent,
   AssignAgentDocument,
+  AssignAgentSubmitPayload,
 } from "@/app/(dashboard)/admin/types/assign-agent.types";
-import { demoAssignAgentDialog } from "@/app/(dashboard)/admin/dummy-data/assign-agent.data";
 
 function Avatar({ name }: { name: string }) {
   const initials = name
@@ -161,41 +161,57 @@ export default function AssignAgentDialog({
   open: boolean;
   onOpenChange: (v: boolean) => void;
   payload?: Partial<AssignAgentDialogPayload>;
-  onAssign?: (agentId: string) => void;
+  onAssign?: (payload: AssignAgentSubmitPayload) => void;
 }) {
-  const data: AssignAgentDialogPayload = useMemo(() => {
-    const p = payload ?? {};
-    return {
-      ...demoAssignAgentDialog,
-      ...p,
-      documents: p.documents ?? demoAssignAgentDialog.documents,
-      agents: p.agents ?? demoAssignAgentDialog.agents,
-    };
-  }, [payload]);
+  const data = useMemo(() => payload, [payload]);
 
   const [tab, setTab] = useState<AssignAgentTab>("recommended");
   const [q, setQ] = useState("");
-  const [docs, setDocs] = useState<AssignAgentDocument[]>(data.documents);
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [docs, setDocs] = useState<AssignAgentDocument[]>([]);
 
-  const [fee, setFee] = useState<number>(data.serviceFeeBDT);
-  const [deadline, setDeadline] = useState<string>(data.deadlineLabel);
+  const [fee, setFee] = useState<number>(0);
+  const [deadline, setDeadline] = useState<string>("");
   const [autoReassign, setAutoReassign] = useState(false);
 
+  React.useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setDebouncedQuery(q.trim().toLowerCase());
+    }, 350);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [q]);
+
+  React.useEffect(() => {
+    if (!data) {
+      setDocs([]);
+      setFee(0);
+      setDeadline("");
+      setAutoReassign(false);
+      return;
+    }
+
+    setDocs(data.documents ?? []);
+    setFee(data.serviceFeeBDT ?? 0);
+    setDeadline(data.deadlineLabel ?? "");
+    setAutoReassign(Boolean(data.autoReassign));
+  }, [data]);
+
   const agents = useMemo(() => {
-    const query = q.trim().toLowerCase();
-    let list = data.agents.filter((a) => {
-      if (!query) return true;
+    const sourceAgents = data?.agents ?? [];
+
+    let list = sourceAgents.filter((a) => {
+      if (!debouncedQuery) return true;
       return (
-        a.name.toLowerCase().includes(query) ||
-        a.role.toLowerCase().includes(query) ||
-        a.phone.toLowerCase().includes(query)
+        a.name.toLowerCase().includes(debouncedQuery) ||
+        a.role.toLowerCase().includes(debouncedQuery) ||
+        a.phone.toLowerCase().includes(debouncedQuery) ||
+        (a.location ?? "").toLowerCase().includes(debouncedQuery)
       );
     });
 
     if (tab === "lowest_load") {
-      list = [...list].sort((a, b) =>
-        a.activeJobsLabel.localeCompare(b.activeJobsLabel),
-      );
+      list = [...list].sort((a, b) => (a.activeJobs ?? 0) - (b.activeJobs ?? 0));
     } else if (tab === "closest_zone") {
       list = [...list].sort(
         (a, b) =>
@@ -204,7 +220,11 @@ export default function AssignAgentDialog({
     }
 
     return list;
-  }, [data.agents, q, tab]);
+  }, [data?.agents, debouncedQuery, tab]);
+
+  if (!data) {
+    return null;
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange} size="xl">
@@ -374,7 +394,15 @@ export default function AssignAgentDialog({
                         <Button
                           size="sm"
                           className="h-9 px-4"
-                          onClick={() => onAssign?.(a.id)}
+                          onClick={() =>
+                            onAssign?.({
+                              agentId: a.id,
+                              documents: docs,
+                              serviceFeeBDT: fee,
+                              deadlineLabel: deadline,
+                              autoReassign,
+                            })
+                          }
                         >
                           Assign Now
                         </Button>
