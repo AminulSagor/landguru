@@ -1,17 +1,21 @@
 export default function StatusSwitch({
   value,
   onChange,
+  disabled = false,
 }: {
   value: boolean;
-  onChange: (v: boolean) => void;
+  onChange: (value: boolean) => void;
+  disabled?: boolean;
 }) {
   return (
     <button
       type="button"
+      disabled={disabled}
       onClick={() => onChange(!value)}
       className={[
         "relative h-5 w-10 rounded-full transition-all",
         value ? "bg-primary" : "bg-secondary border border-gray/20",
+        disabled ? "cursor-not-allowed opacity-70" : "",
       ].join(" ")}
       aria-pressed={value}
     >

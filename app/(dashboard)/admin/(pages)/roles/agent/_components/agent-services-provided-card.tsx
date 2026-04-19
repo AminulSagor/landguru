@@ -1,14 +1,22 @@
 import Card from "@/components/cards/card";
 import { Wrench } from "lucide-react";
+import type { AgentDetails } from "@/types/admin/agent-list/details/[id]/agent-details.types";
 
-const services = [
-  { title: "Ownership History Validation", price: "৳ 3000" },
-  { title: "Pentagraph Map Validation", price: "৳ 3000" },
-  { title: "Physical Estimate .....", price: "৳ 3000" },
-  { title: "Document Organization", price: "৳ 3000" },
-];
+const formatFee = (value?: number) => {
+  if (value === null || value === undefined) {
+    return "-";
+  }
 
-export default function AgentServicesProvidedCard() {
+  return `৳ ${value.toLocaleString("en-BD")}`;
+};
+
+export default function AgentServicesProvidedCard({
+  agent,
+}: {
+  agent: AgentDetails;
+}) {
+  const services = agent?.servicesProvided ?? [];
+
   return (
     <Card>
       <div className="flex items-center gap-2">
@@ -17,21 +25,23 @@ export default function AgentServicesProvidedCard() {
       </div>
 
       <div className="mt-4 space-y-3">
-        {services.map((s) => (
-          <div
-            key={s.title}
-            className="rounded-lg border border-gray/10 bg-secondary px-4 py-3 flex items-center justify-between"
-          >
-            <p className="text-sm text-black">{s.title}</p>
-            <p className="text-sm text-primary font-semibold">{s.price}</p>
+        {services.length > 0 ? (
+          services.map((serviceItem, index) => (
+            <div
+              key={`${serviceItem.name}-${index}`}
+              className="flex items-center justify-between rounded-lg border border-gray/10 bg-secondary px-4 py-3"
+            >
+              <p className="text-sm text-black">{serviceItem.name}</p>
+              <p className="text-sm font-semibold text-primary">
+                {formatFee(serviceItem.fee)}
+              </p>
+            </div>
+          ))
+        ) : (
+          <div className="rounded-lg border border-gray/10 bg-secondary px-4 py-3 text-sm text-gray">
+            No services available
           </div>
-        ))}
-      </div>
-
-      <div className="mt-4 text-center">
-        <button className="text-xs text-gray hover:text-black">
-          + 5 more services
-        </button>
+        )}
       </div>
     </Card>
   );

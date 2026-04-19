@@ -48,7 +48,7 @@ export const getDashboardPathByRole = (role?: string | null) => {
     case "super_admin":
       return "/admin/dashboard";
     case "agent":
-      return "/agent/dashbaord";
+      return "/agent/dashboard";
     case "user":
       return "/user/dashboard";
     default:

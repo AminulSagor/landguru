@@ -5,29 +5,28 @@ import { Check, Phone, Clock, MapPin, Home, Ruler, Wallet } from "lucide-react";
 import Card from "@/components/cards/card";
 import Button from "@/components/buttons/button";
 import { cn } from "@/lib/utils";
-import {
-  BuyRequestItem,
+import type {
+  BuyRequestListItem,
   BuyRequestTagIconKey,
-} from "@/app/(dashboard)/admin/types/buy-request.types";
+} from "@/types/admin/buy-requests/buy-requests-list.types";
 
 export default function BuyRequestRow({
   item,
   checked,
   onToggle,
-  setApproved,
-  setPostId,
+  onApprove,
+  onReject,
 }: {
-  item: BuyRequestItem;
+  item: BuyRequestListItem;
   checked: boolean;
   onToggle: () => void;
-  setApproved: (v: boolean) => void;
-  setPostId: (v: string | null) => void;
+  onApprove: (item: BuyRequestListItem) => void;
+  onReject: (item: BuyRequestListItem) => void;
 }) {
   return (
     <Card>
-      <div className="hidden lg:grid lg:grid-cols-12 gap-4 w-full">
-        {/* checkbox */}
-        <div className=" flex gap-2 lg:col-span-4">
+      <div className="hidden w-full gap-4 lg:grid lg:grid-cols-12">
+        <div className="flex gap-2 lg:col-span-4">
           <div className="pt-2">
             <input
               type="checkbox"
@@ -36,62 +35,51 @@ export default function BuyRequestRow({
               className="h-4 w-4 accent-primary"
             />
           </div>
-          {/* USER PROFILE */}
-          <div className="">
-            <UserProfileCell
-              user={item.user}
-              id={item.id}
-              createdAgo={item.createdAgo}
-            />
+
+          <div>
+            <UserProfileCell user={item.user} id={item.id} createdAgo={item.createdAgo} />
           </div>
         </div>
 
-        {/* REQUIREMENTS & LOCATION */}
         <div className="lg:col-span-4">
           <p className="text-base font-extrabold text-gray">{item.title}</p>
 
-          <div className="mt-2 flex items-center gap-2 min-w-0">
-            <MapPin size={14} className="text-primary shrink-0" />
+          <div className="mt-2 flex min-w-0 items-center gap-2">
+            <MapPin size={14} className="shrink-0 text-primary" />
             <p className="truncate text-[11px] font-semibold text-light-gray">
               {item.locationLine}
             </p>
           </div>
 
-          <div className="mt-3 grid grid-cols-2 gap-3 max-w-66">
-            {item.tags.map((t, idx) => (
+          <div className="mt-3 grid max-w-66 grid-cols-2 gap-3">
+            {item.tags.map((tag, index) => (
               <ReqBox
-                key={`${item.id}-req-${idx}`}
-                icon={t.icon}
-                label={t.label}
-                strong={t.strong}
-                highlight={t.icon === "wallet"}
+                key={`${item.id}-req-${index}`}
+                icon={tag.icon}
+                label={tag.label}
+                strong={tag.strong}
+                highlight={tag.icon === "wallet"}
               />
             ))}
           </div>
         </div>
 
-        {/* DESCRIPTION */}
-        <div className="lg:col-span-2 flex items-center justify-center">
-          <p className="text-xs font-semibold leading-5 text-light-gray line-clamp-4">
+        <div className="flex items-center justify-center lg:col-span-2">
+          <p className="line-clamp-4 text-xs font-semibold leading-5 text-light-gray">
             {item.description}
           </p>
         </div>
 
-        {/* ACTIONS */}
         <div className="flex justify-end lg:col-span-2">
           <ActionsCell
             status={item.statusLabel}
-            onApprove={() => {
-              setApproved(true);
-              setPostId(item.id);
-            }}
-            onReject={() => alert(`Reject: ${item.id} (demo)`)}
+            onApprove={() => onApprove(item)}
+            onReject={() => onReject(item)}
           />
         </div>
       </div>
 
-      {/* MOBILE/TABLET MODE */}
-      <div className="lg:hidden px-4 py-4 space-y-4">
+      <div className="space-y-4 px-4 py-4 lg:hidden">
         <div className="flex items-start gap-3">
           <input
             type="checkbox"
@@ -99,11 +87,7 @@ export default function BuyRequestRow({
             onChange={onToggle}
             className="mt-1 h-4 w-4 accent-primary"
           />
-          <UserProfileCell
-            user={item.user}
-            id={item.id}
-            createdAgo={item.createdAgo}
-          />
+          <UserProfileCell user={item.user} id={item.id} createdAgo={item.createdAgo} />
         </div>
 
         <div className="border-t border-gray/15 pt-4">
@@ -117,25 +101,25 @@ export default function BuyRequestRow({
           </div>
 
           <div className="mt-3 grid grid-cols-2 gap-3">
-            {item.tags.map((t, idx) => (
+            {item.tags.map((tag, index) => (
               <ReqBox
-                key={`${item.id}-mreq-${idx}`}
-                icon={t.icon}
-                label={t.label}
-                strong={t.strong}
-                highlight={t.icon === "wallet"}
+                key={`${item.id}-mreq-${index}`}
+                icon={tag.icon}
+                label={tag.label}
+                strong={tag.strong}
+                highlight={tag.icon === "wallet"}
               />
             ))}
           </div>
         </div>
 
         <div className="border-t border-gray/15 pt-4">
-          <p className="text-xs font-semibold leading-5 text-light-gray line-clamp-4">
+          <p className="line-clamp-4 text-xs font-semibold leading-5 text-light-gray">
             {item.description}
           </p>
         </div>
 
-        <div className="border-t border-gray/15 pt-4 flex items-center justify-between gap-3">
+        <div className="flex items-center justify-between gap-3 border-t border-gray/15 pt-4">
           <span className="rounded-full bg-secondary px-3 py-1 text-[10px] font-extrabold text-gray">
             {item.statusLabel}
           </span>
@@ -143,7 +127,7 @@ export default function BuyRequestRow({
           <div className="flex items-center gap-3">
             <button
               type="button"
-              onClick={() => alert(`Reject: ${item.id} (demo)`)}
+              onClick={() => onReject(item)}
               className="text-[11px] font-extrabold text-[#ff3b30]"
             >
               Reject
@@ -152,7 +136,7 @@ export default function BuyRequestRow({
             <Button
               size="sm"
               className="rounded-xl px-5 py-2"
-              onClick={() => alert(`Approve: ${item.id} (demo)`)}
+              onClick={() => onApprove(item)}
             >
               <span className="inline-flex items-center gap-2">
                 <Check size={16} />
@@ -182,7 +166,7 @@ function ReqBox({
   return (
     <div
       className={cn(
-        "flex items-center gap-2 rounded-lg border px-3 py-2 border",
+        "flex items-center gap-2 rounded-lg border px-3 py-2",
         highlight
           ? "border-primary/20 bg-primary/5"
           : "border-gray/15 bg-secondary",
@@ -202,20 +186,20 @@ function UserProfileCell({
   id,
   createdAgo,
 }: {
-  user: BuyRequestItem["user"];
+  user: BuyRequestListItem["user"];
   id: string;
-  createdAgo: string;
+  createdAgo?: string | null;
 }) {
   const initials = user.name
     .split(" ")
     .filter(Boolean)
     .slice(0, 2)
-    .map((s) => s[0])
+    .map((segment) => segment[0])
     .join("")
     .toUpperCase();
 
   return (
-    <div className="flex items-start gap-3 min-w-0">
+    <div className="flex min-w-0 items-start gap-3">
       <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-full border border-gray/15 bg-secondary">
         {user.avatarUrl ? (
           <Image
@@ -232,10 +216,8 @@ function UserProfileCell({
       </div>
 
       <div className="min-w-0">
-        <div className="flex items-center gap-2 min-w-0">
-          <p className="truncate text-sm font-extrabold text-gray">
-            {user.name}
-          </p>
+        <div className="flex min-w-0 items-center gap-2">
+          <p className="truncate text-sm font-extrabold text-gray">{user.name}</p>
 
           {user.verified && (
             <span className="shrink-0 rounded-md bg-primary/10 px-2 py-1 text-[10px] font-extrabold text-primary">
@@ -251,12 +233,14 @@ function UserProfileCell({
           <p className="text-[11px] font-semibold text-gray">{user.phone}</p>
         </div>
 
-        <div className="mt-2 flex items-center gap-2">
-          <Clock size={14} className="text-light-gray" />
-          <p className="text-[11px] font-semibold text-light-gray">
-            {createdAgo}
-          </p>
-        </div>
+        {createdAgo ? (
+          <div className="mt-2 flex items-center gap-2">
+            <Clock size={14} className="text-light-gray" />
+            <p className="text-[11px] font-semibold text-light-gray">
+              {createdAgo}
+            </p>
+          </div>
+        ) : null}
       </div>
     </div>
   );
@@ -267,7 +251,7 @@ function ActionsCell({
   onApprove,
   onReject,
 }: {
-  status: BuyRequestItem["statusLabel"];
+  status: BuyRequestListItem["statusLabel"];
   onApprove: () => void;
   onReject: () => void;
 }) {

@@ -1,41 +1,44 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import type { LucideIcon } from "lucide-react";
+import {
+  FileText,
+  Folder,
+  Gavel,
+  Globe,
+  Home,
+  Map,
+  Scale,
+  Search,
+  Shield,
+  User,
+} from "lucide-react";
+
 import Button from "@/components/buttons/button";
 import Card from "@/components/cards/card";
-
-import {
-  FileCheck2,
-  Map,
-  Ruler,
-  FilePenLine,
-  Folder,
-  BadgeCheck,
-  FileUp,
-  Shield,
-  Package,
-  X,
-} from "lucide-react";
 import Dialog from "@/components/dialogs/dialog";
-import {
-  BadgeColorKey,
-  ManageServiceType,
-  ServiceIconKey,
-} from "@/app/(dashboard)/admin/types/manage-service-type";
+import type { CreateServiceTypePayload } from "@/types/admin/manage/services/create-service-type.types";
+import type {
+  ServiceTypeBadgeColor,
+  ServiceTypeIconKey,
+  ServiceTypeItem,
+} from "@/types/admin/manage/services/service-types-list.types";
 
-const ICONS: { key: ServiceIconKey; Icon: any }[] = [
-  { key: "doc-check", Icon: FileCheck2 },
-  { key: "map", Icon: Map },
-  { key: "ruler", Icon: Ruler },
-  { key: "doc-pen", Icon: FilePenLine },
-  { key: "folder", Icon: Folder },
-  { key: "badge-check", Icon: BadgeCheck },
-  { key: "file-up", Icon: FileUp },
-  { key: "shield", Icon: Shield },
-  { key: "package", Icon: Package },
+const ICONS: Array<{ key: ServiceTypeIconKey; Icon: LucideIcon }> = [
+  { key: "icon-doc-check", Icon: Gavel },
+  { key: "icon-map", Icon: Map },
+  { key: "icon-ruler", Icon: FileText },
+  { key: "icon-doc-pen", Icon: Home },
+  { key: "icon-folder", Icon: Search },
+  { key: "icon-badge-check", Icon: Shield },
+  { key: "icon-file-up", Icon: Scale },
+  { key: "icon-shield", Icon: Folder },
+  { key: "icon-package", Icon: Globe },
+  { key: "icon-man", Icon: User },
 ];
 
-const COLORS: { key: BadgeColorKey; hex: string }[] = [
+const COLORS: Array<{ key: ServiceTypeBadgeColor; hex: string }> = [
   { key: "purple", hex: "#7C3AED" },
   { key: "orange", hex: "#F97316" },
   { key: "teal", hex: "#14B8A6" },
@@ -45,7 +48,7 @@ const COLORS: { key: BadgeColorKey; hex: string }[] = [
   { key: "indigo", hex: "#6366F1" },
 ];
 
-function badgePreviewBg(color: BadgeColorKey) {
+function badgePreviewBg(color: ServiceTypeBadgeColor) {
   if (color === "purple") return "bg-[#F3E8FF] text-[#6D28D9]";
   if (color === "orange") return "bg-[#FFE8D6] text-[#9A3412]";
   if (color === "teal") return "bg-[#DFF7F2] text-[#0F766E]";
@@ -55,35 +58,69 @@ function badgePreviewBg(color: BadgeColorKey) {
   return "bg-[#DBEAFE] text-[#1D4ED8]";
 }
 
+const DEFAULT_ICON: ServiceTypeIconKey = "icon-doc-check";
+const DEFAULT_BADGE_COLOR: ServiceTypeBadgeColor = "purple";
+
 export default function AddServiceTypeDialog({
   open,
   onOpenChange,
   onSave,
+  service,
+  isSubmitting = false,
 }: {
   open: boolean;
-  onOpenChange: (v: boolean) => void;
-  onSave: (row: ManageServiceType) => void;
+  onOpenChange: (value: boolean) => void;
+  onSave: (payload: CreateServiceTypePayload) => Promise<void> | void;
+  service?: ServiceTypeItem | null;
+  isSubmitting?: boolean;
 }) {
   const [isMandatory, setIsMandatory] = useState(true);
   const [name, setName] = useState("");
   const [desc, setDesc] = useState("");
-  const [icon, setIcon] = useState<ServiceIconKey>("doc-check");
-  const [badgeColor, setBadgeColor] = useState<BadgeColorKey>("purple");
+  const [icon, setIcon] = useState<ServiceTypeIconKey>(DEFAULT_ICON);
+  const [badgeColor, setBadgeColor] =
+    useState<ServiceTypeBadgeColor>(DEFAULT_BADGE_COLOR);
+
+  const isEditMode = Boolean(service);
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    if (service) {
+      setIsMandatory(service.isMandatory);
+      setName(service.name);
+      setDesc(service.description);
+      setIcon(service.icon || DEFAULT_ICON);
+      setBadgeColor(service.badgeColor || DEFAULT_BADGE_COLOR);
+      return;
+    }
+
+    setIsMandatory(true);
+    setName("");
+    setDesc("");
+    setIcon(DEFAULT_ICON);
+    setBadgeColor(DEFAULT_BADGE_COLOR);
+  }, [open, service]);
 
   const previewName = useMemo(
     () => name.trim() || "Ownership Validation",
     [name],
   );
 
+  const SelectedIcon = ICONS.find((item) => item.key === icon)?.Icon ?? Gavel;
+  const isSaveDisabled = isSubmitting || !name.trim() || !desc.trim();
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange} size="lg">
-      {/* header */}
-      <div className="flex items-center justify-between  border-b border-gray/10">
-        <h3 className="text-lg font-semibold pb-3">Add New Service Type</h3>
+      <div className="flex items-center justify-between border-b border-gray/10">
+        <h3 className="text-lg font-semibold pb-3">
+          {isEditMode ? "Update Service Type" : "Add New Service Type"}
+        </h3>
       </div>
 
       <div className="py-5 space-y-5">
-        {/* live preview */}
         <div>
           <p className="text-[11px] font-semibold tracking-widest text-gray">
             LIVE PREVIEW
@@ -94,18 +131,13 @@ export default function AddServiceTypeDialog({
               <div
                 className={`h-10 w-10 rounded-xl flex items-center justify-center ${badgePreviewBg(badgeColor)}`}
               >
-                {(() => {
-                  const I =
-                    ICONS.find((i) => i.key === icon)?.Icon ?? FileCheck2;
-                  return <I className="h-4 w-4" />;
-                })()}
+                <SelectedIcon className="h-4 w-4" />
               </div>
-              <p className="text-sm font-semibold ">{previewName}</p>
+              <p className="text-sm font-semibold">{previewName}</p>
             </div>
           </Card>
         </div>
 
-        {/* mandatory / optional */}
         <div className="flex items-center gap-6">
           <label className="flex items-center gap-2 text-sm font-semibold">
             <input
@@ -117,7 +149,7 @@ export default function AddServiceTypeDialog({
             Mandatory
           </label>
 
-          <label className="flex items-center gap-2 text-sm font-semibold ">
+          <label className="flex items-center gap-2 text-sm font-semibold">
             <input
               type="radio"
               checked={!isMandatory}
@@ -128,15 +160,13 @@ export default function AddServiceTypeDialog({
           </label>
         </div>
 
-        {/* inputs */}
         <div className="space-y-4">
           <div>
             <p className="text-sm font-semibold">Service Name</p>
             <input
               value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="mt-2 h-11 w-full rounded-xl border border-gray/15 bg-white px-4 text-sm  outline-none placeholder:text-gray"
-              placeholder=""
+              onChange={(event) => setName(event.target.value)}
+              className="mt-2 h-11 w-full rounded-xl border border-gray/15 bg-white px-4 text-sm outline-none placeholder:text-gray"
             />
           </div>
 
@@ -144,72 +174,75 @@ export default function AddServiceTypeDialog({
             <p className="text-sm font-semibold">Short Description</p>
             <textarea
               value={desc}
-              onChange={(e) => setDesc(e.target.value)}
+              onChange={(event) => setDesc(event.target.value)}
               className="mt-2 min-h-24 w-full rounded-xl border border-gray/15 bg-white px-4 py-3 text-sm text-primary outline-none placeholder:text-gray"
-              placeholder=""
             />
           </div>
         </div>
 
-        {/* service icon */}
         <div className="flex items-center justify-between">
           <p className="text-sm font-semibold text-primary">Service Icon</p>
 
-          <div className="flex items-center gap-2">
+          <div className="inline-flex items-center rounded-xl bg-[#EEF2F7] p-1">
             <button
               type="button"
-              className="h-8 rounded-lg bg-secondary px-3 text-xs font-semibold"
+              className="h-10 rounded-lg px-4 text-sm font-medium text-[#475467]"
             >
               Upload
             </button>
             <button
               type="button"
-              className="h-8 rounded-lg bg-primary px-3 text-xs font-semibold text-white"
+              className="h-10 rounded-lg bg-white px-4 text-sm font-semibold text-primary shadow-sm"
             >
               Select Icon
             </button>
           </div>
         </div>
 
-        <Card className="p-4 border border-gray/10 bg-white">
-          <div className="grid grid-cols-6 gap-3">
+        <Card className="border border-gray/10 bg-[#F8FAFC] p-5">
+          <div
+            className="w-full"
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(6, minmax(0, 1fr))",
+              gap: "20px 16px",
+            }}
+          >
             {ICONS.map(({ key, Icon }) => {
               const active = key === icon;
+
               return (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => setIcon(key)}
-                  className={[
-                    "h-10 rounded-xl border flex items-center justify-center",
-                    active
-                      ? "border-primary bg-secondary"
-                      : "border-gray/15 bg-white hover:bg-secondary",
-                  ].join(" ")}
-                >
-                  <Icon
-                    className={
-                      active ? "h-5 w-5 text-primary" : "h-5 w-5 text-gray"
-                    }
-                  />
-                </button>
+                <div key={key} className="flex items-center justify-center">
+                  <button
+                    type="button"
+                    onClick={() => setIcon(key)}
+                    className={[
+                      "flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl transition",
+                      active
+                        ? "border-2 border-primary bg-white shadow-sm"
+                        : "border-2 border-transparent bg-transparent hover:bg-white/70",
+                    ].join(" ")}
+                  >
+                    <Icon className="h-6 w-6 text-[#64748B]" strokeWidth={2} />
+                  </button>
+                </div>
               );
             })}
           </div>
         </Card>
 
-        {/* badge color */}
         <div>
           <p className="text-sm font-semibold">Badge Color</p>
 
-          <div className="mt-3 flex items-center gap-3">
-            {COLORS.map((c) => {
-              const active = c.key === badgeColor;
+          <div className="mt-3 flex items-center gap-3 flex-wrap">
+            {COLORS.map((colorItem) => {
+              const active = colorItem.key === badgeColor;
+
               return (
                 <button
-                  key={c.key}
+                  key={colorItem.key}
                   type="button"
-                  onClick={() => setBadgeColor(c.key)}
+                  onClick={() => setBadgeColor(colorItem.key)}
                   className={[
                     "h-10 w-10 rounded-full flex items-center justify-center",
                     active ? "ring-2 ring-primary" : "",
@@ -217,7 +250,7 @@ export default function AddServiceTypeDialog({
                 >
                   <span
                     className="h-7 w-7 rounded-full"
-                    style={{ background: c.hex }}
+                    style={{ background: colorItem.hex }}
                   />
                 </button>
               );
@@ -226,7 +259,6 @@ export default function AddServiceTypeDialog({
         </div>
       </div>
 
-      {/* footer */}
       <div className="flex items-center justify-end gap-3 px-6 py-5 border-t border-gray/10">
         <Button
           variant="secondary"
@@ -239,22 +271,24 @@ export default function AddServiceTypeDialog({
         <Button
           variant="primary"
           size="base"
+          disabled={isSaveDisabled}
           onClick={() => {
-            const nowId = `srv-${Math.random().toString(36).slice(2, 8)}`;
-            onSave({
-              id: nowId,
-              name: previewName,
-              description: desc.trim() || "—",
-              createdAt: "20 Jan, 2026",
-              isActive: true,
+            void onSave({
+              name: name.trim(),
+              isMandatory,
+              description: desc.trim(),
               icon,
               badgeColor,
-              isMandatory,
             });
-            onOpenChange(false);
           }}
         >
-          Save Service Type
+          {isSubmitting
+            ? isEditMode
+              ? "Updating..."
+              : "Saving..."
+            : isEditMode
+              ? "Save Service Type"
+              : "Save Service Type"}
         </Button>
       </div>
     </Dialog>

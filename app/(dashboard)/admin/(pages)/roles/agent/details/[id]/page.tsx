@@ -1,44 +1,44 @@
-
 import AgentDetailsHeader from "@/app/(dashboard)/admin/(pages)/roles/agent/_components/agent-details-header";
 import AgentLeftColumn from "@/app/(dashboard)/admin/(pages)/roles/agent/_components/agent-left-column";
 import AgentMiddleColumn from "@/app/(dashboard)/admin/(pages)/roles/agent/_components/agent-middle-column";
 import AgentRightColumn from "@/app/(dashboard)/admin/(pages)/roles/agent/_components/agent-right-column";
-import { Agents } from "@/app/(dashboard)/admin/dummy-data/agent-list-data";
+import { agentDetailsService } from "@/service/admin/agent/details/[id]/agent-details.service";
 
 interface Props {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
-const AgentDetails = async ({ params }: Props) => {
-  const param = await params;
+const AgentDetailsPage = async ({ params }: Props) => {
+  const { id } = await params;
+  const decodedId = decodeURIComponent(id ?? "");
 
-  const agent = Agents.find((a) => a.id === param.id);
+  try {
+    const agent = await agentDetailsService.getAdminAgentDetailsServer(
+      decodedId,
+    );
 
-  if (!agent) {
-    return <div className="text-gray">Agent not found</div>;
-  }
+    return (
+      <div>
+        <AgentDetailsHeader agent={agent} />
 
-  return (
-    <div>
-      {/* head */}
-      <AgentDetailsHeader agent={agent} />
+        <div className="mt-7 grid grid-cols-1 gap-4 lg:grid-cols-14">
+          <div className="col-span-12 space-y-4 lg:col-span-4">
+            <AgentLeftColumn agent={agent} />
+          </div>
 
-      {/* details */}
-      <div className="grid grid-cols-1 lg:grid-cols-14 gap-4 mt-7">
-        <div className="col-span-12 lg:col-span-4 space-y-4">
-          <AgentLeftColumn agent={agent} />
-        </div>
+          <div className="col-span-12 space-y-4 lg:col-span-6">
+            <AgentMiddleColumn agent={agent} />
+          </div>
 
-        <div className="col-span-12 lg:col-span-6 space-y-4">
-          <AgentMiddleColumn agent={agent} />
-        </div>
-
-        <div className="col-span-12 lg:col-span-4 space-y-4">
-          <AgentRightColumn agent={agent} />
+          <div className="col-span-12 space-y-4 lg:col-span-4">
+            <AgentRightColumn agent={agent} />
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  } catch {
+    return <div className="text-gray">Agent not found</div>;
+  }
 };
 
-export default AgentDetails;
+export default AgentDetailsPage;

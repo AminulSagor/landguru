@@ -1,18 +1,25 @@
-import { Agent } from "@/app/(dashboard)/admin/types/agent-list-type";
+import type { AgentDetails } from "@/types/admin/agent-list/details/[id]/agent-details.types";
 import Button from "@/components/buttons/button";
 import Card from "@/components/cards/card";
 import { ArrowLeft, Pen } from "lucide-react";
 import Link from "next/link";
 
-export default function AgentDetailsHeader({ agent }: { agent: Agent }) {
-  const displayName = agent?.profile?.name ?? "Agent";
-  const profileId = agent?.profile?.profileId ?? "LAW-2026-0001";
+export default function AgentDetailsHeader({
+  agent,
+}: {
+  agent: AgentDetails;
+}) {
+  const displayName = agent?.profileHeader?.name ?? "Agent";
+  const profileId = agent?.profileHeader?.id ?? "-";
 
   return (
     <Card>
-      <div className="flex gap-4 md:items-center flex-col md:flex-row justify-between">
-        <p className="text-sm flex gap-2 items-center">
-          <Link href={"/admin/roles/agent"} className="text-gray hover:text-black">
+      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+        <p className="flex items-center gap-2 text-sm">
+          <Link
+            href={"/admin/roles/agent"}
+            className="text-gray hover:text-black"
+          >
             <ArrowLeft size={18} />
           </Link>
 

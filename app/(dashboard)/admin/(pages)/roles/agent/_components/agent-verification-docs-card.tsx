@@ -1,22 +1,38 @@
 import Card from "@/components/cards/card";
 import { BadgeCheck, FileText, ShieldCheck } from "lucide-react";
+import type { AgentDetails } from "@/types/admin/agent-list/details/[id]/agent-details.types";
 
-const docs = [
-  {
-    title: "National ID (NID)",
-    meta: "ID: 89***321",
-    verified: true,
-    icon: ShieldCheck,
-  },
-  {
-    title: "TIN Certificate",
-    meta: "Tax ID: 44***99",
-    verified: true,
-    icon: FileText,
-  },
-];
+const maskValue = (value?: string | null) => {
+  if (!value) return "-";
 
-export default function AgentVerificationDocsCard() {
+  if (value.length <= 4) {
+    return value;
+  }
+
+  const visiblePart = value.slice(-4);
+  return `${"*".repeat(Math.max(value.length - 4, 0))}${visiblePart}`;
+};
+
+export default function AgentVerificationDocsCard({
+  agent,
+}: {
+  agent: AgentDetails;
+}) {
+  const docs = [
+    {
+      title: "National ID (NID)",
+      meta: `ID: ${maskValue(agent?.verificationDocuments?.nid?.number)}`,
+      verified: agent?.verificationDocuments?.nid?.isVerified ?? false,
+      icon: ShieldCheck,
+    },
+    {
+      title: "TIN Certificate",
+      meta: `Tax ID: ${maskValue(agent?.verificationDocuments?.tin?.number)}`,
+      verified: agent?.verificationDocuments?.tin?.isVerified ?? false,
+      icon: FileText,
+    },
+  ];
+
   return (
     <Card>
       <div className="flex items-center gap-2">
@@ -25,37 +41,39 @@ export default function AgentVerificationDocsCard() {
       </div>
 
       <div className="mt-4 space-y-3">
-        {docs.map((d) => {
-          const Icon = d.icon;
+        {docs.map((doc) => {
+          const Icon = doc.icon;
+
           return (
             <div
-              key={d.title}
-              className="rounded-lg border border-gray/10 bg-white px-4 py-3 flex items-center justify-between"
+              key={doc.title}
+              className="flex items-center justify-between rounded-lg border border-gray/10 bg-white px-4 py-3"
             >
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary">
                   <Icon size={18} className="text-primary" />
                 </div>
 
                 <div>
-                  <p className="text-sm font-semibold text-black">{d.title}</p>
-                  <p className="text-xs text-gray mt-1">{d.meta}</p>
+                  <p className="text-sm font-semibold text-black">
+                    {doc.title}
+                  </p>
+                  <p className="mt-1 text-xs text-gray">{doc.meta}</p>
                 </div>
               </div>
 
-              <span className="px-3 py-1 rounded-full text-xs bg-green/10 text-green font-semibold">
-                Verified
+              <span
+                className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                  doc.verified
+                    ? "bg-green/10 text-green"
+                    : "bg-gray-100 text-gray-500"
+                }`}
+              >
+                {doc.verified ? "Verified" : "Unverified"}
               </span>
             </div>
           );
         })}
-      </div>
-
-      <div className="mt-4 rounded-lg bg-secondary px-4 py-3">
-        <p className="text-xs text-gray">
-          <span className="text-primary font-semibold">Note:</span> These
-          documents were manually verified by admin on Jan 15, 2023.
-        </p>
       </div>
     </Card>
   );

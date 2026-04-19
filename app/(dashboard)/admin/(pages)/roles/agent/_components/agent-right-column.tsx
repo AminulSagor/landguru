@@ -1,12 +1,12 @@
 import AgentServicesProvidedCard from "@/app/(dashboard)/admin/(pages)/roles/agent/_components/agent-services-provided-card";
 import AgentVerificationDocsCard from "@/app/(dashboard)/admin/(pages)/roles/agent/_components/agent-verification-docs-card";
-import { Agent } from "@/app/(dashboard)/admin/types/agent-list-type";
+import type { AgentDetails } from "@/types/admin/agent-list/details/[id]/agent-details.types";
 
-export default function AgentRightColumn({ agent }: { agent: Agent }) {
+export default function AgentRightColumn({ agent }: { agent: AgentDetails }) {
   return (
     <>
-      <AgentServicesProvidedCard />
-      <AgentVerificationDocsCard />
+      <AgentServicesProvidedCard agent={agent} />
+      <AgentVerificationDocsCard agent={agent} />
     </>
   );
 }

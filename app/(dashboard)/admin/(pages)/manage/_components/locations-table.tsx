@@ -1,16 +1,16 @@
 import LocationRow from "@/app/(dashboard)/admin/(pages)/manage/_components/location-row";
-import { ManageZoneRow } from "@/app/(dashboard)/admin/types/manage-location.types";
+import type { OperationalZoneItem } from "@/types/admin/manage/locations/operational-zones-list.types";
 
 export default function LocationsTable({
   rows,
   onToggle,
   onEdit,
-  onDelete,
+  isLoading = false,
 }: {
-  rows: ManageZoneRow[];
-  onToggle: (id: string, v: boolean) => void;
-  onEdit: (id: string) => void;
-  onDelete: (id: string) => void;
+  rows: OperationalZoneItem[];
+  onToggle: (row: OperationalZoneItem, v: boolean) => void;
+  onEdit: (row: OperationalZoneItem) => void;
+  isLoading?: boolean;
 }) {
   return (
     <div className="w-full overflow-x-auto">
@@ -36,15 +36,28 @@ export default function LocationsTable({
         </thead>
 
         <tbody>
-          {rows.map((r) => (
-            <LocationRow
-              key={r.id}
-              row={r}
-              onToggle={onToggle}
-              onEdit={onEdit}
-              onDelete={onDelete}
-            />
-          ))}
+          {isLoading ? (
+            <tr className="bg-white">
+              <td colSpan={5} className="px-5 py-10 text-center text-sm text-gray">
+                Loading operational zones...
+              </td>
+            </tr>
+          ) : rows.length === 0 ? (
+            <tr className="bg-white">
+              <td colSpan={5} className="px-5 py-10 text-center text-sm text-gray">
+                No operational zones found.
+              </td>
+            </tr>
+          ) : (
+            rows.map((row) => (
+              <LocationRow
+                key={row.id}
+                row={row}
+                onToggle={onToggle}
+                onEdit={onEdit}
+              />
+            ))
+          )}
         </tbody>
       </table>
     </div>
