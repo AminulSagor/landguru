@@ -5,9 +5,11 @@ import AssignedLocationCard from "@/app/(dashboard)/admin/(pages)/dashboard/_com
 import LocationPerformanceTable from "@/app/(dashboard)/admin/(pages)/dashboard/_components/location-perfomance-table";
 import SuperAdminRecentActivity from "@/app/(dashboard)/admin/(pages)/dashboard/_components/super-admin-recent-activity";
 import SuperAdminStats from "@/app/(dashboard)/admin/(pages)/dashboard/_components/super-admin-stats";
-import { currentUser } from "@/utils/get.role.utils";
+import { getCurrentUserRole } from "@/utils/get.role.utils";
 
-const page = () => {
+const Page = async () => {
+  const currentUser = await getCurrentUserRole();
+
   return (
     <>
       {currentUser === "admin" ? (
@@ -40,4 +42,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;
