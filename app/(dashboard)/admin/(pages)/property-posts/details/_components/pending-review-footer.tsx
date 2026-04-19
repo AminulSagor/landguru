@@ -28,32 +28,27 @@ export default function PendingReviewFooter({
 }) {
   const router = useRouter();
 
-  const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
-  const [isQuoteDialogOpen, setIsQuoteDialogOpen] = useState(false);
+  const [open, setOpen] = useState(false);
 
   const [reason, setReason] = useState("");
 
-  const [validatedPricePerUnit, setValidatedPricePerUnit] = useState(
+  const validatedPricePerUnit =
     defaultValidatedPricePerUnit !== null &&
       defaultValidatedPricePerUnit !== undefined
       ? String(defaultValidatedPricePerUnit)
-      : "",
-  );
-  const [validatedPrice, setValidatedPrice] = useState(
+      : "";
+  const validatedPrice =
     defaultValidatedPrice !== null && defaultValidatedPrice !== undefined
       ? String(defaultValidatedPrice)
-      : "",
-  );
-  const [mandatoryServiceFee, setMandatoryServiceFee] = useState(
+      : "";
+  const mandatoryServiceFee =
     defaultMandatoryFee !== null && defaultMandatoryFee !== undefined
       ? String(defaultMandatoryFee)
-      : "",
-  );
-  const [optionalServiceFee, setOptionalServiceFee] = useState(
+      : "";
+  const optionalServiceFee =
     defaultOptionalFee !== null && defaultOptionalFee !== undefined
       ? String(defaultOptionalFee)
-      : "",
-  );
+      : "";
 
   const reviewMutation = useMutation({
     mutationFn: ({
@@ -70,8 +65,7 @@ export default function PendingReviewFooter({
           : "Quote submitted successfully.",
       );
 
-      setIsRejectDialogOpen(false);
-      setIsQuoteDialogOpen(false);
+      setOpen(false);
       setReason("");
       await Promise.resolve(router.refresh());
     },
@@ -134,22 +128,19 @@ export default function PendingReviewFooter({
   return (
     <Card className="flex items-center justify-between gap-4">
       <Button
-        onClick={() => setIsRejectDialogOpen(true)}
+        onClick={() => setOpen(true)}
         className="border border-[#EF4444] bg-white text-[#EF4444] hover:bg-[#FEF2F2]"
         disabled={reviewMutation.isPending}
       >
         Reject Post
       </Button>
 
-      <Button
-        variant="primary"
-        onClick={() => setIsQuoteDialogOpen(true)}
-        disabled={reviewMutation.isPending}
-      >
+      <Button variant="primary" onClick={onSubmitQuote} disabled={reviewMutation.isPending}>
         Submit Quote to User <ArrowRight size={18} />
       </Button>
 
-      <Dialog open={isRejectDialogOpen} onOpenChange={setIsRejectDialogOpen} size="md">
+      {/* rejection dialog */}
+      <Dialog open={open} onOpenChange={setOpen} size="md">
         <div>
           <div className="flex items-start justify-between gap-4 border-b border-gray/20 pb-2">
             <div className="space-y-1">
@@ -195,75 +186,6 @@ export default function PendingReviewFooter({
           </div>
         </div>
       </Dialog>
-
-      <Dialog open={isQuoteDialogOpen} onOpenChange={setIsQuoteDialogOpen} size="md">
-        <div>
-          <div className="border-b border-gray/20 pb-2">
-            <p className="text-lg font-semibold text-gray">
-              Submit Quote <span className="font-semibold text-primary">#{propertyId}</span>
-            </p>
-            <p className="text-sm text-gray mt-1">
-              Update validated price and service fees before submitting.
-            </p>
-          </div>
-
-          <div className="mt-4 space-y-4">
-            <NumberField
-              label="Validated Price Per Unit"
-              value={validatedPricePerUnit}
-              onChange={setValidatedPricePerUnit}
-            />
-
-            <NumberField
-              label="Validated Total Price"
-              value={validatedPrice}
-              onChange={setValidatedPrice}
-            />
-
-            <NumberField
-              label="Mandatory Service Fee"
-              value={mandatoryServiceFee}
-              onChange={setMandatoryServiceFee}
-            />
-
-            <NumberField
-              label="Optional Service Fee"
-              value={optionalServiceFee}
-              onChange={setOptionalServiceFee}
-            />
-
-            <Button
-              onClick={onSubmitQuote}
-              disabled={reviewMutation.isPending}
-              className="w-full justify-center"
-            >
-              {reviewMutation.isPending ? "Submitting..." : "Submit Quote"}
-            </Button>
-          </div>
-        </div>
-      </Dialog>
     </Card>
-  );
-}
-
-function NumberField({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-}) {
-  return (
-    <div className="space-y-2">
-      <p className="text-xs font-semibold text-gray">{label}</p>
-      <input
-        type="number"
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        className="w-full h-10 rounded-lg border border-gray/20 px-3 text-sm text-gray outline-none"
-      />
-    </div>
   );
 }

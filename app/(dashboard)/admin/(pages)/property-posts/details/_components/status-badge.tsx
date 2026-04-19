@@ -1,27 +1,24 @@
 "use client";
 
+import { StatusKey } from "@/app/(dashboard)/admin/types/property.types";
+
 export default function StatusBadge({
-  status,
+  kind,
   label,
 }: {
-  status: string;
+  kind: StatusKey;
   label: string;
 }) {
-  const normalizedStatus = status.toUpperCase();
-
   const cls =
-    normalizedStatus === "REJECTED"
+    kind === "rejected"
       ? "bg-[#FEE2E2] text-[#B91C1C] border border-[#FCA5A5]"
-      : normalizedStatus === "PENDING_ADMIN" ||
-          normalizedStatus === "PENDING_BUYER_REVIEW" ||
-          normalizedStatus === "PAYMENT_PENDING_REVIEW" ||
-          normalizedStatus === "QUOTED"
+      : kind === "pending_review"
         ? "bg-[#FFEAD5] text-[#C2410C] border border-[#FDBA74]"
-        : normalizedStatus === "ACTIVE"
+        : kind === "service_fee_paid"
           ? "bg-[#DCFCE7] text-green border border-[#86EFAC]"
-          : normalizedStatus === "SOLD" || normalizedStatus === "PARTIAL_SOLD"
+          : kind === "sold"
             ? "bg-[#DCFCE7] text-green border border-[#86EFAC]"
-            : "bg-white text-gray border border-gray/15";
+            : "bg-[#DCFCE7] text-green-400 border border-[#C3F7D8]"; // live
 
   return (
     <span className={`text-xs font-bold px-12 py-1 rounded-full ${cls}`}>
