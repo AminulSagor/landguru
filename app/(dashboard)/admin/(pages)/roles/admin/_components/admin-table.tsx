@@ -24,8 +24,8 @@ export default function AdminTable({
   onDelete: (id: string) => void;
 }) {
   const router = useRouter();
-  const onDetailsPage = () => {
-    router.push("/admin/roles/admin/details/1234");
+  const onDetailsPage = (id: string) => {
+    router.push(`/admin/roles/admin/details/${id}`);
   };
   return (
     <div className="w-full overflow-x-auto">
@@ -74,7 +74,7 @@ export default function AdminTable({
               onEdit={() => onEdit(r.id)}
               onKey={() => onKey(r.id)}
               onDelete={() => onDelete(r.id)}
-              onClick={onDetailsPage}
+              onClick={() => onDetailsPage(r.id)}
             />
           ))}
         </tbody>

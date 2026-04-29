@@ -5,6 +5,11 @@ export type AdminMiniStat = {
   helperLeft?: string;
   helperRight?: string;
   accent?: "blue" | "purple" | "orange" | "green";
+  // optional backend-provided numeric fields for richer display
+  soldAmount?: number; // for `txn` card
+  boughtAmount?: number; // for `txn` card
+  providedCount?: number; // for `services` card
+  ongoingCount?: number; // for `services` card
 };
 
 export type LeaderRow = {

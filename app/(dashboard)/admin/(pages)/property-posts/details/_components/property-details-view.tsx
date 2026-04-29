@@ -555,7 +555,12 @@ export default function PropertyDetailsView({ property }: Props) {
           <ChosenServicesCard data={details.chosenServices} />
 
           {/*safe + typed */}
-          {serviceProgress ? <ServiceProgressCard data={serviceProgress} /> : null}
+          {serviceProgress ? (
+            <ServiceProgressCard
+              data={serviceProgress}
+              postId={details.header.postRef}
+            />
+          ) : null}
 
           <ServiceFeesCard data={details.serviceFees} />
 

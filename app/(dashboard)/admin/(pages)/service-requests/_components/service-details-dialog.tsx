@@ -3,9 +3,8 @@
 import React, { useMemo, useState } from "react";
 import Dialog from "@/components/dialogs/dialog";
 import Card from "@/components/cards/card";
-import Button from "@/components/buttons/button";
 import { cn } from "@/lib/utils";
-import { Download, Eye, X } from "lucide-react";
+import { Download, Eye } from "lucide-react";
 import { ServiceDetails } from "@/app/(dashboard)/admin/types/service-request.types";
 
 function Avatar({ name }: { name: string }) {
@@ -126,6 +125,9 @@ export default function ServiceDetailsDialog({
   isSubmitting?: boolean;
 }) {
   const [feedback, setFeedback] = useState("");
+  const deliverableUrl = details.finalDeliverable.fileUrl;
+  const actionClassName =
+    "grid h-9 w-9 place-items-center rounded-lg border border-gray/15 bg-white text-gray hover:bg-secondary";
 
   const header = useMemo(() => {
     return (
@@ -201,20 +203,45 @@ export default function ServiceDetailsDialog({
               </div>
 
               <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  className="grid h-9 w-9 place-items-center rounded-lg border border-gray/15 bg-white text-gray hover:bg-secondary"
-                  aria-label="Preview"
-                >
-                  <Eye className="h-4 w-4" />
-                </button>
-                <button
-                  type="button"
-                  className="grid h-9 w-9 place-items-center rounded-lg border border-gray/15 bg-white text-gray hover:bg-secondary"
-                  aria-label="Download"
-                >
-                  <Download className="h-4 w-4" />
-                </button>
+                {deliverableUrl ? (
+                  <a
+                    href={deliverableUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={actionClassName}
+                    aria-label="Preview"
+                  >
+                    <Eye className="h-4 w-4" />
+                  </a>
+                ) : (
+                  <button
+                    type="button"
+                    disabled
+                    className={cn(actionClassName, "cursor-not-allowed opacity-50")}
+                    aria-label="Preview"
+                  >
+                    <Eye className="h-4 w-4" />
+                  </button>
+                )}
+                {deliverableUrl ? (
+                  <a
+                    href={deliverableUrl}
+                    download={details.finalDeliverable.fileName}
+                    className={actionClassName}
+                    aria-label="Download"
+                  >
+                    <Download className="h-4 w-4" />
+                  </a>
+                ) : (
+                  <button
+                    type="button"
+                    disabled
+                    className={cn(actionClassName, "cursor-not-allowed opacity-50")}
+                    aria-label="Download"
+                  >
+                    <Download className="h-4 w-4" />
+                  </button>
+                )}
               </div>
             </div>
           </Card>
@@ -224,6 +251,18 @@ export default function ServiceDetailsDialog({
           <h4 className="text-sm font-semibold text-black">
             Admin Feedback / Revision Request
           </h4>
+
+          {details.lastFeedback ? (
+            <Card className="mt-3 border border-gray/15 bg-white p-4">
+              <div className="text-xs font-semibold text-gray">Last feedback</div>
+              <p className="mt-2 text-sm text-black">
+                {details.lastFeedback.message}
+              </p>
+              <p className="mt-2 text-xs text-gray">
+                {details.lastFeedback.timeLabel}
+              </p>
+            </Card>
+          ) : null}
 
           <textarea
             value={feedback}

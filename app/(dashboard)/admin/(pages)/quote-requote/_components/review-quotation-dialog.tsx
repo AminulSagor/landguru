@@ -14,6 +14,7 @@ import {
   getAdminSellPostNegotiationReviewDetails,
   rejectAdminSellPostNegotiation,
 } from "@/service/admin/sell-posts/sell-post-negotiations.service";
+import { serviceTypesActiveService } from "@/service/admin/manage/services/active-service-types.service";
 import type {
   SellPostNegotiationCounterPayload,
   SellPostNegotiationItem,
@@ -149,17 +150,28 @@ export default function ReviewQutationDialog({
       .map(humanizeServiceKey);
   }, [reviewDetailsQuery.data?.userChosenServices]);
 
-  const optionalFromApi = useMemo(() => {
-    const chosenServices = reviewDetailsQuery.data?.userChosenServices ?? [];
+  const allServicesQuery = useQuery({
+    queryKey: ["service-types-active"],
+    queryFn: async () => serviceTypesActiveService.getActiveServiceTypes(),
+    enabled: open,
+  });
 
-    return chosenServices
-      .filter((serviceKey) => !MANDATORY_SERVICE_KEYS.has(serviceKey))
-      .map((serviceKey, index) => ({
-        id: `opt-${index + 1}`,
-        label: humanizeServiceKey(serviceKey),
-        checked: true,
+  const optionalFromApi = useMemo(() => {
+    const chosenServicesSet = new Set(
+      reviewDetailsQuery.data?.userChosenServices ?? [],
+    );
+
+    const services = allServicesQuery.data ?? [];
+
+    return services
+      .filter((s) => !s.isMandatory)
+      .map((s) => ({
+        id: s.id,
+        label: s.name,
+        checked: chosenServicesSet.has(s.serviceKey),
+        disabled: !s.isActive,
       }));
-  }, [reviewDetailsQuery.data?.userChosenServices]);
+  }, [allServicesQuery.data, reviewDetailsQuery.data?.userChosenServices]);
 
   const { register, handleSubmit, reset } = useForm<ReviewQuotationFormValues>({
     defaultValues: {

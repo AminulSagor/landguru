@@ -66,12 +66,15 @@ export const buildQueryString = (params: {
   return query.toString();
 };
 
-export const formatCurrency = (amount: number | null, symbol = "৳"): string => {
-  if (amount === null) {
+export const formatCurrency = (
+  amount?: number | null,
+  symbol = "৳",
+): string => {
+  if (amount == null || !Number.isFinite(Number(amount))) {
     return `${symbol} 0`;
   }
 
-  return `${symbol} ${amount.toLocaleString()}`;
+  return `${symbol} ${Number(amount).toLocaleString()}`;
 };
 
 export const getInitials = (name: string): string => {

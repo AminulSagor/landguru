@@ -16,7 +16,6 @@ export type AssignAgentAgent = {
   role: string;
   phone: string;
   avatarUrl?: string | null;
-  online: boolean;
   matchesZone?: boolean;
   activeJobs?: number;
   activeJobsLabel: string;

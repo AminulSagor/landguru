@@ -10,8 +10,10 @@ import AssignAgentDialog from "@/app/(dashboard)/admin/(pages)/property-posts/de
 
 export default function ServiceProgressCard({
   data,
+  postId,
 }: {
   data: NonNullable<PropertyDetails["serviceProgress"]>;
+  postId?: string;
 }) {
   const [open, setOpen] = useState(false);
   const match = data.completedText.match(/\((\d+)\/(\d+)/);
@@ -124,7 +126,7 @@ export default function ServiceProgressCard({
           </table>
         </div>
       </div>
-      <AssignAgentDialog open={open} onOpenChange={setOpen} />
+      <AssignAgentDialog open={open} onOpenChange={setOpen} postId={postId} />
     </Card>
   );
 }

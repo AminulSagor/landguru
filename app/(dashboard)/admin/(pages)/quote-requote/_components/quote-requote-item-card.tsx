@@ -199,10 +199,19 @@ type ActionCellProps = {
   item: SellPostNegotiationItem;
   isActionRequired: boolean;
   onReviewRespond: (item: SellPostNegotiationItem) => void;
+  onQuickAccept: (item: SellPostNegotiationItem) => void;
+  isQuickAccepting: boolean;
 };
 
-function ActionCell({ item, isActionRequired, onReviewRespond }: ActionCellProps) {
-  const isDisabled = !isActionRequired;
+function ActionCell({
+  item,
+  isActionRequired,
+  onReviewRespond,
+  onQuickAccept,
+  isQuickAccepting,
+}: ActionCellProps) {
+  const isDisabled = !isActionRequired || isQuickAccepting;
+  const quickAcceptLabel = isQuickAccepting ? "Sending..." : "Quick Accept";
 
   return (
     <div className="flex min-w-[170px] flex-col gap-2">
@@ -218,10 +227,11 @@ function ActionCell({ item, isActionRequired, onReviewRespond }: ActionCellProps
       <button
         type="button"
         disabled={isDisabled}
+        onClick={() => onQuickAccept(item)}
         className="flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-[#B7E4C7] bg-[#EAF9EF] px-4 text-sm font-semibold text-[#157F3D] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
       >
         <CircleCheck size={16} />
-        <span>Quick Accept</span>
+        <span>{quickAcceptLabel}</span>
       </button>
     </div>
   );
@@ -231,12 +241,16 @@ type QuoteRequoteItemCardProps = {
   item: SellPostNegotiationItem;
   isActionRequired: boolean;
   onReviewRespond: (item: SellPostNegotiationItem) => void;
+  onQuickAccept: (item: SellPostNegotiationItem) => void;
+  isQuickAccepting: boolean;
 };
 
 export default function QuoteRequoteItemCard({
   item,
   isActionRequired,
   onReviewRespond,
+  onQuickAccept,
+  isQuickAccepting,
 }: QuoteRequoteItemCardProps) {
   return (
     <tr className="border-b border-gray/15 last:border-b-0">
@@ -261,6 +275,8 @@ export default function QuoteRequoteItemCard({
           item={item}
           isActionRequired={isActionRequired}
           onReviewRespond={onReviewRespond}
+          onQuickAccept={onQuickAccept}
+          isQuickAccepting={isQuickAccepting}
         />
       </td>
     </tr>

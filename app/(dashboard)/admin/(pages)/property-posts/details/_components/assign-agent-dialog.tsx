@@ -2,86 +2,147 @@
 
 import React, { useMemo, useState } from "react";
 import { Search, MapPin, FileText, Calendar, CheckCircle2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import Dialog from "@/components/dialogs/dialog";
 import Card from "@/components/cards/card";
 import Button from "@/components/buttons/button";
 import { cn } from "@/lib/utils";
+import { adminZoneAgentsService } from "@/service/admin/agent/admin-zone-agents.service";
+import { getToken } from "@/utils/cookies.utils";
+import type { AdminZoneAgentItem } from "@/types/admin/agent-list/admin-zone-agents.types";
 
 type Agent = {
   id: string;
   name: string;
   role: string;
   phone: string;
+  activeJobs?: number;
   activeJobsText: string;
   activeJobsTone?: "green" | "blue" | "orange";
   matchesZone?: boolean;
   recommended?: boolean;
 };
 
+function decodeJwtPayload(token: string): Record<string, unknown> | null {
+  if (typeof window === "undefined" || typeof atob === "undefined") {
+    return null;
+  }
+
+  const parts = token.split(".");
+
+  if (parts.length < 2) return null;
+
+  const payload = parts[1];
+  const normalized = payload.replace(/-/g, "+").replace(/_/g, "/");
+  const padded = normalized.padEnd(
+    normalized.length + (4 - (normalized.length % 4)) % 4,
+    "=",
+  );
+
+  try {
+    return JSON.parse(atob(padded)) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+}
+
+function getAdminIdFromToken(token: string | null): string | null {
+  if (!token) return null;
+
+  const payload = decodeJwtPayload(token);
+  const sub = payload?.sub;
+  const id = payload?.id;
+
+  if (typeof sub === "string") return sub;
+  if (typeof id === "string") return id;
+
+  return null;
+}
+
+function toActiveJobsTone(activeJobs: number): Agent["activeJobsTone"] {
+  if (activeJobs === 0) return "blue";
+  if (activeJobs <= 1) return "green";
+  return "orange";
+}
+
+function mapAdminAgent(agent: AdminZoneAgentItem): Agent {
+  const activeJobs = Number(agent.currentActiveJobs ?? 0);
+
+  return {
+    id: agent.id,
+    name: agent.name,
+    role: agent.role,
+    phone: agent.phone,
+    activeJobs,
+    activeJobsText:
+      activeJobs === 1
+        ? "Active Jobs: 1 (Low)"
+        : `Active Jobs: ${activeJobs}`,
+    activeJobsTone: toActiveJobsTone(activeJobs),
+  };
+}
+
 export default function AssignAgentDialog({
   open,
   onOpenChange,
   postId = "POST-1044",
+  adminId,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   postId?: string;
+  adminId?: string;
 }) {
   const [tab, setTab] = useState<"recommended" | "lowest" | "closest">(
     "recommended",
   );
   const [q, setQ] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
 
-  const agents: Agent[] = useMemo(
-    () => [
-      {
-        id: "1",
-        name: "Mr. Karim",
-        role: "Senior Surveyor",
-        phone: "+880 1711-234567",
-        activeJobsText: "Active Jobs: 1 (Low)",
-        activeJobsTone: "green",
-        matchesZone: true,
-        recommended: true,
-      },
-      {
-        id: "2",
-        name: "Mr. Ahmed",
-        role: "Surveyor",
-        phone: "+880 1611-998877",
-        activeJobsText: "Active Jobs: 0",
-        activeJobsTone: "blue",
-      },
-      {
-        id: "3",
-        name: "Mr. Farhan",
-        role: "Surveyor",
-        phone: "+880 1722-111222",
-        activeJobsText: "Active Jobs: 2",
-        activeJobsTone: "orange",
-      },
-    ],
-    [],
+  const resolvedAdminId = useMemo(
+    () => adminId ?? getAdminIdFromToken(getToken()),
+    [adminId, open],
   );
 
-  const filtered = useMemo(() => {
-    const s = q.trim().toLowerCase();
-    let list = agents.filter(
-      (a) =>
-        !s ||
-        a.name.toLowerCase().includes(s) ||
-        a.role.toLowerCase().includes(s),
-    );
+  const postLabel = postId.startsWith("#") ? postId : `#${postId}`;
 
-    if (tab === "recommended")
-      list = list.sort(
-        (a, b) => Number(!!b.recommended) - Number(!!a.recommended),
+  React.useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setDebouncedQuery(q.trim());
+    }, 350);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [q]);
+
+  const agentsQuery = useQuery({
+    queryKey: ["admin-zone-agents", resolvedAdminId, debouncedQuery],
+    queryFn: () =>
+      adminZoneAgentsService.getAdminZoneAgents({
+        adminId: resolvedAdminId as string,
+        page: 1,
+        limit: 10,
+        role: "surveyor",
+        ...(debouncedQuery ? { search: debouncedQuery } : {}),
+      }),
+    enabled: open && Boolean(resolvedAdminId),
+    placeholderData: (previousData) => previousData,
+  });
+  const agents = useMemo(() => {
+    const sourceAgents = agentsQuery.data?.data ?? [];
+    let list = sourceAgents.map(mapAdminAgent);
+
+    if (tab === "lowest") {
+      list = [...list].sort(
+        (a, b) => (a.activeJobs ?? 0) - (b.activeJobs ?? 0),
       );
-    if (tab === "lowest") list = list; // design-only
-    if (tab === "closest") list = list; // design-only
+    }
 
     return list;
-  }, [agents, q, tab]);
+  }, [agentsQuery.data?.data, tab]);
+
+  const isLoading = agentsQuery.isLoading;
+  const hasError = agentsQuery.isError;
+  const showEmpty = agentsQuery.isFetched && agents.length === 0;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange} size="xl">
@@ -91,7 +152,7 @@ export default function AssignAgentDialog({
           <div className="space-y-1">
             <p className="text-lg font-semibold text-gray">
               Assign Agent for{" "}
-              <span className="text-primary font-semibold">#{postId}</span>
+              <span className="text-primary font-semibold">{postLabel}</span>
             </p>
             <p className="text-xs text-gray">
               Select the best available agent and specify requirements.
@@ -219,9 +280,26 @@ export default function AssignAgentDialog({
 
               {/* list */}
               <div className="space-y-3">
-                {filtered.map((a, idx) => (
-                  <AgentRow key={a.id} agent={a} highlight={idx === 0} />
-                ))}
+                {isLoading ? (
+                  <p className="text-xs text-gray">Loading agents...</p>
+                ) : null}
+                {!isLoading && hasError ? (
+                  <p className="text-xs text-[#EF4444]">
+                    Unable to load agents.
+                  </p>
+                ) : null}
+                {!isLoading && !hasError && showEmpty ? (
+                  <p className="text-xs text-gray">No agents found.</p>
+                ) : null}
+                {!isLoading && !hasError
+                  ? agents.map((a, idx) => (
+                      <AgentRow
+                        key={a.id}
+                        agent={a}
+                        highlight={tab === "recommended" && idx === 0}
+                      />
+                    ))
+                  : null}
               </div>
             </div>
 
@@ -245,7 +323,7 @@ export default function AssignAgentDialog({
                   </div>
                 </div>
 
-                <div className="space-y-2">
+                {/* <div className="space-y-2">
                   <p className="text-xs font-semibold tracking-wide text-gray">
                     Auto-reassign if not accepted
                   </p>
@@ -268,7 +346,7 @@ export default function AssignAgentDialog({
                     The request will be automatically dispatched to the next
                     best available agent if not accepted within the timeframe.
                   </p>
-                </div>
+                </div> */}
               </div>
             </div>
           </div>
@@ -361,10 +439,9 @@ function AgentRow({ agent, highlight }: { agent: Agent; highlight?: boolean }) {
         highlight ? "border-primary/30 bg-primary/5" : "border-gray/15",
       )}
     >
-      <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3">
         <div className="relative">
           <div className="h-12 w-12 rounded-full bg-gray/10" />
-          <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-green" />
         </div>
 
         <div className="space-y-1">

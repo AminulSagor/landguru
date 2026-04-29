@@ -1,6 +1,7 @@
 "use client";
 
-import { Play } from "lucide-react";
+import { Play, Image as ImageIcon } from "lucide-react";
+import { useState } from "react";
 import Card from "@/components/cards/card";
 
 import { PropertyDetails } from "@/app/(dashboard)/admin/types/property.types";
@@ -72,37 +73,89 @@ export default function PostInformationCard({
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
         <div>
-          <p className="text-xs font-extrabold text-gray mb-3">
-            Property Photos
-          </p>
-          <div className="flex items-center gap-3 overflow-x-auto pb-1">
-            {data.media.photos.map((p, idx) => (
-              <div
-                key={idx}
-                className="h-16 w-24 rounded-lg overflow-hidden border border-gray/15 bg-secondary shrink-0"
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={p.url}
-                  alt={`photo-${idx}`}
-                  className="h-full w-full object-cover"
-                />
+          <p className="text-xs font-extrabold text-gray mb-3">Property Photos</p>
+          {data.media.photos && data.media.photos.length > 0 ? (
+            <PhotosGallery photos={data.media.photos} />
+          ) : (
+            <div className="h-48 w-full rounded-lg border border-gray/15 bg-secondary flex items-center justify-center text-sm text-gray">
+              <div className="flex items-center gap-2">
+                <ImageIcon size={18} />
+                <span>No images available</span>
               </div>
-            ))}
-          </div>
+            </div>
+          )}
         </div>
 
         <div>
-          <p className="text-xs font-extrabold text-gray mb-3">
-            Property Video
-          </p>
-          <div className="h-20 max-w-54 rounded-lg border border-gray/15 bg-secondary flex items-center justify-center">
-            <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center">
-              <Play size={16} className="text-white" />
+          <p className="text-xs font-extrabold text-gray mb-3">Property Video</p>
+          {data.media.video?.url ? (
+            <div className="h-40 w-full rounded-lg border border-gray/15 bg-black overflow-hidden flex items-center justify-center">
+              <video
+                controls
+                src={data.media.video.url}
+                poster={data.media.photos?.[0]?.url}
+                className="h-full w-full object-contain bg-black"
+              />
             </div>
-          </div>
+          ) : (
+            <div className="h-20 max-w-54 rounded-lg border border-gray/15 bg-secondary flex items-center justify-center">
+              <div className="flex items-center gap-3 text-sm text-gray">
+                <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center">
+                  <Play size={16} className="text-white" />
+                </div>
+                <span>No video available</span>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </Card>
+  );
+}
+
+function PhotosGallery({ photos }: { photos: { url: string }[] }) {
+  const [modalIndex, setModalIndex] = useState<number | null>(null);
+
+  return (
+    <div>
+      <div className="flex items-center gap-3 overflow-x-auto pb-1 mt-3">
+        {photos.map((p, idx) => (
+          <button
+            key={idx}
+            onClick={() => setModalIndex(idx)}
+            className="h-16 w-24 rounded-lg overflow-hidden border border-gray/15 bg-secondary shrink-0 focus:outline-none"
+            aria-label={`Open photo ${idx + 1}`}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={p.url} alt={`thumb-${idx}`} className="h-full w-full object-cover" />
+          </button>
+        ))}
+      </div>
+
+      {modalIndex !== null && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setModalIndex(null)}
+        >
+          <div className="relative max-w-[90%] max-h-[90%]" onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={() => setModalIndex(null)}
+              className="absolute right-2 top-2 h-8 w-8 rounded-full bg-white flex items-center justify-center text-gray shadow"
+              aria-label="Close"
+            >
+              ×
+            </button>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={photos[modalIndex].url}
+              alt={`photo-${modalIndex}`}
+              className="max-h-[80vh] max-w-[90vw] object-contain"
+            />
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

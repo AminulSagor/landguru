@@ -1,10 +1,16 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 import Button from "@/components/buttons/button";
 import Card from "@/components/cards/card";
 import { Camera, ChevronDown, User, Lock } from "lucide-react";
 import Dialog from "@/components/dialogs/dialog";
+import { adminCreateService } from "@/service/admin/admin-list/create-admin.service";
+import { operationalZonesService } from "@/service/admin/operational-zones.service";
+import type { AdminCreatePayload } from "@/types/admin/admin-list/admin-create.types";
+import type { OperationalZone } from "@/types/operational-zones/operational-zone.types";
 
 type RoleLevel = "location";
 
@@ -28,14 +34,37 @@ export default function AdminOnBoardDialog({
   const [thana, setThana] = useState("");
   const [street, setStreet] = useState("");
 
-  const [zone] = useState("Dhaka - Uttara Zone");
+  const [selectedZoneId, setSelectedZoneId] = useState<string | undefined>(undefined);
   const [roleLevel, setRoleLevel] = useState<RoleLevel>("location");
 
   const [password, setPassword] = useState("LandGuru@2026#XYZ");
 
+  const { data: zonesData, isLoading: isZonesLoading } = useQuery({
+    queryKey: ["operational-zones"],
+    queryFn: () => operationalZonesService.getAllZones(),
+  });
+
   const canSubmit = useMemo(() => {
     return fullName.trim() && phone.trim() && email.trim();
   }, [fullName, phone, email]);
+
+  const queryClient = useQueryClient();
+
+  const createMutation = useMutation({
+    mutationFn: (payload: AdminCreatePayload) =>
+      adminCreateService.createAdmin(payload),
+    onSuccess: (response) => {
+      toast.success(response?.message ?? "Admin created");
+      queryClient.invalidateQueries({ queryKey: ["admin-list"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-summary-metrics"] });
+      onOpenChange(false);
+    },
+    onError: (error: any) => {
+      const msg =
+        error?.response?.data?.message || error?.message || "Failed to create admin";
+      toast.error(msg);
+    },
+  });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange} size="lg">
@@ -144,16 +173,28 @@ export default function AdminOnBoardDialog({
           <div className="mt-5">
             <p className={sectionCls}>ASSIGN LOCATION</p>
 
-            <div className="mt-2 flex h-11 w-full items-center justify-between rounded-xl border border-gray/15 bg-white px-4">
-              <p className="text-sm font-medium text-black uppercase">
-                {zone}
-              </p>
-              <ChevronDown className="h-4 w-4 text-gray" />
+            <div className="mt-2">
+              {isZonesLoading ? (
+                <div className="h-11 flex items-center px-4 rounded-xl border border-gray/15 bg-white text-sm text-gray">Loading zones...</div>
+              ) : (
+                <select
+                  value={selectedZoneId ?? ""}
+                  onChange={(e) => setSelectedZoneId(e.target.value || undefined)}
+                  className="mt-2 h-11 w-full rounded-xl border border-gray/15 bg-white px-4 text-sm text-black outline-none"
+                >
+                  <option value="">Select an operational zone</option>
+                  {zonesData?.zones?.map((z: OperationalZone) => (
+                    <option key={z.id} value={z.id}>
+                      {z.zoneName} — {z.district}
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
 
             <div className="mt-3 flex items-center justify-between rounded-xl bg-[#E9F2FF] px-4 py-3">
               <p className="text-sm font-medium text-black">
-                Selected: {zone}
+                Selected: {zonesData?.zones?.find((z) => z.id === selectedZoneId)?.zoneName ?? "None"}
               </p>
               <span className="rounded-md bg-primary px-3 py-1 text-[11px] font-semibold text-white">
                 ACTIVE
@@ -218,8 +259,29 @@ export default function AdminOnBoardDialog({
           Cancel
         </button>
 
-        <Button variant="primary" size="base" disabled={!canSubmit}>
-          Create Admin Profile
+        <Button
+          variant="primary"
+          size="base"
+          disabled={!canSubmit || createMutation.isPending}
+          onClick={() => {
+            if (!canSubmit || createMutation.isPending) return;
+
+            const payload: AdminCreatePayload = {
+              name: fullName.trim(),
+              phone: phone.trim(),
+              email: email.trim(),
+              division: division || undefined,
+              district: district || undefined,
+              thana: thana || undefined,
+              fullAddress: street || undefined,
+              ...(selectedZoneId ? { adminZoneId: selectedZoneId } : {}),
+              password: password || undefined,
+            };
+
+            createMutation.mutate(payload);
+          }}
+        >
+          {createMutation.isPending ? "Creating..." : "Create Admin Profile"}
         </Button>
       </div>
     </Dialog>

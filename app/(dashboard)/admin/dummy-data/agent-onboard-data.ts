@@ -18,3 +18,15 @@ export const serviceOptions: AgentServiceOption[] = [
   { id: "risk_analysis", title: "Risk Analysis" },
   { id: "court_case", title: "Court Case" },
 ];
+
+// DEPRECATION NOTICE
+// This file contains demo data only. Replace usages with live API calls.
+export const __IS_DEMO = true;
+
+export async function getLiveOrDemo(..._args: any[]): Promise<{ roles: AgentRole[]; options: AgentServiceOption[] }> {
+  if (typeof window !== "undefined") {
+    // eslint-disable-next-line no-console
+    console.warn("[DEMO] Using agent-onboard demo data — replace with live API.");
+  }
+  return { roles: agentRoles, options: serviceOptions };
+}

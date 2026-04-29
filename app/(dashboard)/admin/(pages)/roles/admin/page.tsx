@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 import Card from "@/components/cards/card";
 import Button from "@/components/buttons/button";
 import { Plus } from "lucide-react";
 import {
+  AdminActivityStatus,
   AdminManageStats,
   AdminRow,
 } from "@/app/(dashboard)/admin/types/admin-list-type";
@@ -14,8 +16,19 @@ import AdminToolbar from "@/app/(dashboard)/admin/(pages)/roles/admin/_component
 import AdminTable from "@/app/(dashboard)/admin/(pages)/roles/admin/_components/admin-table";
 import BulkActionBar from "@/app/(dashboard)/admin/(pages)/roles/admin/_components/bulk-action-bar";
 import AdminOnBoardDialog from "@/app/(dashboard)/admin/(pages)/roles/admin/_components/admin-onboard-dialog";
-import { agentSummaryService } from "@/service/admin/agent/agent-summary.service";
+import EditAdminDialog from "@/app/(dashboard)/admin/(pages)/roles/admin/_components/edit-admin-dialog";
+import AdminResetCredentialsDialog from "@/app/(dashboard)/admin/(pages)/reset-requests/_components/admin-reset-credentials-dialog";
+import type { ResetRequest } from "@/app/(dashboard)/admin/types/admin-reset-types";
+import { adminListService } from "@/service/admin/admin-list/admin-list.service";
+import { adminSummaryMetricsService } from "@/service/admin/admin-list/admin-summary-metrics.service";
+import { adminStatusService } from "@/service/admin/admin-list/admin-status.service";
+import { adminBulkStatusService } from "@/service/admin/admin-list/admin-bulk-status.service";
+import { adminDeleteService } from "@/service/admin/admin-list/admin-delete.service";
+import { adminUpdateService } from "@/service/admin/admin-list/admin-update.service";
 import { operationalZonesListService } from "@/service/admin/manage/locations/operational-zones-list.service";
+import type { AdminListItem } from "@/types/admin/admin-list/admin-list.types";
+import type { AdminSummaryMetricsData } from "@/types/admin/admin-list/admin-summary-metrics.types";
+import type { UpdateAdminPayload } from "@/types/admin/admin-list/admin-update.types";
 
 const SEARCH_DEBOUNCE_MS = 350;
 const PAGE_SIZE = 10;
@@ -26,13 +39,100 @@ const DEFAULT_ADMIN_STATS: AdminManageStats = {
   totalWorkforce: 0,
 };
 
+function getErrorMessage(error: unknown): string {
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "response" in error &&
+    typeof (error as { response?: { data?: { message?: string } } }).response
+      ?.data?.message === "string"
+  ) {
+    return (error as { response?: { data?: { message?: string } } }).response!
+      .data!.message!;
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return "Something went wrong.";
+}
+
+function toActivityStatus(
+  value: string | null | undefined,
+  isActive?: boolean,
+): AdminActivityStatus {
+  if (value) {
+    const normalized = value.toLowerCase();
+    if (
+      normalized === "online" ||
+      normalized === "offline" ||
+      normalized === "suspended"
+    ) {
+      return normalized as AdminActivityStatus;
+    }
+  }
+
+  if (isActive === false) {
+    return "suspended";
+  }
+
+  return "offline";
+}
+
+function toLocationTone(item: AdminListItem): AdminRow["locationTone"] {
+  if (item.isActive === false) {
+    return "gray";
+  }
+
+  const suspendedCount =
+    item.workforceSuspended ?? item.workforceSupervision?.inactiveAgents ?? 0;
+
+  return suspendedCount > 0 ? "purple" : "blue";
+}
+
+function mapAdminRow(item: AdminListItem): AdminRow {
+  const workforceCount =
+    item.workforceCount ?? item.workforceSupervision?.totalAgents ?? 0;
+  const workforceActive =
+    item.workforceActive ?? item.workforceSupervision?.activeAgents ?? 0;
+  const workforceSuspended =
+    item.workforceSuspended ?? item.workforceSupervision?.inactiveAgents ?? 0;
+  const lastLoginText = item.lastLoginText?.trim()
+    ? item.lastLoginText
+    : "Last login: -";
+
+  return {
+    id: item.id,
+    name: item.fullName,
+    avatar: item.photoUrl ?? undefined,
+    assignedLocation: item.assignedLocation ?? "Unknown",
+    locationTone: toLocationTone(item),
+    phone: item.phone,
+    email: item.email,
+    workforceCount,
+    workforceActive,
+    workforceSuspended,
+    activityStatus: toActivityStatus(item.activityStatus, item.isActive),
+    lastLoginText,
+    accountEnabled: item.accountEnabled ?? item.isActive ?? true,
+  };
+}
+
 export default function AdminManageAdminsPage() {
-  const [rows, setRows] = useState<AdminRow[]>([]);
+  const queryClient = useQueryClient();
+
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [tab, setTab] = useState<"active" | "suspended">("active");
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [page, setPage] = useState(1);
+  const [selectedZone, setSelectedZone] = useState("");
+  const [openOnBoardDialog, setOnBoardDialog] = useState(false);
+  const [editingAdmin, setEditingAdmin] = useState<AdminRow | null>(null);
+  const [openEditDialog, setOpenEditDialog] = useState(false);
+  const [resetRequestData, setResetRequestData] = useState<ResetRequest | null>(null);
+  const [openResetDialog, setOpenResetDialog] = useState(false);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -43,63 +143,92 @@ export default function AdminManageAdminsPage() {
     return () => window.clearTimeout(timeoutId);
   }, [query]);
 
-  const { data: agentSummaryResponse } = useQuery({
-    queryKey: ["admin-agent-summary"],
-    queryFn: () => agentSummaryService.getAdminAgentSummary(),
+  useEffect(() => {
+    setPage(1);
+  }, [tab, selectedZone]);
+
+  useEffect(() => {
+    setSelectedIds([]);
+  }, [tab, debouncedQuery, selectedZone]);
+
+  const summaryQuery = useQuery({
+    queryKey: ["admin-summary-metrics"],
+    queryFn: () => adminSummaryMetricsService.getSummaryMetrics(),
+  });
+
+  const listQuery = useQuery({
+    queryKey: ["admin-list", page, PAGE_SIZE, debouncedQuery, selectedZone, tab],
+    queryFn: () =>
+      adminListService.getAdminList({
+        page,
+        limit: PAGE_SIZE,
+        ...(debouncedQuery ? { search: debouncedQuery } : {}),
+        ...(selectedZone ? { zone: selectedZone } : {}),
+        isActive: tab === "active",
+      }),
+    placeholderData: (previousData) => previousData,
   });
 
   const { data: operationalZonesResponse } = useQuery({
-    queryKey: ["admin-operational-zones-summary"],
+    queryKey: ["admin-operational-zones"],
     queryFn: () =>
       operationalZonesListService.getOperationalZones({
         page: 1,
         limit: 500,
       }),
+    staleTime: 5 * 60 * 1000,
   });
 
-  const filtered = useMemo(() => {
-    const q = debouncedQuery.toLowerCase();
-    const byTab =
-      tab === "active"
-        ? rows.filter((r) => r.activityStatus !== "suspended")
-        : rows.filter((r) => r.activityStatus === "suspended");
+  const zoneOptions = useMemo(() => {
+    const values = (operationalZonesResponse?.zones ?? [])
+      .map((zone) => zone.zoneName.trim())
+      .filter(Boolean);
 
-    if (!q) return byTab;
+    return Array.from(new Set(values)).sort((a, b) => a.localeCompare(b));
+  }, [operationalZonesResponse?.zones]);
 
-    return byTab.filter((r) => {
-      return (
-        r.name.toLowerCase().includes(q) ||
-        r.id.toLowerCase().includes(q) ||
-        r.phone.toLowerCase().includes(q)
-      );
-    });
-  }, [rows, tab, debouncedQuery]);
+  const zoneSelectOptions = useMemo(
+    () =>
+      (operationalZonesResponse?.zones ?? [])
+        .map((zone) => ({ id: zone.id, name: zone.zoneName.trim() }))
+        .filter((zone) => zone.name),
+    [operationalZonesResponse?.zones],
+  );
 
-  const totalResults = filtered.length;
-  const totalPages = Math.max(1, Math.ceil(totalResults / PAGE_SIZE));
-  const safePage = Math.min(page, totalPages);
-
-  const visible = useMemo(() => {
-    const start = (safePage - 1) * PAGE_SIZE;
-    return filtered.slice(start, start + PAGE_SIZE);
-  }, [filtered, safePage]);
+  const rows = useMemo(
+    () => (listQuery.data?.data ?? []).map(mapAdminRow),
+    [listQuery.data?.data],
+  );
 
   const adminStats = useMemo<AdminManageStats>(() => {
-    const activeLocations =
-      operationalZonesResponse?.zones.filter((zone) => zone.isActive).length ??
-      DEFAULT_ADMIN_STATS.activeLocations;
-    const totalWorkforce =
-      agentSummaryResponse?.data.totalAgents ?? DEFAULT_ADMIN_STATS.totalWorkforce;
+    const data: AdminSummaryMetricsData | undefined = summaryQuery.data?.data;
+    if (!data) {
+      return DEFAULT_ADMIN_STATS;
+    }
 
     return {
-      totalAdmins: rows.length,
-      activeLocations,
-      totalWorkforce,
+      totalAdmins: Number(data.totalAdmins ?? 0),
+      activeLocations: Number(data.activeLocations ?? 0),
+      totalWorkforce: Number(data.totalWorkforce ?? 0),
     };
-  }, [agentSummaryResponse?.data.totalAgents, operationalZonesResponse?.zones, rows.length]);
+  }, [summaryQuery.data?.data]);
+
+  const meta = listQuery.data?.meta;
+  const totalResults = meta?.total ?? 0;
+  const totalPages = meta?.totalPages ?? 1;
+  const safePage = Math.min(page, totalPages);
+  const startIndex = totalResults === 0 ? 0 : (safePage - 1) * PAGE_SIZE + 1;
+  const endIndex =
+    totalResults === 0 ? 0 : startIndex + Math.max(rows.length - 1, 0);
+
+  useEffect(() => {
+    if (page > totalPages) {
+      setPage(Math.max(totalPages, 1));
+    }
+  }, [page, totalPages]);
 
   const allVisibleSelected =
-    visible.length > 0 && visible.every((r) => selectedIds.includes(r.id));
+    rows.length > 0 && rows.every((r) => selectedIds.includes(r.id));
 
   function toggleSelect(id: string) {
     setSelectedIds((prev) =>
@@ -110,17 +239,114 @@ export default function AdminManageAdminsPage() {
   function toggleSelectAllVisible() {
     if (allVisibleSelected) {
       setSelectedIds((prev) =>
-        prev.filter((id) => !visible.some((r) => r.id === id)),
+        prev.filter((id) => !rows.some((r) => r.id === id)),
       );
     } else {
       setSelectedIds((prev) => {
-        const add = visible.map((r) => r.id).filter((id) => !prev.includes(id));
+        const add = rows.map((r) => r.id).filter((id) => !prev.includes(id));
         return [...prev, ...add];
       });
     }
   }
 
-  const [openOnBoardDialog, setOnBoardDialog] = useState(false);
+  const statusMutation = useMutation({
+    mutationFn: ({ adminId, isActive }: { adminId: string; isActive: boolean }) =>
+      adminStatusService.updateAdminStatus(adminId, { isActive }),
+    onSuccess: (response) => {
+      toast.success(response.message || "Admin status updated.");
+      queryClient.invalidateQueries({ queryKey: ["admin-list"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-summary-metrics"] });
+    },
+    onError: (error) => toast.error(getErrorMessage(error)),
+  });
+
+  const bulkStatusMutation = useMutation({
+    mutationFn: ({ adminIds, isActive }: { adminIds: string[]; isActive: boolean }) =>
+      adminBulkStatusService.updateBulkStatus({ adminIds, isActive }),
+    onSuccess: (response) => {
+      toast.success(response.message || "Bulk status updated.");
+      setSelectedIds([]);
+      queryClient.invalidateQueries({ queryKey: ["admin-list"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-summary-metrics"] });
+    },
+    onError: (error) => toast.error(getErrorMessage(error)),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (adminId: string) => adminDeleteService.deleteAdmin(adminId),
+    onSuccess: (response) => {
+      toast.success(response.message || "Admin deleted.");
+      queryClient.invalidateQueries({ queryKey: ["admin-list"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-summary-metrics"] });
+    },
+    onError: (error) => toast.error(getErrorMessage(error)),
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ adminId, payload }: { adminId: string; payload: UpdateAdminPayload }) =>
+      adminUpdateService.updateAdmin(adminId, payload),
+    onSuccess: (response) => {
+      toast.success(response.message || "Admin updated.");
+      setEditingAdmin(null);
+      setOpenEditDialog(false);
+      queryClient.invalidateQueries({ queryKey: ["admin-list"] });
+    },
+    onError: (error) => toast.error(getErrorMessage(error)),
+  });
+
+  const handleEdit = (id: string) => {
+    const match = rows.find((row) => row.id === id);
+    if (!match) {
+      return;
+    }
+
+    setEditingAdmin(match);
+    setOpenEditDialog(true);
+  };
+
+  const handleSaveEdit = (payload: UpdateAdminPayload) => {
+    if (!editingAdmin) {
+      return;
+    }
+
+    updateMutation.mutate({ adminId: editingAdmin.id, payload });
+  };
+
+  const handleDelete = (id: string) => {
+    if (!window.confirm("Delete this admin profile?")) {
+      return;
+    }
+
+    deleteMutation.mutate(id);
+  };
+
+  const handleKey = (id: string) => {
+    const match = rows.find((row) => row.id === id);
+    if (!match) return;
+
+    setResetRequestData({
+      id: match.id,
+      name: match.name,
+      adminId: match.id,
+      avatar: match.avatar ?? "",
+      time: new Date().toISOString(),
+      phone: match.phone ?? "",
+      email: match.email ?? "",
+      zone: match.assignedLocation ?? "",
+    });
+
+    setOpenResetDialog(true);
+  };
+
+  const pageButtons = useMemo(() => {
+    if (totalPages <= 1) {
+      return [safePage];
+    }
+
+    return [safePage, safePage + 1, safePage + 2].filter(
+      (value) => value <= totalPages,
+    );
+  }, [safePage, totalPages]);
 
   return (
     <div className="space-y-4">
@@ -144,6 +370,9 @@ export default function AdminManageAdminsPage() {
         <AdminToolbar
           query={query}
           onQueryChange={setQuery}
+          zone={selectedZone}
+          zoneOptions={zoneOptions}
+          onZoneChange={setSelectedZone}
           tab={tab}
           onTabChange={setTab}
         />
@@ -152,19 +381,17 @@ export default function AdminManageAdminsPage() {
       {/* table */}
       <div className="border border-gray/15 rounded-lg overflow-hidden">
         <AdminTable
-          rows={visible}
+          rows={rows}
           selectedIds={selectedIds}
           allVisibleSelected={allVisibleSelected}
           onToggleAll={toggleSelectAllVisible}
           onToggleOne={toggleSelect}
           onToggleAccount={(id, v) =>
-            setRows((prev) =>
-              prev.map((r) => (r.id === id ? { ...r, accountEnabled: v } : r)),
-            )
+            statusMutation.mutate({ adminId: id, isActive: v })
           }
-          onEdit={(id) => console.log("edit", id)}
-          onKey={(id) => console.log("key", id)}
-          onDelete={(id) => console.log("delete", id)}
+          onEdit={handleEdit}
+            onKey={handleKey}
+          onDelete={handleDelete}
         />
 
         {/* footer */}
@@ -172,10 +399,7 @@ export default function AdminManageAdminsPage() {
           <p className="text-sm font-medium text-gray">
             {totalResults === 0
               ? "Showing 0 to 0 of 0 results"
-              : `Showing ${(safePage - 1) * PAGE_SIZE + 1} to ${Math.min(
-                  safePage * PAGE_SIZE,
-                  totalResults,
-                )} of ${totalResults} results`}
+              : `Showing ${startIndex} to ${endIndex} of ${totalResults} results`}
           </p>
 
           <div className="flex items-center gap-0 overflow-hidden rounded-lg border border-gray/15 bg-white">
@@ -186,15 +410,19 @@ export default function AdminManageAdminsPage() {
             >
               ‹
             </button>
-            <button className="h-9 w-9 bg-primary text-white font-semibold">
-              {safePage}
-            </button>
-            <button className="h-9 w-9 text-gray hover:text-primary">
-              {Math.min(safePage + 1, totalPages)}
-            </button>
-            <button className="h-9 w-9 text-gray hover:text-primary">
-              {Math.min(safePage + 2, totalPages)}
-            </button>
+            {pageButtons.map((value) => (
+              <button
+                key={value}
+                onClick={() => setPage(value)}
+                className={
+                  value === safePage
+                    ? "h-9 w-9 bg-primary text-white font-semibold"
+                    : "h-9 w-9 text-gray hover:text-primary"
+                }
+              >
+                {value}
+              </button>
+            ))}
             <button
               className="h-9 w-9 text-gray hover:text-primary disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
@@ -212,18 +440,16 @@ export default function AdminManageAdminsPage() {
         open={selectedIds.length > 0}
         onClear={() => setSelectedIds([])}
         onTurnOn={() =>
-          setRows((prev) =>
-            prev.map((r) =>
-              selectedIds.includes(r.id) ? { ...r, accountEnabled: true } : r,
-            ),
-          )
+          bulkStatusMutation.mutate({
+            adminIds: selectedIds,
+            isActive: true,
+          })
         }
         onTurnOff={() =>
-          setRows((prev) =>
-            prev.map((r) =>
-              selectedIds.includes(r.id) ? { ...r, accountEnabled: false } : r,
-            ),
-          )
+          bulkStatusMutation.mutate({
+            adminIds: selectedIds,
+            isActive: false,
+          })
         }
       />
 
@@ -231,6 +457,31 @@ export default function AdminManageAdminsPage() {
         onOpenChange={setOnBoardDialog}
         open={openOnBoardDialog}
       />
+
+      <EditAdminDialog
+        open={openEditDialog}
+        onOpenChange={(open) => {
+          setOpenEditDialog(open);
+          if (!open) {
+            setEditingAdmin(null);
+          }
+        }}
+        admin={editingAdmin}
+        zones={zoneSelectOptions}
+        isSubmitting={updateMutation.isPending}
+        onSave={handleSaveEdit}
+      />
+
+      {resetRequestData && (
+        <AdminResetCredentialsDialog
+          open={openResetDialog}
+          onOpenChange={(open) => {
+            setOpenResetDialog(open);
+            if (!open) setResetRequestData(null);
+          }}
+          data={resetRequestData}
+        />
+      )}
     </div>
   );
 }

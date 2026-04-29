@@ -22,6 +22,10 @@ import type {
 import type { ServiceRequestsSummaryData } from "@/types/admin/service-requests/service-requests-summary.types";
 import type { PropertyPostItem } from "@/types/admin/property-post/property.types";
 import type { AvailableAgentItem } from "@/types/admin/service-requests/service-request-assignment.types";
+import type {
+  ServiceRequestReviewDeliverable,
+  ServiceRequestReviewResponse,
+} from "@/types/admin/service-requests/service-request-review.types";
 
 import type { AssignAgentDialogPayload, AssignAgentDocument, AssignAgentSubmitPayload } from "@/app/(dashboard)/admin/types/assign-agent.types";
 import type { ServiceDetails } from "@/app/(dashboard)/admin/types/service-request.types";
@@ -116,13 +120,21 @@ function resolveZoneLabel(post: PropertyPostItem): string {
   return post.fullAddress || post.address?.fullAddress || "Location unavailable";
 }
 
-function getDocuments(post: PropertyPostItem): AssignAgentDocument[] {
-  const urls = [
-    ...(post.documents?.map((item) => item.fileUrl) ?? []),
-    ...(post.deedFiles ?? []),
-    ...(post.khatianFiles ?? []),
-    ...(post.otherFiles ?? []),
-  ].filter(Boolean);
+function getDocuments(
+  post: PropertyPostItem,
+  providedUrls?: string[] | null,
+): AssignAgentDocument[] {
+  const baseUrls =
+    providedUrls !== null && providedUrls !== undefined
+      ? providedUrls
+      : [
+          ...(post.documents?.map((item) => item.fileUrl) ?? []),
+          ...(post.deedFiles ?? []),
+          ...(post.khatianFiles ?? []),
+          ...(post.otherFiles ?? []),
+        ];
+
+  const urls = baseUrls.filter(Boolean) as string[];
 
   return Array.from(new Set(urls)).map((url, index) => {
     const fileName = getFileName(url);
@@ -160,6 +172,96 @@ function toDisplayDate(value?: string | null): string {
   }).format(date);
 }
 
+function toDisplayDateTime(value?: string | null): string {
+  if (!value) {
+    return "Not set";
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  }).format(date);
+}
+
+function getLastActiveLabel(review?: ServiceRequestReviewResponse | null): string {
+  const submittedAt = review?.timings?.submittedAt;
+  if (submittedAt) {
+    return `Submitted: ${toDisplayDateTime(submittedAt)}`;
+  }
+
+  const activityLog = review?.activityLog ?? [];
+  const latestTime = activityLog.reduce((acc, entry) => {
+    const time = Date.parse(entry.date);
+    if (Number.isNaN(time)) {
+      return acc;
+    }
+    return time > acc ? time : acc;
+  }, 0);
+
+  if (latestTime > 0) {
+    return `Last Update: ${toDisplayDateTime(new Date(latestTime).toISOString())}`;
+  }
+
+  return "Last Active: N/A";
+}
+
+function pickLatestDeliverable(
+  deliverables?: ServiceRequestReviewDeliverable[] | null,
+): ServiceRequestReviewDeliverable | null {
+  if (!deliverables?.length) {
+    return null;
+  }
+
+  const sorted = [...deliverables].sort((left, right) => {
+    const leftTime = Date.parse(left.uploadedAt);
+    const rightTime = Date.parse(right.uploadedAt);
+    const safeLeft = Number.isNaN(leftTime) ? 0 : leftTime;
+    const safeRight = Number.isNaN(rightTime) ? 0 : rightTime;
+    return safeLeft - safeRight;
+  });
+
+  return sorted[sorted.length - 1] ?? deliverables[deliverables.length - 1];
+}
+
+function mapReviewActivityLog(
+  review?: ServiceRequestReviewResponse | null,
+): ServiceDetails["activityLog"] | null {
+  const activityLog = review?.activityLog ?? [];
+
+  if (activityLog.length === 0) {
+    return null;
+  }
+
+  return activityLog.map((entry) => {
+    const fileUrl = entry.files?.[0];
+
+    if (fileUrl) {
+      return {
+        kind: "file" as const,
+        title: entry.title,
+        fileName: getFileName(fileUrl),
+        timeLabel: toDisplayDateTime(entry.date),
+      };
+    }
+
+    return {
+      kind: "event" as const,
+      title: entry.title,
+      subtitle: null,
+      timeLabel: toDisplayDateTime(entry.date),
+    };
+  });
+}
+
 function toIsoDate(value: string, fallback?: string): string {
   const candidate = value.trim();
 
@@ -186,30 +288,45 @@ function buildAssignPayload(
     (assignment) => assignment.id === item.service.id,
   );
 
+  const serviceKey =
+    item.serviceKey ??
+    item.service.key ??
+    matchingAssignment?.serviceKey ??
+    item.service.name;
+  const responseDeadline =
+    item.responseDeadline !== undefined
+      ? item.responseDeadline
+      : matchingAssignment?.responseDeadline ?? null;
+  const serviceDescription =
+    item.serviceDescription ??
+    item.service.description ??
+    `Handle ${item.service.name} request for this property post.`;
+  const serviceFeeBDT =
+    item.feeAmount !== undefined
+      ? item.feeAmount ?? 0
+      : matchingAssignment?.feeAmount ?? 0;
+  const autoReassign = item.autoReassign ?? matchingAssignment?.autoReassign ?? false;
+
   return {
     postId: item.parentPost.displayId ?? item.parentPost.id,
     sellPostId: item.parentPost.id,
     assignmentId: item.service.id,
-    serviceKey:
-      matchingAssignment?.serviceKey ?? item.service.key ?? item.service.name,
+    serviceKey,
     serviceName: matchingAssignment?.serviceName ?? item.service.name,
-    zoneLabel: resolveZoneLabel(post),
+    zoneLabel: item.parentPost.location || resolveZoneLabel(post),
     serviceTitle: item.service.name,
-    serviceDesc:
-      matchingAssignment?.serviceName ??
-      `Handle ${item.service.name} request for this property post.`,
-    documents: getDocuments(post),
-    serviceFeeBDT: matchingAssignment?.feeAmount ?? 0,
-    deadlineLabel: toDisplayDate(matchingAssignment?.responseDeadline),
-    responseDeadlineISO: matchingAssignment?.responseDeadline ?? undefined,
-    autoReassign: Boolean(matchingAssignment?.autoReassign),
+    serviceDesc: serviceDescription,
+    documents: getDocuments(post, item.documents),
+    serviceFeeBDT,
+    deadlineLabel: toDisplayDate(responseDeadline),
+    responseDeadlineISO: responseDeadline ?? undefined,
+    autoReassign,
     agents: agents.map((agent) => ({
       id: agent.id,
       name: agent.name,
       role: agent.designation,
       phone: agent.phone,
       avatarUrl: agent.photoUrl,
-      online: true,
       activeJobs: agent.activeJobs,
       activeJobsLabel: `Active Jobs: ${agent.activeJobs} ${agent.activeJobsLabel}`,
       activeTone: toTone(agent.activeJobsLabel),
@@ -227,45 +344,78 @@ function toStatusLabel(status: string): string {
   return "Submitted";
 }
 
-function buildServiceDetails(item: ServiceRequestListItem): ServiceDetails {
-  const statusLabel = toStatusLabel(item.status);
-  const activity = item.latestWorkLog
-    ? [
-        {
-          kind: "event" as const,
-          title: item.latestWorkLog.title,
-          subtitle: "Latest work log from backend",
-          timeLabel: toDisplayDate(item.latestWorkLog.createdAt),
-        },
-      ]
-    : [
-        {
-          kind: "event" as const,
-          title: "No activity log available",
-          subtitle: "Backend did not return activity history for this request",
-          timeLabel: "-",
-        },
-      ];
+function buildServiceDetails(
+  item: ServiceRequestListItem,
+  review?: ServiceRequestReviewResponse | null,
+): ServiceDetails {
+  const statusLabel = toStatusLabel(review?.status ?? item.status);
+  const serviceName = review?.serviceName ?? item.service.name;
+  const reviewActivity = mapReviewActivityLog(review);
+  const activity =
+    reviewActivity ??
+    (item.latestWorkLog
+      ? [
+          {
+            kind: "event" as const,
+            title: item.latestWorkLog.title,
+            subtitle: "Latest work log from backend",
+            timeLabel: toDisplayDate(item.latestWorkLog.createdAt),
+          },
+        ]
+      : [
+          {
+            kind: "event" as const,
+            title: "No activity log available",
+            subtitle: "Backend did not return activity history for this request",
+            timeLabel: "-",
+          },
+        ]);
+
+  const deliverable = pickLatestDeliverable(review?.deliverables ?? undefined);
+  const deliverableFileUrl = deliverable?.files?.[0] ?? null;
+  const deliverableFileName = deliverableFileUrl
+    ? getFileName(deliverableFileUrl)
+    : "No deliverable file available";
+  const deliverableMeta = deliverable?.uploadedAt
+    ? `Uploaded ${toDisplayDateTime(deliverable.uploadedAt)}`
+    : deliverable
+      ? "Uploaded"
+      : "Unavailable";
+
+  const agentName = review?.agent?.name ?? item.assignedAgent?.name ?? "Unassigned";
+  const agentId = review?.agent?.id ?? item.assignedAgent?.id ?? "";
+  const agentAvatar = review?.agent?.photo ?? item.assignedAgent?.photoUrl ?? null;
+  const lastFeedback = review?.lastFeedback?.feedback
+    ? {
+        message: review.lastFeedback.feedback,
+        timeLabel: review.lastFeedback.createdAt
+          ? toDisplayDateTime(review.lastFeedback.createdAt)
+          : "Previously sent",
+      }
+    : null;
 
   return {
-    headerTitle: `Service Details: ${item.service.name}`,
+    headerTitle: `Service Details: ${serviceName}`,
     serviceIdLabel: `#${item.service.displayId ?? item.service.id}-${item.parentPost.displayId ?? item.parentPost.id}`,
     statusChipLabel: statusLabel,
     agent: {
-      id: item.assignedAgent?.id ?? "",
-      name: item.assignedAgent?.name ?? "Unassigned",
+      id: agentId,
+      name: agentName,
       role: "Assigned Agent",
-      phone: "N/A",
-      avatarUrl: item.assignedAgent?.photoUrl,
-      isOnline: false,
-      startedAtLabel: "Started: N/A",
-      lastActiveLabel: "Last Active: N/A",
+      phone: review?.agent?.phone ?? "N/A",
+      avatarUrl: agentAvatar,
+      startedAtLabel: review?.timings?.startedAt
+        ? `Started: ${toDisplayDateTime(review.timings.startedAt)}`
+        : "Started: N/A",
+      lastActiveLabel: getLastActiveLabel(review),
     },
     activityLog: activity,
     finalDeliverable: {
-      fileName: "No deliverable metadata from API",
-      meta: "Unavailable",
+      fileName: deliverableFileName,
+      meta: deliverableMeta,
+      fileUrl: deliverableFileUrl,
     },
+    lastFeedback,
   };
 }
 
@@ -292,6 +442,7 @@ export default function ServiceRequestPage() {
 
   const lastErrorMessageRef = React.useRef<string | null>(null);
   const lastSummaryErrorMessageRef = React.useRef<string | null>(null);
+  const lastDetailsErrorMessageRef = React.useRef<string | null>(null);
 
   React.useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -330,6 +481,18 @@ export default function ServiceRequestPage() {
         sort: sortParam,
       }),
     placeholderData: (previousData) => previousData,
+  });
+
+  const reviewQuery = useQuery({
+    queryKey: ["admin-service-request-review", selected?.service.id],
+    queryFn: () => {
+      if (!selected?.service.id) {
+        throw new Error("Assignment id is missing.");
+      }
+
+      return serviceRequestAssignmentService.getAssignmentReview(selected.service.id);
+    },
+    enabled: openDetails && Boolean(selected?.service.id),
   });
 
   const loadAssignPayloadMutation = useMutation({
@@ -449,6 +612,20 @@ export default function ServiceRequestPage() {
     }
   }, [summaryQuery.error]);
 
+  React.useEffect(() => {
+    if (!reviewQuery.error) {
+      lastDetailsErrorMessageRef.current = null;
+      return;
+    }
+
+    const message = getErrorMessage(reviewQuery.error);
+
+    if (lastDetailsErrorMessageRef.current !== message) {
+      toast.error(message);
+      lastDetailsErrorMessageRef.current = message;
+    }
+  }, [reviewQuery.error]);
+
   const rows = listQuery.data?.data ?? [];
   const meta = listQuery.data?.meta;
 
@@ -487,7 +664,6 @@ export default function ServiceRequestPage() {
           role: "Assigned Agent",
           phone: "N/A",
           avatarUrl: null,
-          isOnline: false,
           startedAtLabel: "Started: N/A",
           lastActiveLabel: "Last Active: N/A",
         },
@@ -502,12 +678,14 @@ export default function ServiceRequestPage() {
         finalDeliverable: {
           fileName: "No deliverable metadata from API",
           meta: "Unavailable",
+          fileUrl: null,
         },
+        lastFeedback: null,
       };
     }
 
-    return buildServiceDetails(selected);
-  }, [selected]);
+    return buildServiceDetails(selected, reviewQuery.data ?? null);
+  }, [selected, reviewQuery.data]);
 
   const onView = React.useCallback((item: ServiceRequestListItem) => {
     setSelected(item);

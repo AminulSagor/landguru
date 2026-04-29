@@ -2,6 +2,8 @@
 
 import React from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { useMutation } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 import type {
   SellPostNegotiationItem,
   SellPostNegotiationTab,
@@ -21,6 +23,10 @@ import QuoteRequoteItemCard from "@/app/(dashboard)/admin/(pages)/quote-requote/
 import QuotationSentSuccessDialog from "@/app/(dashboard)/admin/(pages)/quote-requote/_components/quotation-sent-success-dialog";
 import Card from "@/components/cards/card";
 import ReviewQutationDialog from "@/app/(dashboard)/admin/(pages)/quote-requote/_components/review-quotation-dialog";
+import {
+  counterAdminSellPostNegotiation,
+  getAdminSellPostNegotiationReviewDetails,
+} from "@/service/admin/sell-posts/sell-post-negotiations.service";
 
 type QuoteRequoteClientProps = {
   items: SellPostNegotiationItem[];
@@ -78,6 +84,10 @@ export default function QuoteRequoteClient({
   const [isSuccessDialogOpen, setIsSuccessDialogOpen] = React.useState(false);
   const [successDialogData, setSuccessDialogData] =
     React.useState<SuccessDialogData>(initialSuccessDialogData);
+  const [quickAcceptingId, setQuickAcceptingId] =
+    React.useState<string | null>(null);
+
+  const currencySymbol = "৳";
 
   React.useEffect(() => {
     setSearchInput(search);
@@ -189,6 +199,63 @@ export default function QuoteRequoteClient({
     setIsSuccessDialogOpen(true);
   };
 
+  const quickAcceptMutation = useMutation({
+    mutationFn: async (item: SellPostNegotiationItem) => {
+      if (!item.negotiationId) {
+        throw new Error("Negotiation ID is missing.");
+      }
+
+      const details = await getAdminSellPostNegotiationReviewDetails(
+        item.negotiationId,
+      );
+      const mandatoryFee = Number(details.userCounter?.mandatory ?? 0);
+      const optionalFee = Number(details.userCounter?.optional ?? 0);
+
+      if (!Number.isFinite(mandatoryFee) || !Number.isFinite(optionalFee)) {
+        throw new Error("Invalid seller offer values.");
+      }
+
+      await counterAdminSellPostNegotiation(item.negotiationId, {
+        mandatoryFee,
+        optionalFee,
+      });
+
+      return { mandatoryFee, optionalFee };
+    },
+    onMutate: (item) => {
+      setQuickAcceptingId(item.negotiationId ?? null);
+    },
+    onSuccess: (data, item) => {
+      toast.success("Seller offer resent successfully.");
+      handleSuccessDialogOpen({
+        postId: `#${item.postId ?? ""}`,
+        sellerName: item.seller.name,
+        mandatoryFee: data.mandatoryFee,
+        optionalFee: data.optionalFee,
+        currencySymbol,
+      });
+      router.refresh();
+    },
+    onError: (error) => {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to resend seller offer.";
+      toast.error(message);
+    },
+    onSettled: () => {
+      setQuickAcceptingId(null);
+    },
+  });
+
+  const handleQuickAccept = (item: SellPostNegotiationItem) => {
+    if (quickAcceptMutation.isPending) {
+      return;
+    }
+
+    quickAcceptMutation.mutate(item);
+  };
+
   const startIndex =
     visibleItems.length === 0 ? 0 : (meta.page - 1) * meta.limit + 1;
   const endIndex =
@@ -253,6 +320,10 @@ export default function QuoteRequoteClient({
                         activeTab === "ADMIN_TO_RESPOND"
                       }
                       onReviewRespond={handleReviewRespond}
+                      onQuickAccept={handleQuickAccept}
+                      isQuickAccepting={
+                        quickAcceptingId === item.negotiationId
+                      }
                     />
                   ))}
                 </tbody>

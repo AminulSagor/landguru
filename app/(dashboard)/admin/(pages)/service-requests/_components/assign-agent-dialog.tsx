@@ -29,12 +29,6 @@ function Avatar({ name }: { name: string }) {
   );
 }
 
-function OnlineDot() {
-  return (
-    <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-green ring-2 ring-white" />
-  );
-}
-
 function Pill({
   active,
   children,
@@ -374,7 +368,6 @@ export default function AssignAgentDialog({
                       <div className="flex items-center gap-3">
                         <div className="relative">
                           <Avatar name={a.name} />
-                          {a.online ? <OnlineDot /> : null}
                         </div>
 
                         <div>
@@ -438,7 +431,7 @@ export default function AssignAgentDialog({
               </div>
 
               {/* Right: toggle */}
-              <div className="">
+              {/* <div className="">
                 <div className="flex justify-between gap-4">
                   <div className="lg:mr-4 lg:text-right">
                     <p className="text-sm font-semibold text-black">
@@ -451,7 +444,7 @@ export default function AssignAgentDialog({
 
                   <Toggle on={autoReassign} onChange={setAutoReassign} />
                 </div>
-              </div>
+              </div> */}
             </div>
 
             <p className="mt-3 text-xs text-gray">

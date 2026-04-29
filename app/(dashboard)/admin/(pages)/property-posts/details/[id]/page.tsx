@@ -2,8 +2,8 @@ import PropertyDetailsView from "@/app/(dashboard)/admin/(pages)/property-posts/
 import { getAdminPropertyPostDetailServer } from "@/service/admin/property/property-post-detail.server.service";
 import { notFound } from "next/navigation";
 
-const page = async ({ params }: { params: { id: string } }) => {
-  const { id } = params;
+const page = async ({ params }: { params: Promise<{ id: string }> | { id: string } }) => {
+  const { id } = await params;
 
   try {
     const property = await getAdminPropertyPostDetailServer(id);

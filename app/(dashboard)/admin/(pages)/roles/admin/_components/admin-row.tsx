@@ -1,5 +1,4 @@
 import { AdminRow } from "@/app/(dashboard)/admin/types/admin-list-type";
-import { IMAGE } from "@/constants/image-paths";
 import { Edit3, KeyRound, Trash2 } from "lucide-react";
 import Image from "next/image";
 
@@ -35,6 +34,8 @@ export default function AdminRowItem({
     .join("")
     .toUpperCase();
 
+  const avatarSrc = row.avatar?.trim();
+
   const onlineDot =
     row.activityStatus === "online"
       ? "bg-green"
@@ -59,19 +60,31 @@ export default function AdminRowItem({
   return (
     <tr className="border-b border-gray/10 bg-white" onClick={onClick}>
       <td className="px-5 py-5 align-middle">
-        <input type="checkbox" checked={selected} onChange={onToggle} />
+        <input
+          type="checkbox"
+          checked={selected}
+          onClick={(event) => event.stopPropagation()}
+          onChange={() => onToggle()}
+        />
       </td>
 
       {/* profile */}
       <td className="px-5 py-5 align-middle">
         <div className="flex items-center gap-3">
-          <div className="rounded-full bg-secondary flex items-center justify-center overflow-hidden">
-            <Image
-              src={IMAGE.avatar}
-              height={35}
-              width={35}
-              alt="admin-image"
-            />
+          <div className="h-9 w-9 rounded-full bg-secondary flex items-center justify-center overflow-hidden">
+            {avatarSrc ? (
+              <Image
+                src={avatarSrc}
+                height={36}
+                width={36}
+                alt={`${row.name} avatar`}
+                className="h-9 w-9 object-cover"
+              />
+            ) : (
+              <span className="text-xs font-semibold text-gray">
+                {initials}
+              </span>
+            )}
           </div>
           <div>
             <p className="text-sm font-semibold">{row.name}</p>
@@ -129,7 +142,10 @@ export default function AdminRowItem({
       <td className="px-5 py-5 align-middle">
         <button
           type="button"
-          onClick={() => onToggleAccount(!row.accountEnabled)}
+          onClick={(event) => {
+            event.stopPropagation();
+            onToggleAccount(!row.accountEnabled);
+          }}
           className={[
             "relative h-5 w-10 rounded-full transition-all",
             row.accountEnabled
@@ -151,21 +167,30 @@ export default function AdminRowItem({
         <div className="flex items-center justify-end gap-4">
           <button
             className="text-gray hover:text-primary"
-            onClick={onEdit}
+            onClick={(event) => {
+              event.stopPropagation();
+              onEdit();
+            }}
             aria-label="Edit"
           >
             <Edit3 className="h-4 w-4" />
           </button>
           <button
             className="text-gray hover:text-primary"
-            onClick={onKey}
+            onClick={(event) => {
+              event.stopPropagation();
+              onKey();
+            }}
             aria-label="Key"
           >
             <KeyRound className="h-4 w-4" />
           </button>
           <button
             className="text-[#EF4444]"
-            onClick={onDelete}
+            onClick={(event) => {
+              event.stopPropagation();
+              onDelete();
+            }}
             aria-label="Delete"
           >
             <Trash2 className="h-4 w-4" />

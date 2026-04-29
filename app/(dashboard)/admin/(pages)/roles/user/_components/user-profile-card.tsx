@@ -24,7 +24,6 @@ export default function UserProfileCard({ user }: { user: User }) {
               className="h-full w-full object-cover"
             />
           </div>
-          <div className="absolute bottom-1 right-1 h-4 w-4 rounded-full bg-green border-2 border-white" />
         </div>
 
         <p className="mt-3 text-lg font-semibold text-black">{name}</p>

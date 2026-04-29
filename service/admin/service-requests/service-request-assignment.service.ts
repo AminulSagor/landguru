@@ -7,6 +7,7 @@ import type {
   ServiceRequestActionResponse,
   ServiceRequestFeedbackPayload,
 } from "@/types/admin/service-requests/service-request-assignment.types";
+import type { ServiceRequestReviewResponse } from "@/types/admin/service-requests/service-request-review.types";
 
 export const serviceRequestAssignmentService = {
   async getAvailableAgents(
@@ -31,6 +32,16 @@ export const serviceRequestAssignmentService = {
     const response = await serviceClient.post<AssignAgentResponse>(
       "/property-services/assign",
       payload,
+    );
+
+    return response.data;
+  },
+
+  async getAssignmentReview(
+    assignmentId: string,
+  ): Promise<ServiceRequestReviewResponse> {
+    const response = await serviceClient.get<ServiceRequestReviewResponse>(
+      `/property-services/assignment/${assignmentId}/review`,
     );
 
     return response.data;

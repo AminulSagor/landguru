@@ -14,6 +14,7 @@ export interface ServiceRequestListServiceInfo {
   displayId?: string;
   name: string;
   key?: string;
+  description?: string | null;
 }
 
 export interface ServiceRequestListParentPost {
@@ -39,6 +40,12 @@ export interface ServiceRequestListApiItem {
   assignedAgent: ServiceRequestListAssignedAgent | null;
   status: ServiceRequestStatus;
   latestWorkLog: ServiceRequestLatestWorkLogApi | null;
+  serviceKey?: string;
+  serviceDescription?: string | null;
+  feeAmount?: number | null;
+  responseDeadline?: string | null;
+  autoReassign?: boolean;
+  documents?: string[] | null;
 }
 
 export interface ServiceRequestListItem {
@@ -47,6 +54,12 @@ export interface ServiceRequestListItem {
   assignedAgent: ServiceRequestListAssignedAgent | null;
   status: ServiceRequestStatus;
   latestWorkLog: ServiceRequestLatestWorkLogApi | null;
+  serviceKey?: string;
+  serviceDescription?: string | null;
+  feeAmount?: number | null;
+  responseDeadline?: string | null;
+  autoReassign?: boolean;
+  documents?: string[] | null;
 }
 
 export interface ServiceRequestListMeta {

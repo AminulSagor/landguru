@@ -26,7 +26,6 @@ export default function AdminProfileCard({
                 <Image src={profile.avatarUrl} alt="avatar" width={64} height={64} />
               ) : null}
             </div>
-            <span className="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full bg-green border-2 border-white" />
           </div>
 
           <div>
