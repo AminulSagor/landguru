@@ -77,6 +77,27 @@ export const formatCurrency = (
   return `${symbol} ${Number(amount).toLocaleString()}`;
 };
 
+export const formatPostId = (id?: string | null): string => {
+  if (!id) {
+    return "";
+  }
+
+  const normalized = id.trim();
+
+  if (!normalized) {
+    return "";
+  }
+
+  if (normalized.startsWith("#")) {
+    return normalized;
+  }
+
+  const shortId =
+    normalized.length > 8 ? normalized.slice(0, 8) : normalized;
+
+  return `#${shortId.toUpperCase()}`;
+};
+
 export const getInitials = (name: string): string => {
   return name
     .split(" ")

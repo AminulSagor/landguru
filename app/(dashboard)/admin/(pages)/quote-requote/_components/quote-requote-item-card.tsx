@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import type { SellPostNegotiationItem } from "@/types/admin/quote-requote/sell-post-negotiations.types";
 import {
   formatCurrency,
+  formatPostId,
   getInitials,
 } from "@/app/(dashboard)/admin/(pages)/quote-requote/_utils/quote-requote.utils";
 import { CircleCheck, Clock3 } from "lucide-react";
@@ -101,7 +102,7 @@ function PostCell({ item }: { item: SellPostNegotiationItem }) {
         </p>
 
         <p className="mt-1 line-clamp-1 text-xs font-medium text-primary">
-          #{item.postId}
+          {formatPostId(item.postId)}
         </p>
       </div>
     </div>

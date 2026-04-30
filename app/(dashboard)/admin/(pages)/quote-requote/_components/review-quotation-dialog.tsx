@@ -9,6 +9,7 @@ import { Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Dialog from "@/components/dialogs/dialog";
 import Button from "@/components/buttons/button";
+import { formatPostId } from "@/app/(dashboard)/admin/(pages)/quote-requote/_utils/quote-requote.utils";
 import {
   counterAdminSellPostNegotiation,
   getAdminSellPostNegotiationReviewDetails,
@@ -244,7 +245,7 @@ export default function ReviewQutationDialog({
       toast.success("Counter-offer sent successfully.");
       onControl(false);
       onSuccessDialogOpen({
-        postId: `#${item?.postId ?? ""}`,
+        postId: formatPostId(item?.postId),
         sellerName: item?.seller.name ?? "",
         mandatoryFee: variables.mandatoryFee,
         optionalFee: variables.optionalFee,
@@ -310,7 +311,7 @@ export default function ReviewQutationDialog({
           <p className="mt-1 text-xs font-semibold text-light-gray">
             Negotiating Post{" "}
             <span className="font-extrabold text-gray">
-              #{item?.postId ?? ""}
+              {formatPostId(item?.postId)}
             </span>{" "}
             with{" "}
             <span className="font-extrabold text-gray">

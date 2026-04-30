@@ -88,7 +88,9 @@ export default function AdminRowItem({
           </div>
           <div>
             <p className="text-sm font-semibold">{row.name}</p>
-            <p className="text-xs font-medium text-gray">{row.id}</p>
+            <p className="text-xs font-medium text-gray">
+              {row.displayId ?? row.id}
+            </p>
           </div>
         </div>
       </td>

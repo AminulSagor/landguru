@@ -59,6 +59,12 @@ export function formatCompactBdt(value: number | null) {
   return `৳ ${new Intl.NumberFormat("en-BD").format(value)}`;
 }
 
+export function formatBdt(value: number | null | undefined) {
+  if (value === null || value === undefined) return "Pending";
+
+  return `৳ ${new Intl.NumberFormat("en-BD").format(value)}`;
+}
+
 export function formatRelativeTime(dateString?: string | null) {
   if (!dateString) return "";
 

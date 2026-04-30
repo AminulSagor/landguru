@@ -3,35 +3,133 @@
 import { Play, Image as ImageIcon } from "lucide-react";
 import { useState } from "react";
 import Card from "@/components/cards/card";
-
-import { PropertyDetails } from "@/app/(dashboard)/admin/types/property.types";
 import Avatar from "@/app/(dashboard)/admin/(pages)/property-posts/details/_components/avatar";
+import type { PropertyPostItem } from "@/types/admin/property-post/property.types";
+import { formatBdt } from "@/app/(dashboard)/admin/(pages)/property-posts/_utils/properties-management-table.utils";
+import { MetricUnit } from "@/app/(dashboard)/admin/types/property.types";
+import {
+  convertLandAmount,
+  normalizeLandUnit,
+} from "@/app/(dashboard)/admin/(pages)/property-posts/_utils/land-unit.utils";
+
+function getAddressText(property: PropertyPostItem) {
+  if (property.address?.fullAddress?.trim()) {
+    return property.address.fullAddress;
+  }
+
+  if (property.fullAddress?.trim()) {
+    return property.fullAddress;
+  }
+
+  const locationParts = [
+    property.address?.upazila ?? property.upazila,
+    property.address?.district ?? property.district,
+    property.address?.division ?? property.division,
+  ].filter(Boolean);
+
+  if (locationParts.length === 0) return "Location unavailable";
+
+  return locationParts.join(", ");
+}
+
+function resolveVideoUrl(property: PropertyPostItem) {
+  if (property.videoUrl) return property.videoUrl;
+
+  const videoDoc = property.documents?.find((doc) => doc.category === "VIDEO");
+  return videoDoc?.fileUrl;
+}
+
+function formatLandAmount(value: number | null | undefined) {
+  if (value === null || value === undefined || !Number.isFinite(value)) {
+    return "N/A";
+  }
+
+  return new Intl.NumberFormat("en-BD", {
+    maximumFractionDigits: 2,
+  }).format(value);
+}
 
 export default function PostInformationCard({
-  title,
-  data,
+  property,
+  selectedUnit,
 }: {
-  title: string;
-  data: PropertyDetails["postInformation"];
+  property: PropertyPostItem;
+  selectedUnit?: MetricUnit;
 }) {
+  const sellerName =
+    property.seller.name ?? property.seller.fullName ?? "Unknown Seller";
+  const sellerPhone = property.seller.phone ?? "N/A";
+  const sellerId = property.seller.id ?? property.sellerId ?? "N/A";
+  const sellerUid = sellerId === "N/A" ? "N/A" : sellerId.slice(0, 8).toUpperCase();
+  const sellerAvatar = property.seller.photoUrl ?? property.seller.avatar ?? "";
+  const addressText = getAddressText(property);
+  const photos = (property.photos ?? []).map((url) => ({ url }));
+  const videoUrl = resolveVideoUrl(property);
+  const selectedUnitNormalized = normalizeLandUnit(selectedUnit);
+  const sellableUnitNormalized = normalizeLandUnit(property.sellableUnit);
+  const plotUnitNormalized = normalizeLandUnit(property.plotUnit);
+  const canConvertSellable = Boolean(sellableUnitNormalized && selectedUnitNormalized);
+  const canConvertPlot = Boolean(plotUnitNormalized && selectedUnitNormalized);
+  const sellableAmountValue = canConvertSellable
+    ? convertLandAmount(
+        property.sellableAmount,
+        sellableUnitNormalized,
+        selectedUnitNormalized,
+      )
+    : property.sellableAmount;
+  const plotSizeValue = canConvertPlot
+    ? convertLandAmount(
+        property.plotSize,
+        plotUnitNormalized,
+        selectedUnitNormalized,
+      )
+    : property.plotSize;
+  const sellableUnitLabel = canConvertSellable
+    ? (selectedUnit as string)
+    : property.sellableUnit;
+  const plotUnitLabel = canConvertPlot
+    ? (selectedUnit as string)
+    : property.plotUnit;
+  const facts = [
+    {
+      label: "Property Type",
+      value: property.propertyType,
+    },
+    {
+      label: "Sellable Amount",
+      value: `${formatLandAmount(sellableAmountValue)} ${sellableUnitLabel}`,
+    },
+    {
+      label: "Plot Size",
+      value: `${formatLandAmount(plotSizeValue)} ${plotUnitLabel}`,
+    },
+    {
+      label: "Road Distance",
+      value:
+        property.roadDistanceMin !== null && property.roadDistanceMax !== null
+          ? `${property.roadDistanceMin} - ${property.roadDistanceMax} ft`
+          : "N/A",
+    },
+  ];
+
   return (
     <Card>
-      <p className="text-sm font-extrabold text-primary">{title}</p>
+      <p className="text-sm font-extrabold text-primary">{property.title}</p>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
         <div>
           <p className="text-xs font-semibold text-gray mb-2">Posted By</p>
           <div className="flex items-center gap-3">
-            <Avatar url={data.postedBy.avatarUrl} name={data.postedBy.name} />
+            <Avatar url={sellerAvatar} name={sellerName} />
             <div>
               <p className="text-xs font-extrabold text-gray">
-                {data.postedBy.name}
+                {sellerName}
               </p>
               <p className="text-xs font-semibold text-gray">
-                {data.postedBy.phone}
+                {sellerPhone}
               </p>
               <p className="text-xs font-semibold text-gray">
-                ID: {data.postedBy.uid}
+                ID: {sellerUid}
               </p>
             </div>
           </div>
@@ -40,19 +138,19 @@ export default function PostInformationCard({
         <div>
           <p className="text-xs font-semibold text-gray mb-2">Asking Price</p>
           <p className="text-xs font-extrabold text-primary">
-            {data.askingPrice}
+            {formatBdt(property.askingPrice)}
           </p>
         </div>
 
         <div>
           <p className="text-xs font-semibold text-gray mb-2">Location</p>
-          <p className="text-xs font-semibold text-gray">{data.locationText}</p>
+          <p className="text-xs font-semibold text-gray">{addressText}</p>
         </div>
       </div>
 
-      {data.facts?.length > 0 && (
+      {facts.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-5">
-          {data.facts.map((f) => (
+          {facts.map((f) => (
             <div
               key={f.label}
               className="border border-gray/15 rounded-lg p-3 bg-white"
@@ -68,14 +166,16 @@ export default function PostInformationCard({
 
       <div className="mt-6">
         <p className="text-xs font-semibold text-gray mb-2">Description</p>
-        <p className="text-xs font-semibold text-gray">{data.description}</p>
+        <p className="text-xs font-semibold text-gray">
+          {property.description ?? "No description available."}
+        </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
         <div>
           <p className="text-xs font-extrabold text-gray mb-3">Property Photos</p>
-          {data.media.photos && data.media.photos.length > 0 ? (
-            <PhotosGallery photos={data.media.photos} />
+          {photos.length > 0 ? (
+            <PhotosGallery photos={photos} />
           ) : (
             <div className="h-48 w-full rounded-lg border border-gray/15 bg-secondary flex items-center justify-center text-sm text-gray">
               <div className="flex items-center gap-2">
@@ -88,12 +188,12 @@ export default function PostInformationCard({
 
         <div>
           <p className="text-xs font-extrabold text-gray mb-3">Property Video</p>
-          {data.media.video?.url ? (
+          {videoUrl ? (
             <div className="h-40 w-full rounded-lg border border-gray/15 bg-black overflow-hidden flex items-center justify-center">
               <video
                 controls
-                src={data.media.video.url}
-                poster={data.media.photos?.[0]?.url}
+                src={videoUrl}
+                poster={photos[0]?.url}
                 className="h-full w-full object-contain bg-black"
               />
             </div>

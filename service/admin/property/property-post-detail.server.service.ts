@@ -7,6 +7,6 @@ export const getAdminPropertyPostDetailServer = async (
   const response = await serviceServer.get<PropertyPostItem>(
     `/sell-posts/${postId}`,
   );
-
+  console.log("Fetched property post detail:", response.data);
   return response.data;
 };

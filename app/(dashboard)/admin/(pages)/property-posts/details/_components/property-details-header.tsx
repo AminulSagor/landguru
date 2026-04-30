@@ -1,17 +1,17 @@
 "use client";
 
 import { ArrowLeft } from "lucide-react";
-import { StatusKey } from "@/app/(dashboard)/admin/types/property.types";
+import type { PropertyPostStatus } from "@/types/admin/property-post/property.types";
 import StatusBadge from "@/app/(dashboard)/admin/(pages)/property-posts/details/_components/status-badge";
 
 export default function PropertyDetailsHeader({
   postRef,
-  statusKey,
+  status,
   statusLabel,
   onBack,
 }: {
   postRef: string;
-  statusKey: StatusKey;
+  status: PropertyPostStatus;
   statusLabel: string;
   onBack: () => void;
 }) {
@@ -24,7 +24,7 @@ export default function PropertyDetailsHeader({
 
       <div className="flex items-center gap-3 mt-2">
         <p className="text-xs font-extrabold text-primary">{postRef}</p>
-        <StatusBadge kind={statusKey} label={statusLabel} />
+        <StatusBadge status={status} label={statusLabel} />
       </div>
     </div>
   );

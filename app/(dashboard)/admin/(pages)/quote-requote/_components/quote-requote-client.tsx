@@ -13,6 +13,7 @@ import type { QuoteRequoteSortKey } from "@/app/(dashboard)/admin/(pages)/quote-
 import {
   buildQueryString,
   filterNegotiationItems,
+  formatPostId,
   SEARCH_DEBOUNCE_MS,
   sortNegotiationItems,
 } from "@/app/(dashboard)/admin/(pages)/quote-requote/_utils/quote-requote.utils";
@@ -228,7 +229,7 @@ export default function QuoteRequoteClient({
     onSuccess: (data, item) => {
       toast.success("Seller offer resent successfully.");
       handleSuccessDialogOpen({
-        postId: `#${item.postId ?? ""}`,
+        postId: formatPostId(item.postId),
         sellerName: item.seller.name,
         mandatoryFee: data.mandatoryFee,
         optionalFee: data.optionalFee,

@@ -3,35 +3,95 @@
 import React, { useState } from "react";
 import Card from "@/components/cards/card";
 import Button from "@/components/buttons/button";
-import { PropertyDetails } from "@/app/(dashboard)/admin/types/property.types";
-import Avatar from "@/app/(dashboard)/admin/(pages)/property-posts/details/_components/avatar";
 import AssignAgentDialog from "@/app/(dashboard)/admin/(pages)/property-posts/details/_components/assign-agent-dialog";
+import type { PropertyPostItem } from "@/types/admin/property-post/property.types";
+
+type ProgressStatus = "none" | "pending" | "in_progress" | "submitted" | "verified";
+
+function humanizeServiceKey(serviceKey: string) {
+  return serviceKey
+    .split("_")
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+function toServiceProgressStatus(status?: string | null): ProgressStatus {
+  const normalized = (status ?? "").toUpperCase();
+
+  if (normalized === "PENDING") return "pending";
+  if (normalized === "IN_PROGRESS") return "in_progress";
+  if (normalized === "SUBMITTED") return "submitted";
+  if (normalized === "VERIFIED" || normalized === "COMPLETED") return "verified";
+
+  return "none";
+}
+
+function parseProgressText(value?: string | null) {
+  const match = value?.match(/(\d+)\s*\/\s*(\d+)/);
+
+  if (!match) {
+    return { done: 0, total: 0 };
+  }
+
+  return {
+    done: Number.parseInt(match[1], 10) || 0,
+    total: Number.parseInt(match[2], 10) || 0,
+  };
+}
 
 
 export default function ServiceProgressCard({
-  data,
-  postId,
+  property,
 }: {
-  data: NonNullable<PropertyDetails["serviceProgress"]>;
-  postId?: string;
+  property: PropertyPostItem;
 }) {
   const [open, setOpen] = useState(false);
-  const match = data.completedText.match(/\((\d+)\/(\d+)/);
-  const done = match ? Number(match[1]) : 0;
-  const total = match ? Number(match[2]) : 0;
+  const selectedServices = property.selectedServiceslist?.length
+    ? property.selectedServiceslist.map((service) => service.serviceKey)
+    : property.selectedServices ?? [];
+  const selectedServiceLabels = selectedServices.map((service) =>
+    humanizeServiceKey(service),
+  );
+  const serviceRowsSource =
+    property.serviceAssignments && property.serviceAssignments.length > 0
+      ? property.serviceAssignments.map((assignment) => ({
+          label: assignment.serviceName || humanizeServiceKey(assignment.serviceKey),
+          id: assignment.id,
+          status: assignment.status,
+          hasAgent: Boolean(assignment.agentId),
+        }))
+      : selectedServiceLabels.map((label) => ({
+          label,
+          id: undefined,
+          status: undefined,
+          hasAgent: false,
+        }));
+  const progressFromApi = parseProgressText(property.servicesProgress);
+  const fallbackTotal = serviceRowsSource.length;
+  const fallbackDone = serviceRowsSource.filter((row) => {
+    const mapped = toServiceProgressStatus(row.status);
+    return mapped === "submitted" || mapped === "verified";
+  }).length;
+  const total = progressFromApi.total > 0 ? progressFromApi.total : fallbackTotal;
+  const done = progressFromApi.total > 0 ? progressFromApi.done : fallbackDone;
+  const completedText = `(${done}/${total} Completed)`;
+  const noteText =
+    total > done ? `${total - done} service(s) still pending` : undefined;
+  const postRef = `#${property.id.slice(0, 8).toUpperCase()}`;
 
   return (
     <Card>
       <div className="flex items-center justify-between">
         <p className="text-sm font-semibold text-gray">Service Progress</p>
-        <p className="text-xs font-extrabold text-gray">{data.completedText}</p>
+        <p className="text-xs font-extrabold text-gray">{completedText}</p>
       </div>
 
       <div className="mt-3">
         <ProgressBar done={done} total={total} />
-        {data.noteText && (
+        {noteText && (
           <p className="text-xs font-semibold text-[#B91C1C] mt-2">
-            {data.noteText}
+            {noteText}
           </p>
         )}
       </div>
@@ -57,66 +117,64 @@ export default function ServiceProgressCard({
             </thead>
 
             <tbody>
-              {data.rows.map((r, idx) => {
-                const disabled = r.action.kind === "disabled";
+              {serviceRowsSource.map((row, idx) => {
+                const progressStatus = toServiceProgressStatus(row.status);
+                const action = !row.hasAgent
+                  ? {
+                      kind: "assign" as const,
+                      label: "Assign Agent",
+                    }
+                  : progressStatus === "submitted"
+                    ? {
+                        kind: "review" as const,
+                        label: "Review",
+                      }
+                    : {
+                        kind: "view" as const,
+                        label: "View",
+                      };
+                const disabled = action.kind === "disabled";
                 return (
                   <tr
-                    key={`${r.serviceType}-${idx}`}
+                    key={`${row.label}-${idx}`}
                     className="border-t border-gray/15"
                   >
                     <td className="px-4 py-3">
                       <p className="text-xs font-extrabold text-gray">
-                        {r.serviceType}
+                        {row.label}
                       </p>
-                      {r.serviceRef && (
+                      {row.id && (
                         <p className="text-xs font-semibold text-gray">
-                          {r.serviceRef}
+                          #{row.id.slice(0, 8).toUpperCase()}
                         </p>
                       )}
                     </td>
 
                     <td className="px-4 py-3">
-                      {r.assignedAgent ? (
-                        <div className="flex items-center gap-3">
-                          <Avatar
-                            url={r.assignedAgent.avatarUrl}
-                            name={r.assignedAgent.name}
-                          />
-                          <div>
-                            <p className="text-xs font-extrabold text-gray">
-                              {r.assignedAgent.name}
-                            </p>
-                            <p className="text-xs font-semibold text-gray">
-                              {r.assignedAgent.role}
-                            </p>
-                          </div>
-                        </div>
-                      ) : (
-                        <div>
-                          <p className="text-xs font-extrabold text-gray">
-                            None
-                          </p>
-                          <p className="text-xs font-semibold text-gray">
-                            None
-                          </p>
-                        </div>
-                      )}
+                      <div>
+                        <p className="text-xs font-extrabold text-gray">
+                          None
+                        </p>
+                        <p className="text-xs font-semibold text-gray">
+                          None
+                        </p>
+                      </div>
                     </td>
 
                     <td className="px-4 py-3">
-                      <ProgressPill status={r.progressStatus} />
+                      <ProgressPill status={progressStatus} />
                     </td>
 
                     <td className="px-4 py-3 text-right">
                       <Button
                         size="sm"
                         variant={
-                          r.action.kind === "review" ? "primary" : "secondary"
+                          action.kind === "review" ? "primary" : "secondary"
                         }
                         disabled={disabled}
                         onClick={() => setOpen(true)}
                       >
-                        {r.action.label}
+                        {action.label}
                       </Button>
                     </td>
                   </tr>
@@ -126,18 +184,12 @@ export default function ServiceProgressCard({
           </table>
         </div>
       </div>
-      <AssignAgentDialog open={open} onOpenChange={setOpen} postId={postId} />
+      <AssignAgentDialog open={open} onOpenChange={setOpen} postId={postRef} />
     </Card>
   );
 }
 
-function ProgressPill({
-  status,
-}: {
-  status: NonNullable<
-    PropertyDetails["serviceProgress"]
-  >["rows"][number]["progressStatus"];
-}) {
+function ProgressPill({ status }: { status: ProgressStatus }) {
   const map: Record<string, string> = {
     none: "bg-secondary text-gray border border-gray/15",
     pending: "bg-[#FFEAD5] text-[#C2410C] border border-[#FDBA74]",

@@ -4,7 +4,7 @@ import React from "react";
 import { Check, ShieldAlert } from "lucide-react";
 import Card from "@/components/cards/card";
 import Button from "@/components/buttons/button";
-import { PropertyDetails } from "@/app/(dashboard)/admin/types/property.types";
+import type { PropertyPostItem } from "@/types/admin/property-post/property.types";
 
 function ChecklistItem({
   label,
@@ -29,16 +29,23 @@ function ChecklistItem({
 }
 
 export default function AuthenticityCard({
-  data,
+  property,
 }: {
-  data: NonNullable<PropertyDetails["authenticityChecklist"]>;
+  property: PropertyPostItem;
 }) {
+  const items =
+    property.riskChecklist?.map((item, index) => ({
+      label: item.label?.trim() || `Checklist item ${index + 1}`,
+      checked: item.isChecked ?? item.checked ?? false,
+    })) ?? [];
+  const canEdit = true;
+
   return (
     <Card>
       <div className="flex items-center justify-between gap-4">
         <p className="text-sm font-semibold text-gray">Property Authenticity</p>
 
-        {data.canEdit && (
+        {canEdit && (
           <Button size="sm" variant="primary">
             Edit Status
           </Button>
@@ -48,11 +55,13 @@ export default function AuthenticityCard({
       <div className="border border-gray/15 rounded-lg p-4 bg-white mt-4">
         <div className="flex items-center gap-2 mb-4">
           <ShieldAlert size={16} className="text-primary" />
-          <p className="text-xs font-extrabold text-gray">{data.title}</p>
+          <p className="text-xs font-extrabold text-gray">
+            Property Authenticity Checklist
+          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {data.items.map((it) => (
+          {items.map((it) => (
             <ChecklistItem
               key={it.label}
               label={it.label}

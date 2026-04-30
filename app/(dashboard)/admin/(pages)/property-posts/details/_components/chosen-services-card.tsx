@@ -3,15 +3,28 @@
 import React from "react";
 import { Check } from "lucide-react";
 import Card from "@/components/cards/card";
-import { PropertyDetails } from "@/app/(dashboard)/admin/types/property.types";
+import type { PropertyPostItem } from "@/types/admin/property-post/property.types";
+
+function humanizeServiceKey(serviceKey: string) {
+  return serviceKey
+    .split("_")
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
 
 export default function ChosenServicesCard({
-  data,
+  property,
 }: {
-  data: PropertyDetails["chosenServices"];
+  property: PropertyPostItem;
 }) {
-  const total = data.optional.length;
-  const selected = data.optional.filter((x) => x.selected).length;
+  const selectedServices = property.selectedServiceslist?.length
+    ? property.selectedServiceslist.map((service) => service.serviceKey)
+    : property.selectedServices ?? [];
+  const mandatoryLabels: string[] = [];
+  const optionalLabels = selectedServices.map((service) => humanizeServiceKey(service));
+  const total = optionalLabels.length;
+  const selected = optionalLabels.length;
 
   return (
     <Card>
@@ -23,12 +36,12 @@ export default function ChosenServicesCard({
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {data.mandatory.map((m) => (
+          {mandatoryLabels.map((label) => (
             <div
-              key={m.label}
+              key={label}
               className="border border-gray/15 rounded-lg px-3 py-2 bg-white"
             >
-              <p className="text-xs font-semibold text-gray">{m.label}</p>
+              <p className="text-xs font-semibold text-gray">{label}</p>
             </div>
           ))}
         </div>
@@ -39,19 +52,19 @@ export default function ChosenServicesCard({
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {data.optional.map((o) => (
+            {optionalLabels.map((label) => (
               <div
-                key={o.label}
+                key={label}
                 className="border border-gray/15 rounded-lg px-3 py-2 bg-white flex items-center gap-2"
               >
                 <div
                   className={`h-4 w-4 rounded border border-gray/15 flex items-center justify-center ${
-                    o.selected ? "bg-primary" : "bg-white"
+                    "bg-primary"
                   }`}
                 >
-                  {o.selected && <Check size={12} className="text-white" />}
+                  <Check size={12} className="text-white" />
                 </div>
-                <p className="text-xs font-semibold text-gray">{o.label}</p>
+                <p className="text-xs font-semibold text-gray">{label}</p>
               </div>
             ))}
           </div>
