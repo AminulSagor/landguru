@@ -1,6 +1,7 @@
 import { serviceClient } from "@/service/base/axios.client";
 import type {
   PropertyPostItem,
+  ReorganizePropertyDocumentsResponse,
   ReorganizePropertyDocumentsPayload,
   UpdateOwnershipHistoryPayload,
   UpdatePropertyStatusPayload,
@@ -23,9 +24,9 @@ export const propertyPostManagementService = {
   async reorganizePropertyDocuments(
     postId: string,
     payload: ReorganizePropertyDocumentsPayload,
-  ): Promise<PropertyPostItem> {
-    const response = await serviceClient.put<PropertyPostItem>(
-      `/property-services/mgt/${postId}/reorganize-documents`,
+  ): Promise<ReorganizePropertyDocumentsResponse> {
+    const response = await serviceClient.put<ReorganizePropertyDocumentsResponse>(
+      `/property-services/mgt/${postId}/documents`,
       payload,
     );
 

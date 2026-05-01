@@ -209,6 +209,11 @@ export interface ReorganizePropertyDocumentsPayload {
   documents: ReorganizePropertyDocumentInput[];
 }
 
+export interface ReorganizePropertyDocumentsResponse {
+  success: boolean;
+  message: string;
+}
+
 export interface UpdateOwnershipHistoryInput {
   ownerName: string;
   duration: string;

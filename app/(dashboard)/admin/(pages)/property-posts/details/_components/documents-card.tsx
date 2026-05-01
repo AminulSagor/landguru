@@ -3,7 +3,7 @@
 import { FileText } from "lucide-react";
 import Card from "@/components/cards/card";
 import Button from "@/components/buttons/button";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import OrganizeVerifyDocumentsDialog from "@/app/(dashboard)/admin/(pages)/property-posts/details/_components/organize-verify-document-dialog";
 import { DocKind } from "@/app/(dashboard)/admin/types/property.types";
 import type {
@@ -79,7 +79,7 @@ export default function DocumentsCard({
   canReorganize?: boolean;
 }) {
   const [open, setOpen] = useState(false);
-  const documents = resolveDocuments(property);
+  const documents = useMemo(() => resolveDocuments(property), [property]);
   const deedDocs = documents.filter((doc) => doc.category === "DEED");
   const khatianDocs = documents.filter((doc) => doc.category === "KHATIAN");
   const otherDocs = documents.filter(
@@ -160,7 +160,12 @@ export default function DocumentsCard({
       )}
 
       {/* organize dialog */}
-      <OrganizeVerifyDocumentsDialog open={open} onOpenChange={setOpen} />
+      <OrganizeVerifyDocumentsDialog
+        open={open}
+        onOpenChange={setOpen}
+        documents={documents}
+        postId={property.id}
+      />
     </Card>
   );
 }

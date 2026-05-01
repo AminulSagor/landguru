@@ -1,11 +1,20 @@
 // app/(admin)/admin/dashboard/(pages)/property-posts/details/_components/organize-verify-document-dialog.tsx
 "use client";
 
-import React, { useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 import { Eye, Trash2, GripVertical, Upload, Plus, Save } from "lucide-react";
 import Dialog from "@/components/dialogs/dialog";
 import Button from "@/components/buttons/button";
 import { cn } from "@/utils/classnames.utils";
+import { propertyPostManagementService } from "@/service/admin/property/property-post-management.service";
+import type {
+  PropertyDocumentCategory,
+  PropertyPostDocument,
+  ReorganizePropertyDocumentsPayload,
+} from "@/types/admin/property-post/property.types";
 
 type DocSection = "deed" | "khatian" | "other";
 
@@ -15,6 +24,7 @@ type DocItem = {
   section: DocSection;
   file?: File;
   url?: string;
+  category?: PropertyDocumentCategory;
 };
 
 /* ---------------- helpers ---------------- */
@@ -36,6 +46,46 @@ function fileBadge(ext: string) {
 function thumbClass(_ext: string) {
   // screenshot vibe (soft tile)
   return "bg-secondary border border-gray/15";
+}
+
+function fileNameFromUrl(fileUrl: string) {
+  const segments = fileUrl.split("/").filter(Boolean);
+  return segments[segments.length - 1] ?? fileUrl;
+}
+
+function toDocSection(category?: PropertyDocumentCategory): DocSection {
+  if (category === "DEED") return "deed";
+  if (category === "KHATIAN") return "khatian";
+  return "other";
+}
+
+function toCategoryForSection(
+  section: DocSection,
+  currentCategory?: PropertyDocumentCategory,
+): PropertyDocumentCategory {
+  if (section === "deed") return "DEED";
+  if (section === "khatian") return "KHATIAN";
+
+  if (currentCategory && !["DEED", "KHATIAN"].includes(currentCategory)) {
+    return currentCategory;
+  }
+
+  return "OTHER";
+}
+
+function toDocItems(documents?: PropertyPostDocument[]) {
+  if (!documents?.length) return [];
+
+  return documents.map((doc) => {
+    const section = toDocSection(doc.category);
+    return {
+      id: doc.id ?? uid(section),
+      name: fileNameFromUrl(doc.fileUrl),
+      section,
+      url: doc.fileUrl,
+      category: doc.category,
+    };
+  });
 }
 
 /* ---------------- UI pieces (STATIC) ---------------- */
@@ -336,18 +386,16 @@ function DocSectionBlock({
 export default function OrganizeVerifyDocumentsDialog({
   open,
   onOpenChange,
+  documents,
+  postId,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
+  documents?: PropertyPostDocument[];
+  postId: string;
 }) {
-  const [items, setItems] = useState<DocItem[]>([
-    { id: uid("deed"), name: "Deed document 1.pdf", section: "deed" },
-    { id: uid("deed"), name: "Deed document 2.pdf", section: "deed" },
-    { id: uid("deed"), name: "Deed document 3.pdf", section: "deed" },
-    { id: uid("khatian"), name: "CS Khatian.pdf", section: "khatian" },
-    { id: uid("khatian"), name: "RS Khatian.pdf", section: "khatian" },
-    { id: uid("other"), name: "Other_document.pdf", section: "other" },
-  ]);
+  const router = useRouter();
+  const [items, setItems] = useState<DocItem[]>(() => toDocItems(documents));
 
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [overKey, setOverKey] = useState<string | null>(null);
@@ -359,6 +407,28 @@ export default function OrganizeVerifyDocumentsDialog({
     deed: null,
     khatian: null,
     other: null,
+  });
+
+  useEffect(() => {
+    if (!open) return;
+    setItems(toDocItems(documents));
+    setDraggingId(null);
+    setOverKey(null);
+    setRenamingId(null);
+    setRenameValue("");
+  }, [open, documents]);
+
+  const reorganizeMutation = useMutation({
+    mutationFn: (payload: ReorganizePropertyDocumentsPayload) =>
+      propertyPostManagementService.reorganizePropertyDocuments(postId, payload),
+    onSuccess: async (response) => {
+      toast.success(response.message || "Documents reorganized successfully.");
+      onOpenChange(false);
+      await Promise.resolve(router.refresh());
+    },
+    onError: () => {
+      toast.error("Failed to reorganize documents.");
+    },
   });
 
   const bySection = useMemo(() => {
@@ -384,6 +454,7 @@ export default function OrganizeVerifyDocumentsDialog({
         section,
         file: f,
         url: URL.createObjectURL(f),
+        category: toCategoryForSection(section),
       })),
     ]);
   }
@@ -426,7 +497,13 @@ export default function OrganizeVerifyDocumentsDialog({
       const insertInto = map[targetSection];
       const clampedIndex = Math.max(0, Math.min(targetIndex, insertInto.length));
 
-      insertInto.splice(clampedIndex, 0, { ...dragged, section: targetSection });
+      const nextCategory = toCategoryForSection(targetSection, dragged.category);
+
+      insertInto.splice(clampedIndex, 0, {
+        ...dragged,
+        section: targetSection,
+        category: nextCategory,
+      });
 
       return [...map.deed, ...map.khatian, ...map.other];
     });
@@ -450,8 +527,26 @@ export default function OrganizeVerifyDocumentsDialog({
   }
 
   function saveAndClose() {
-    // TODO: send `items` to backend
-    onOpenChange(false);
+    if (reorganizeMutation.isPending) return;
+
+    if (items.some((item) => item.file)) {
+      toast.error("Upload new files before saving.");
+      return;
+    }
+
+    const documentsPayload = items
+      .filter((item) => item.url)
+      .map((item) => ({
+        fileUrl: item.url as string,
+        category: toCategoryForSection(item.section, item.category),
+      }));
+
+    if (!documentsPayload.length) {
+      toast.error("No documents to update.");
+      return;
+    }
+
+    reorganizeMutation.mutate({ documents: documentsPayload });
   }
 
   return (
@@ -476,7 +571,8 @@ export default function OrganizeVerifyDocumentsDialog({
         <button
           type="button"
           onClick={() => onOpenChange(false)}
-          className="text-gray hover:underline text-xs font-semibold"
+          disabled={reorganizeMutation.isPending}
+          className="text-gray hover:underline text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-60"
         >
           ✕
         </button>
@@ -576,14 +672,22 @@ export default function OrganizeVerifyDocumentsDialog({
           <button
             type="button"
             onClick={() => onOpenChange(false)}
-            className="text-xs font-semibold text-gray hover:underline"
+            disabled={reorganizeMutation.isPending}
+            className="text-xs font-semibold text-gray hover:underline disabled:cursor-not-allowed disabled:opacity-60"
           >
             Cancel
           </button>
 
-          <Button size="sm" variant="primary" onClick={saveAndClose}>
+          <Button
+            size="sm"
+            variant="primary"
+            onClick={saveAndClose}
+            disabled={reorganizeMutation.isPending}
+          >
             <Save size={16} />
-            Save &amp; Reorder
+            {reorganizeMutation.isPending
+              ? "Saving..."
+              : "Save & Reorder"}
           </Button>
         </div>
       </div>
