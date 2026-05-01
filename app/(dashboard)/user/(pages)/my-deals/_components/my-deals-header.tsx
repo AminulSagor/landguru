@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ArrowLeft, CheckCircle2, Lock } from "lucide-react";
 import type { DealItem } from "@/app/(dashboard)/user/types/deals";
+import { formatDisplayId } from "@/utils/id.utils";
 
 type Props = {
   property: DealItem;
@@ -28,7 +29,7 @@ export default function MyDealsHeader({ property }: Props) {
             {property.title}
           </h1>
           <p className="mt-1 text-sm font-semibold text-gray/50">
-            #{property.postId || property.id}
+            {formatDisplayId("POST", property.postId || property.id)}
           </p>
         </div>
 

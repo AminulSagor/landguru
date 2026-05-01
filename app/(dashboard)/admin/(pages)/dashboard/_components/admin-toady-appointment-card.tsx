@@ -1,7 +1,7 @@
 "use client";
 
 import Card from "@/components/cards/card";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/classnames.utils";
 import { CalendarDays, ChevronRight, Plus } from "lucide-react";
 
 type Person = {

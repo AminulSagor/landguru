@@ -5,6 +5,7 @@ import { Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { ListingCard } from "@/app/(dashboard)/user/types/my-property-list";
 import Image from "next/image";
 import Link from "next/link";
+import { formatDisplayId } from "@/utils/id.utils";
 
 const PAGE_SIZE = 6;
 
@@ -143,7 +144,9 @@ function MyPropertyCard({ item }: { item: ListingCard }) {
         {/* Body */}
         <div className="p-4">
           <h3 className="text-sm font-semibold text-gray">{item.title}</h3>
-          <p className="mt-1 text-xs text-gray/40">#{item.id}</p>
+          <p className="mt-1 text-xs text-gray/40">
+            {formatDisplayId("POST", item.id)}
+          </p>
 
           {/* Tags */}
           <div className="mt-3 flex flex-wrap gap-2">

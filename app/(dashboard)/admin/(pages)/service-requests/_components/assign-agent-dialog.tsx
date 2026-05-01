@@ -4,7 +4,7 @@ import React, { useMemo, useState } from "react";
 import Dialog from "@/components/dialogs/dialog";
 import Card from "@/components/cards/card";
 import Button from "@/components/buttons/button";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/classnames.utils";
 import { Calendar, Check, MapPin, Search, X } from "lucide-react";
 
 import {

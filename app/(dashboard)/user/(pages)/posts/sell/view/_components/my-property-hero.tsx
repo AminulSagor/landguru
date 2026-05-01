@@ -5,6 +5,7 @@ import { ArrowLeft, Trash } from "lucide-react";
 import { ListingCard } from "@/app/(dashboard)/user/types/my-property-list";
 import Button from "@/components/buttons/button";
 import Link from "next/link";
+import { formatDisplayId } from "@/utils/id.utils";
 
 type Props = {
   property: ListingCard;
@@ -30,7 +31,9 @@ const MyPropertyHero = ({ property, isDraft }: Props) => {
           <h1 className="text-2xl font-extrabold text-gray">
             {property.title}
           </h1>
-          <p className="mt-1 text-sm text-gray/50">#{property.id}</p>
+          <p className="mt-1 text-sm text-gray/50">
+            {formatDisplayId("POST", property.id)}
+          </p>
         </div>
 
         {/* Right Status Pills */}

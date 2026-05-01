@@ -6,7 +6,8 @@ import toast from "react-hot-toast";
 import Dialog from "@/components/dialogs/dialog";
 import Card from "@/components/cards/card";
 import Button from "@/components/buttons/button";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/classnames.utils";
+import { formatDisplayId } from "@/utils/id.utils";
 import {
   MapPin,
   Home,
@@ -362,7 +363,9 @@ export default function ApprovedDialog({
       <div className="w-full">
         <div className="flex items-start justify-between gap-4 border-b border-gray/15 px-6 py-5">
           <div className="min-w-0">
-            <p className="text-base font-semibold">Review Buy Request {post.id}</p>
+            <p className="text-base font-semibold">
+              Review Buy Request {formatDisplayId("BUY", post.id)}
+            </p>
 
             <div className="mt-1 flex items-center gap-2">
               <p className="text-sm text-gray">

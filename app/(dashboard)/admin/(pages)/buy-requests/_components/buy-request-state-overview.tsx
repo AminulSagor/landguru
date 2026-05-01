@@ -4,7 +4,7 @@
 import React from "react";
 import { FileText, Globe, CheckCircle2 } from "lucide-react";
 import Card from "@/components/cards/card";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/classnames.utils";
 
 type OverviewItem = {
   key: "pending_review" | "active_published" | "closed_fulfilled";

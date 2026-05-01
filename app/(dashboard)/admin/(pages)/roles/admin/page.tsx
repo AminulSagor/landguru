@@ -18,7 +18,7 @@ import BulkActionBar from "@/app/(dashboard)/admin/(pages)/roles/admin/_componen
 import AdminOnBoardDialog from "@/app/(dashboard)/admin/(pages)/roles/admin/_components/admin-onboard-dialog";
 import EditAdminDialog from "@/app/(dashboard)/admin/(pages)/roles/admin/_components/edit-admin-dialog";
 import AdminResetCredentialsDialog from "@/app/(dashboard)/admin/(pages)/reset-requests/_components/admin-reset-credentials-dialog";
-import { formatAdminDisplayId } from "@/lib/utils";
+import { formatAdminDisplayId, formatDisplayIdSafe } from "@/utils/id.utils";
 import type { ResetRequest } from "@/app/(dashboard)/admin/types/admin-reset-types";
 import { adminListService } from "@/service/admin/admin-list/admin-list.service";
 import { adminSummaryMetricsService } from "@/service/admin/admin-list/admin-summary-metrics.service";
@@ -329,7 +329,7 @@ export default function AdminManageAdminsPage() {
     setResetRequestData({
       id: match.id,
       name: match.name,
-      adminId: match.displayId ?? match.id,
+      adminId: formatDisplayIdSafe("ADM", match.displayId, match.id),
       avatar: match.avatar ?? "",
       time: new Date().toISOString(),
       phone: match.phone ?? "",

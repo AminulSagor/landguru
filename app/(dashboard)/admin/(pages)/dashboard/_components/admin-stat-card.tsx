@@ -2,7 +2,7 @@
 
 import React from "react";
 import Card from "@/components/cards/card";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/classnames.utils";
 
 type Variant = "danger" | "primary" | "success" | "neutral";
 

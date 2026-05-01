@@ -3,7 +3,7 @@
 import React, { useMemo, useState } from "react";
 import Dialog from "@/components/dialogs/dialog";
 import Card from "@/components/cards/card";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/classnames.utils";
 import { Download, Eye } from "lucide-react";
 import { ServiceDetails } from "@/app/(dashboard)/admin/types/service-request.types";
 

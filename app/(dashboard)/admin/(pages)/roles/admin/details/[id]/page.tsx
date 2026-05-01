@@ -6,7 +6,7 @@ import AdminProfileCard from "@/app/(dashboard)/admin/(pages)/roles/admin/_compo
 import SupervisedAgentsCard from "@/app/(dashboard)/admin/(pages)/roles/admin/_components/supervised-agents-card";
 import { adminDetailsService } from "@/service/admin/admin-list/details/[id]/admin-details.service";
 import { AdminMiniStat } from "@/app/(dashboard)/admin/types/admin-details-type";
-import { formatAdminDisplayId } from "@/lib/utils";
+import { formatAdminDisplayId } from "@/utils/id.utils";
 
 interface Props {
   params: Promise<{ id: string }>;

@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import Card from "@/components/cards/card";
 import type { BuyPostDetails } from "@/app/(dashboard)/user/dummy-data/buy-post-data";
+import { formatDisplayId } from "@/utils/id.utils";
 
 export default function BuyPostRequestDetailsCard({
   data,
@@ -25,7 +26,8 @@ export default function BuyPostRequestDetailsCard({
         <div>
           <h3 className="text-lg font-extrabold text-gray">{data.title}</h3>
           <p className="mt-1 text-sm font-semibold text-gray/50">
-            #{data.id} <span className="mx-2 text-gray/20">•</span> Posted:{" "}
+            {formatDisplayId("BUY", data.id)}{" "}
+            <span className="mx-2 text-gray/20">•</span> Posted:{" "}
             {data.postedText}
           </p>
         </div>

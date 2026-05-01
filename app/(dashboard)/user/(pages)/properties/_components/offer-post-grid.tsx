@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import type { OfferPostCard } from "@/app/(dashboard)/user/types/offer-post";
+import { formatDisplayId } from "@/utils/id.utils";
 
 const PAGE_SIZE = 6;
 
@@ -142,7 +143,9 @@ function OfferPostCardUI({ item }: { item: OfferPostCard }) {
         {/* Body */}
         <div className="p-5">
           <h3 className="text-base font-extrabold text-gray">{item.title}</h3>
-          <p className="mt-1 text-xs font-semibold text-gray/40">#{item.id}</p>
+          <p className="mt-1 text-xs font-semibold text-gray/40">
+            {formatDisplayId("OFF", item.id)}
+          </p>
 
           {/* Pills */}
           <div className="mt-3 flex flex-wrap items-center gap-2">

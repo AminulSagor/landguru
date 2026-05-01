@@ -1,7 +1,7 @@
 import { PropertyRequest } from "@/app/(dashboard)/user/types/property-request";
 import Button from "@/components/buttons/button";
 import Card from "@/components/cards/card";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/classnames.utils";
 import {
   CheckCircle2,
   ChevronRight,

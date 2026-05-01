@@ -3,7 +3,7 @@
 import Card from "@/components/cards/card";
 import Button from "@/components/buttons/button";
 import { Shield, CheckCircle, RotateCcw, Settings } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/classnames.utils";
 
 type ActivityType = "policy" | "approved" | "reset" | "config";
 

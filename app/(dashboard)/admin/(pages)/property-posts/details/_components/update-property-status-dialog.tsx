@@ -8,7 +8,7 @@ import { Info, Check, Calendar, Mail, Phone, Lock } from "lucide-react";
 import Dialog from "@/components/dialogs/dialog";
 import Card from "@/components/cards/card";
 import Button from "@/components/buttons/button";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/classnames.utils";
 import { propertyPostManagementService } from "@/service/admin/property/property-post-management.service";
 import {
   PropertyPostStatus,

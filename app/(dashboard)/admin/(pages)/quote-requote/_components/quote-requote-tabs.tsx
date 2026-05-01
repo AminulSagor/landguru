@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/classnames.utils";
 import type { SellPostNegotiationTab } from "@/types/admin/quote-requote/sell-post-negotiations.types";
 import { NEGOTIATION_TABS } from "@/app/(dashboard)/admin/(pages)/quote-requote/_utils/quote-requote.utils";
 

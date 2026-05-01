@@ -5,6 +5,7 @@ import { ResetRequest } from "@/app/(dashboard)/admin/types/admin-reset-types";
 import { AlertTriangle, Info, Mail, MapPin, Phone, Trash2 } from "lucide-react";
 import { useState } from "react";
 import AdminResetCredentialsDialog from "@/app/(dashboard)/admin/(pages)/reset-requests/_components/admin-reset-credentials-dialog";
+import { formatDisplayId } from "@/utils/id.utils";
 
 export default function AdminRequestDetails({ data }: { data: ResetRequest }) {
   const [openReset, setOpenReset] = useState(false);
@@ -44,7 +45,9 @@ export default function AdminRequestDetails({ data }: { data: ResetRequest }) {
                     Admin Identifier:{" "}
                     <span className="text-primary">{data.adminId}</span>{" "}
                     <span className="text-gray">|</span> Ticket:{" "}
-                    <span className="text-primary">{data.id}</span>
+                    <span className="text-primary">
+                      {formatDisplayId("RST", data.id)}
+                    </span>
                   </p>
                 </div>
               </div>

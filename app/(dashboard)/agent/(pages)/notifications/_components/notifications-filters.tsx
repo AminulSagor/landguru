@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { cn } from "@/lib/utils"; // if you have it, else remove cn and use template strings
+import { cn } from "@/utils/classnames.utils"; // if you have it, else remove cn and use template strings
 
 export type NotiFilter = "all" | "action" | "appointments";
 

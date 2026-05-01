@@ -5,6 +5,7 @@ import Card from "@/components/cards/card";
 import Button from "@/components/buttons/button";
 import AssignAgentDialog from "@/app/(dashboard)/admin/(pages)/property-posts/details/_components/assign-agent-dialog";
 import type { PropertyPostItem } from "@/types/admin/property-post/property.types";
+import { formatDisplayId } from "@/utils/id.utils";
 
 type ProgressStatus = "none" | "pending" | "in_progress" | "submitted" | "verified";
 
@@ -78,7 +79,7 @@ export default function ServiceProgressCard({
   const completedText = `(${done}/${total} Completed)`;
   const noteText =
     total > done ? `${total - done} service(s) still pending` : undefined;
-  const postRef = `#${property.id.slice(0, 8).toUpperCase()}`;
+  const postRef = formatDisplayId("POST", property.id);
 
   return (
     <Card>
@@ -145,7 +146,7 @@ export default function ServiceProgressCard({
                       </p>
                       {row.id && (
                         <p className="text-xs font-semibold text-gray">
-                          #{row.id.slice(0, 8).toUpperCase()}
+                          {formatDisplayId("SRV", row.id)}
                         </p>
                       )}
                     </td>

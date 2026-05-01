@@ -1,5 +1,6 @@
 import { ResetRequest } from "@/app/(dashboard)/admin/types/admin-reset-types";
 import Image from "next/image";
+import { formatDisplayId } from "@/utils/id.utils";
 
 export default function QueueItem({
   item,
@@ -27,7 +28,9 @@ export default function QueueItem({
       >
         {/* top meta row */}
         <div className="flex items-start justify-between">
-          <p className="text-xs font-semibold text-primary">{item.id}</p>
+          <p className="text-xs font-semibold text-primary">
+            {formatDisplayId("RST", item.id)}
+          </p>
 
           <div className="flex flex-col items-end gap-1">
             {showAction ? (

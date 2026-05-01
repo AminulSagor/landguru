@@ -1,6 +1,7 @@
 import { AdminRow } from "@/app/(dashboard)/admin/types/admin-list-type";
 import { Edit3, KeyRound, Trash2 } from "lucide-react";
 import Image from "next/image";
+import { formatDisplayIdSafe } from "@/utils/id.utils";
 
 function locationChip(tone: AdminRow["locationTone"]) {
   if (tone === "purple") return "bg-[#F3E8FF] text-[#6D28D9]";
@@ -89,7 +90,7 @@ export default function AdminRowItem({
           <div>
             <p className="text-sm font-semibold">{row.name}</p>
             <p className="text-xs font-medium text-gray">
-              {row.displayId ?? row.id}
+              {formatDisplayIdSafe("ADM", row.displayId, row.id)}
             </p>
           </div>
         </div>

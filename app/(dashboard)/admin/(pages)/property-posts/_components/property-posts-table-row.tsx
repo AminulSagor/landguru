@@ -6,6 +6,7 @@ import { MoreVertical } from "lucide-react";
 
 import Button from "@/components/buttons/button";
 import type { PropertyPostItem } from "@/types/admin/property-post/property.types";
+import { formatDisplayId } from "@/utils/id.utils";
 
 import {
   buildPropertyDetailsHref,
@@ -138,7 +139,7 @@ export default function PropertyPostsTableRow({
           {property.isResell && <TagPill label="Resell Post" tone="red" />}
 
           <span className="text-[11px] font-semibold text-gray">
-            #{property.id.slice(0, 8).toUpperCase()}
+            {formatDisplayId("POST", property.id)}
           </span>
         </div>
       </td>

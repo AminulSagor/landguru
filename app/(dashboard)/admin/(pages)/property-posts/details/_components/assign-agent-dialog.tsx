@@ -6,7 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import Dialog from "@/components/dialogs/dialog";
 import Card from "@/components/cards/card";
 import Button from "@/components/buttons/button";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/classnames.utils";
 import { adminZoneAgentsService } from "@/service/admin/agent/admin-zone-agents.service";
 import { getToken } from "@/utils/cookies.utils";
 import type { AdminZoneAgentItem } from "@/types/admin/agent-list/admin-zone-agents.types";

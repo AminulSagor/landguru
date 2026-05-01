@@ -26,6 +26,7 @@ import type {
   ServiceRequestReviewDeliverable,
   ServiceRequestReviewResponse,
 } from "@/types/admin/service-requests/service-request-review.types";
+import { formatDisplayIdSafe } from "@/utils/id.utils";
 
 import type { AssignAgentDialogPayload, AssignAgentDocument, AssignAgentSubmitPayload } from "@/app/(dashboard)/admin/types/assign-agent.types";
 import type { ServiceDetails } from "@/app/(dashboard)/admin/types/service-request.types";
@@ -308,7 +309,11 @@ function buildAssignPayload(
   const autoReassign = item.autoReassign ?? matchingAssignment?.autoReassign ?? false;
 
   return {
-    postId: item.parentPost.displayId ?? item.parentPost.id,
+    postId: formatDisplayIdSafe(
+      "POST",
+      item.parentPost.displayId,
+      item.parentPost.id,
+    ),
     sellPostId: item.parentPost.id,
     assignmentId: item.service.id,
     serviceKey,
@@ -394,9 +399,20 @@ function buildServiceDetails(
       }
     : null;
 
+  const serviceDisplayId = formatDisplayIdSafe(
+    "SRV",
+    item.service.displayId,
+    item.service.id,
+  );
+  const postDisplayId = formatDisplayIdSafe(
+    "POST",
+    item.parentPost.displayId,
+    item.parentPost.id,
+  );
+
   return {
     headerTitle: `Service Details: ${serviceName}`,
-    serviceIdLabel: `#${item.service.displayId ?? item.service.id}-${item.parentPost.displayId ?? item.parentPost.id}`,
+    serviceIdLabel: `${serviceDisplayId}-${postDisplayId.replace(/^#/, "")}`,
     statusChipLabel: statusLabel,
     agent: {
       id: agentId,

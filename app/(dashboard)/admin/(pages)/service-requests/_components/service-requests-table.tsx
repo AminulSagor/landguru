@@ -3,7 +3,8 @@
 
 import React from "react";
 import Button from "@/components/buttons/button";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/classnames.utils";
+import { formatDisplayIdSafe } from "@/utils/id.utils";
 import { MapPin, Plus, Loader2 } from "lucide-react";
 import type { ServiceRequestListItem } from "@/types/admin/service-requests/service-requests-list.types";
 
@@ -305,13 +306,21 @@ export default function ServiceRequestsTable({
                   <td className="px-6 py-5">
                     <div className="text-sm text-black">{item.service.name}</div>
                     <div className="mt-1 text-xs text-gray">
-                      #{item.service.displayId ?? item.service.id}
+                      {formatDisplayIdSafe(
+                        "SRV",
+                        item.service.displayId,
+                        item.service.id,
+                      )}
                     </div>
                   </td>
 
                   <td className="px-6 py-5">
                     <div className="text-primary">
-                      #{item.parentPost.displayId ?? item.parentPost.id}
+                      {formatDisplayIdSafe(
+                        "POST",
+                        item.parentPost.displayId,
+                        item.parentPost.id,
+                      )}
                     </div>
                     <div className="mt-1 flex items-center gap-2 text-xs text-gray">
                       <MapPin className="h-4 w-4" />

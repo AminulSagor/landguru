@@ -5,7 +5,7 @@ import React, { useMemo, useRef, useState } from "react";
 import { Eye, Trash2, GripVertical, Upload, Plus, Save } from "lucide-react";
 import Dialog from "@/components/dialogs/dialog";
 import Button from "@/components/buttons/button";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/classnames.utils";
 
 type DocSection = "deed" | "khatian" | "other";
 

@@ -15,7 +15,7 @@ import { Calendar, Clock, MapPin, SendHorizontal } from "lucide-react";
 
 import Button from "@/components/buttons/button";
 import Dialog from "@/components/dialogs/dialog";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/classnames.utils";
 import { scheduleAppointmentService } from "@/service/admin/appointments/schedule-appointment.service";
 import type { SiteVisitRequestItem } from "@/types/admin/appointments/site-visit-requests.types";
 

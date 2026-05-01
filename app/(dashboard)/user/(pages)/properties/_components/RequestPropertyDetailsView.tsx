@@ -23,6 +23,7 @@ import {
 
 import Card from "@/components/cards/card";
 import Button from "@/components/buttons/button";
+import { formatDisplayId } from "@/utils/id.utils";
 
 import { PropertyRequestDetails } from "@/app/(dashboard)/user/(pages)/properties/request/details/[id]/page";
 
@@ -72,7 +73,9 @@ export default function RequestPropertyDetailsView({
                   </h1>
                   <StatusBadge status={request.status} />
                 </div>
-                <p className="mt-2 text-sm text-gray/70">ID: #{request.id}</p>
+                <p className="mt-2 text-sm text-gray/70">
+                  ID: {formatDisplayId("REQ", request.id)}
+                </p>
               </div>
 
               <div className="w-full md:w-[320px]">

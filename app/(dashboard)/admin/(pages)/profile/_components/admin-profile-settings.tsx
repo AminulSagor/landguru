@@ -4,7 +4,7 @@ import React from "react";
 import Image from "next/image";
 import Card from "@/components/cards/card";
 import Button from "@/components/buttons/button";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/classnames.utils";
 import {
   Briefcase,
   CheckCircle2,

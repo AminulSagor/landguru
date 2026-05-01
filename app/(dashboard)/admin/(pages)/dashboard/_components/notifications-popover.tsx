@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Button from "@/components/buttons/button";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/classnames.utils";
 import { Bell, Check, AlertCircle, Wrench, UserPlus } from "lucide-react";
 
 type NotificationType = "urgent" | "success" | "service" | "user";

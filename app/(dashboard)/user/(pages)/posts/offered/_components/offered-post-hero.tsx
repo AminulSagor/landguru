@@ -4,6 +4,7 @@ import React from "react";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { OfferPostCard } from "@/app/(dashboard)/user/types/offer-post";
+import { formatDisplayId } from "@/utils/id.utils";
 
 type Props = {
   property: OfferPostCard;
@@ -30,7 +31,7 @@ const OfferedPostHero = ({ property }: Props) => {
             {property.title}
           </h1>
           <p className="mt-1 text-sm font-semibold text-gray/50">
-            #{property.id}
+            {formatDisplayId("OFF", property.id)}
           </p>
         </div>
 

@@ -8,6 +8,7 @@ import {
   AppointmentItem,
   appointmentsData,
 } from "@/app/(dashboard)/agent/dummy-data/moc-appointment-data";
+import { formatDisplayId } from "@/utils/id.utils";
 
 type Tabkey = "upcomming" | "past";
 const AppointmentPage = () => {
@@ -49,7 +50,9 @@ function AppointmentListCard({ item }: { item: AppointmentItem }) {
         <div className="flex items-start justify-between gap-3">
           <div>
             <h3 className="text-base font-extrabold text-gray">{item.title}</h3>
-            <p className="text-xs font-semibold text-gray/50">{item.id}</p>
+            <p className="text-xs font-semibold text-gray/50">
+              {formatDisplayId("APT", item.id)}
+            </p>
           </div>
 
           <ChevronRight className="text-gray/30" size={18} />

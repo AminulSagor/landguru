@@ -4,7 +4,7 @@
 import * as React from "react";
 import { Search, ChevronDown, MapPin } from "lucide-react";
 import Button from "@/components/buttons/button";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/classnames.utils";
 import Dialog from "@/components/dialogs/dialog";
 
 export type ListingStatus = "Active" | "Pending";

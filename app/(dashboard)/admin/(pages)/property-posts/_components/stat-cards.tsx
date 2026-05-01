@@ -2,7 +2,7 @@
 
 import React from "react";
 import Card from "@/components/cards/card";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/classnames.utils";
 import type { AdminSellPostSummaryStats } from "@/types/admin/property-post/sell-post-summary.types";
 import {
   ClipboardList,

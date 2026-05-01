@@ -20,6 +20,7 @@ import PendingReviewFooter from "@/app/(dashboard)/admin/(pages)/property-posts/
 import UpdateStatusSection from "@/app/(dashboard)/admin/(pages)/property-posts/details/_components/update-status-section";
 import type { PropertyPostItem } from "@/types/admin/property-post/property.types";
 import { formatBdt } from "@/app/(dashboard)/admin/(pages)/property-posts/_utils/properties-management-table.utils";
+import { formatDisplayId } from "@/utils/id.utils";
 
 type Props = { property: PropertyPostItem };
 
@@ -69,7 +70,7 @@ export default function PropertyDetailsView({ property }: Props) {
   const router = useRouter();
 
   const statusLabel = toStatusLabel(property.status);
-  const postRef = `#${property.id.slice(0, 8).toUpperCase()}`;
+  const postRef = formatDisplayId("POST", property.id);
   const normalizedStatus = property.status.toUpperCase();
   const [unit, setUnit] = useState<MetricUnit>(
     toMetricUnit(property.plotUnit || property.sellableUnit),

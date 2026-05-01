@@ -3,7 +3,8 @@
 import React, { useMemo, useState } from "react";
 import Card from "@/components/cards/card";
 import Button from "@/components/buttons/button";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/classnames.utils";
+import { formatDisplayId } from "@/utils/id.utils";
 import {
   MoreHorizontal,
   Tag,
@@ -63,7 +64,9 @@ export default function AdminRecentActivityTask() {
                 key={r.id}
                 className="border-t border-gray/15 hover:bg-secondary/20"
               >
-                <td className="p-4 text-gray">{r.id}</td>
+                <td className="p-4 text-gray">
+                  {formatDisplayId("ACT", r.id)}
+                </td>
 
                 <td className="p-4">
                   <TypePill type={r.type} />
