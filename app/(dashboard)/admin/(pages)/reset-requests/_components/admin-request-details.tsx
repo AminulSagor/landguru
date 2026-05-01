@@ -1,3 +1,5 @@
+"use client";
+
 import Card from "@/components/cards/card";
 import Button from "@/components/buttons/button";
 import Image from "next/image";

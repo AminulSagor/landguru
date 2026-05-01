@@ -56,4 +56,10 @@ export const propertyPostManagementService = {
 
     return response.data;
   },
+
+  async getPotentialBuyers(postId: string) : Promise<any> {
+    const response = await serviceClient.get(`/sell-posts/appointments/admin/${postId}/potential-buyers`);
+    console.log(response.data);
+    return response.data;
+  }
 };

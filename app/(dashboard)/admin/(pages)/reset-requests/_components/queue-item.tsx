@@ -1,6 +1,10 @@
+"use client";
+
 import { ResetRequest } from "@/app/(dashboard)/admin/types/admin-reset-types";
 import Image from "next/image";
 import { formatDisplayId } from "@/utils/id.utils";
+import { useRouter } from "next/navigation";
+
 
 export default function QueueItem({
   item,

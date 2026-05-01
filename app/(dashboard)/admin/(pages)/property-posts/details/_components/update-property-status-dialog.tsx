@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { Info, Check, Calendar, Mail, Phone, Lock } from "lucide-react";
@@ -75,6 +75,17 @@ export default function UpdatePropertyStatusDialog({
     [],
   );
 
+const getPotentialBuyersQuery = useQuery({
+  queryKey: ["potential-buyers", postId],
+  queryFn: async () => {
+    const data =
+      await propertyPostManagementService.getPotentialBuyers(postId);
+
+    console.log("Potential buyers response:", data);
+    return data;
+  },
+  enabled: open && !!postId,
+});
   const updateStatusMutation = useMutation({
     mutationFn: (payload: UpdatePropertyStatusPayload) =>
       propertyPostManagementService.updatePropertyStatus(postId, payload),
@@ -257,14 +268,19 @@ export default function UpdatePropertyStatusDialog({
               </div>
 
               {/* add another buyer */}
+
               <button
+                onClick={() => getPotentialBuyersQuery.refetch()}
+                disabled={getPotentialBuyersQuery.isFetching}
                 type="button"
                 className={cn(
                   "mt-4 w-full rounded-xl border-2 border-dashed px-4 py-6 text-center",
                   "border-primary/40 text-sm font-semibold text-primary hover:bg-primary/5",
                 )}
               >
-                Add Another Buyer
+                {getPotentialBuyersQuery.isFetching
+                  ? "Loading..."
+                  : "Add Another Buyer"}
               </button>
             </div>
           </Card>
@@ -301,7 +317,10 @@ export default function UpdatePropertyStatusDialog({
             Cancel
           </button>
 
-          <Button onClick={handleConfirm} disabled={updateStatusMutation.isPending}>
+          <Button
+            onClick={handleConfirm}
+            disabled={updateStatusMutation.isPending}
+          >
             <span className="inline-flex items-center gap-2">
               <Lock className="h-4 w-4" />
               {updateStatusMutation.isPending

@@ -8,6 +8,7 @@ import { adminDetailsService } from "@/service/admin/admin-list/details/[id]/adm
 import { AdminMiniStat } from "@/app/(dashboard)/admin/types/admin-details-type";
 import { formatAdminDisplayId } from "@/utils/id.utils";
 
+
 interface Props {
   params: Promise<{ id: string }>;
 }
@@ -175,7 +176,14 @@ export default async function AdminDetailsPage({ params }: Props) {
 
     return (
       <div className="space-y-4">
-        <AdminDetailsHeader breadcrumbName={data.breadcrumbName} adminId={admin?.id ?? decodedId} />
+        <AdminDetailsHeader
+  breadcrumbName={data.breadcrumbName}
+  adminId={admin?.id ?? decodedId}
+  adminEmail={admin?.email ?? ""}
+  adminPhone={admin?.phone ?? ""}
+  adminZone={admin?.assignedLocation ?? ""}
+  adminAvatarUrl={admin?.photoUrl ?? ""}
+/>
 
         <AdminProfileCard profile={data.profile} />
 

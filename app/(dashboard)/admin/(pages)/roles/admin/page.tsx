@@ -34,6 +34,47 @@ import type { UpdateAdminPayload } from "@/types/admin/admin-list/admin-update.t
 const SEARCH_DEBOUNCE_MS = 350;
 const PAGE_SIZE = 10;
 
+function showConfirmToast({
+  title,
+  description,
+  confirmLabel,
+  onConfirm,
+}: {
+  title: string;
+  description: string;
+  confirmLabel: string;
+  onConfirm: () => void;
+}) {
+  toast.custom(
+    (t) => (
+      <div className="w-[320px] rounded-2xl border border-gray/15 bg-white p-4 shadow-xl">
+        <p className="text-sm font-semibold text-primary">{title}</p>
+        <p className="mt-1 text-sm text-gray">{description}</p>
+        <div className="mt-4 flex justify-end gap-2">
+          <button
+            type="button"
+            className="rounded-lg border border-gray/15 px-3 py-2 text-sm font-medium text-gray hover:bg-secondary"
+            onClick={() => toast.dismiss(t.id)}
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            className="rounded-lg bg-[#EF4444] px-3 py-2 text-sm font-medium text-white hover:bg-[#d83b3b]"
+            onClick={() => {
+              toast.dismiss(t.id);
+              onConfirm();
+            }}
+          >
+            {confirmLabel}
+          </button>
+        </div>
+      </div>
+    ),
+    { duration: Infinity },
+  );
+}
+
 const DEFAULT_ADMIN_STATS: AdminManageStats = {
   totalAdmins: 0,
   activeLocations: 0,
@@ -315,11 +356,12 @@ export default function AdminManageAdminsPage() {
   };
 
   const handleDelete = (id: string) => {
-    if (!window.confirm("Delete this admin profile?")) {
-      return;
-    }
-
-    deleteMutation.mutate(id);
+    showConfirmToast({
+      title: "Delete this admin profile?",
+      description: "This action cannot be undone.",
+      confirmLabel: "Delete",
+      onConfirm: () => deleteMutation.mutate(id),
+    });
   };
 
   const handleKey = (id: string) => {
