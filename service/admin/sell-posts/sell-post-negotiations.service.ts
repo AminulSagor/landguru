@@ -6,15 +6,11 @@ import type {
   SellPostNegotiationsQueryParams,
   SellPostNegotiationsResponse,
 } from "@/types/admin/quote-requote/sell-post-negotiations.types";
-import {
-  mapSellPostNegotiationsResponse,
-  type SellPostNegotiationsApiResponse,
-} from "@/service/admin/sell-posts/sell-post-negotiations.mapper";
 
 export const getAdminSellPostNegotiations = async (
   params: SellPostNegotiationsQueryParams,
 ): Promise<SellPostNegotiationsResponse> => {
-  const response = await serviceClient.get<SellPostNegotiationsApiResponse>(
+  const response = await serviceClient.get<SellPostNegotiationsResponse>(
     "/sell-posts/admin/negotiations",
     {
       params: {
@@ -25,7 +21,7 @@ export const getAdminSellPostNegotiations = async (
     },
   );
 
-  return mapSellPostNegotiationsResponse(response.data);
+  return response.data;
 };
 
 export const getAdminSellPostNegotiationReviewDetails = async (

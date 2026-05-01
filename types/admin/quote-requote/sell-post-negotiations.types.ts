@@ -10,22 +10,22 @@ export type SellPostNegotiationStatus =
   | string;
 
 export type SellPostNegotiationSeller = {
-  id: string;
-  name: string;
-  phone: string;
-  image: string | null;
+  id?: string;
+  name?: string;
+  phone?: string;
+  image?: string | null;
 };
 
 export type SellPostNegotiationItem = {
   negotiationId: string;
-  postId: string;
-  postTitle: string;
-  postImage: string | null;
-  seller: SellPostNegotiationSeller;
-  adminLastQuote: number | null;
-  userNewCounter: number | null;
-  requoteCount: number;
-  lastActionAt: string;
+  postId?: string;
+  postTitle?: string;
+  postImage?: string | null;
+  seller?: SellPostNegotiationSeller;
+  adminLastQuote?: number | null;
+  userNewCounter?: number | null;
+  requoteCount?: number;
+  lastActionAt?: string;
   status?: SellPostNegotiationStatus;
   isActionRequired?: boolean;
   postLocation?: string | null;

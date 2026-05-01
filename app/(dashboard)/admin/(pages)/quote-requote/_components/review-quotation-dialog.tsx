@@ -246,7 +246,7 @@ export default function ReviewQutationDialog({
       onControl(false);
       onSuccessDialogOpen({
         postId: formatPostId(item?.postId),
-        sellerName: item?.seller.name ?? "",
+        sellerName: item?.seller?.name ?? "",
         mandatoryFee: variables.mandatoryFee,
         optionalFee: variables.optionalFee,
         currencySymbol: sym,
@@ -315,7 +315,7 @@ export default function ReviewQutationDialog({
             </span>{" "}
             with{" "}
             <span className="font-extrabold text-gray">
-              {item?.seller.name ?? ""}
+              {item?.seller?.name ?? ""}
             </span>
           </p>
         </div>

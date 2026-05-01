@@ -8,6 +8,20 @@ import type {
   UpdateRiskChecklistPayload,
 } from "@/types/admin/property-post/property.types";
 
+export type PotentialBuyer = {
+  id: string;
+  name: string;
+  phone: string;
+  email: string;
+  image: string | null;
+  isVerified: boolean;
+};
+
+export type PotentialBuyersResponse = {
+  success: boolean;
+  data: PotentialBuyer[];
+};
+
 export const propertyPostManagementService = {
   async updatePropertyStatus(
     postId: string,
@@ -57,9 +71,13 @@ export const propertyPostManagementService = {
     return response.data;
   },
 
-  async getPotentialBuyers(postId: string) : Promise<any> {
-    const response = await serviceClient.get(`/sell-posts/appointments/admin/${postId}/potential-buyers`);
-    console.log(response.data);
+  async getPotentialBuyers(
+    postId: string,
+  ): Promise<PotentialBuyersResponse> {
+    const response = await serviceClient.get<PotentialBuyersResponse>(
+      `/sell-posts/appointments/admin/${postId}/potential-buyers`,
+    );
+
     return response.data;
   }
 };

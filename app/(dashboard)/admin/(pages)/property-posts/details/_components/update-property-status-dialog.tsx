@@ -3,13 +3,19 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import toast from "react-hot-toast";
 import { Info, Check, Calendar, Mail, Phone, Lock } from "lucide-react";
 import Dialog from "@/components/dialogs/dialog";
 import Card from "@/components/cards/card";
 import Button from "@/components/buttons/button";
 import { cn } from "@/utils/classnames.utils";
-import { propertyPostManagementService } from "@/service/admin/property/property-post-management.service";
+import { formatDisplayId } from "@/utils/id.utils";
+import {
+  propertyPostManagementService,
+  type PotentialBuyer,
+  type PotentialBuyersResponse,
+} from "@/service/admin/property/property-post-management.service";
 import {
   PropertyPostStatus,
   UpdatePropertyStatusPayload,
@@ -17,6 +23,12 @@ import {
 import { getErrorMessage } from "../../_utils/property-posts.utils";
 
 type StatusKey = "active" | "pending" | "sold" | "reject";
+
+function formatBuyerId(id: string) {
+  if (!id) return "";
+
+  return id.length > 4 ? id.slice(-4).toUpperCase() : id.toUpperCase();
+}
 
 function toDialogStatus(status: PropertyPostStatus): StatusKey {
   const normalized = status.toUpperCase();
@@ -56,6 +68,13 @@ export default function UpdatePropertyStatusDialog({
   const [status, setStatus] = useState<StatusKey>(toDialogStatus(currentStatus));
   const [soldPrice, setSoldPrice] = useState("");
   const [saleDate, setSaleDate] = useState("");
+  const [activeBuyerId, setActiveBuyerId] = useState<string | undefined>(
+    selectedBuyerId,
+  );
+  const displayPostId = useMemo(
+    () => formatDisplayId("POST", postId),
+    [postId],
+  );
 
   useEffect(() => {
     if (!open) return;
@@ -63,7 +82,8 @@ export default function UpdatePropertyStatusDialog({
     setStatus(toDialogStatus(currentStatus));
     setSoldPrice("");
     setSaleDate("");
-  }, [open, currentStatus, postId]);
+    setActiveBuyerId(selectedBuyerId);
+  }, [open, currentStatus, postId, selectedBuyerId]);
 
   const statusTabs = useMemo(
     () => [
@@ -75,17 +95,27 @@ export default function UpdatePropertyStatusDialog({
     [],
   );
 
-const getPotentialBuyersQuery = useQuery({
-  queryKey: ["potential-buyers", postId],
-  queryFn: async () => {
-    const data =
-      await propertyPostManagementService.getPotentialBuyers(postId);
+  const getPotentialBuyersQuery = useQuery<PotentialBuyersResponse>({
+    queryKey: ["potential-buyers", postId],
+    queryFn: () => propertyPostManagementService.getPotentialBuyers(postId),
+    enabled: open && !!postId,
+  });
+  const potentialBuyers = useMemo<PotentialBuyer[]>(
+    () => getPotentialBuyersQuery.data?.data ?? [],
+    [getPotentialBuyersQuery.data],
+  );
 
-    console.log("Potential buyers response:", data);
-    return data;
-  },
-  enabled: open && !!postId,
-});
+  useEffect(() => {
+    if (!open || potentialBuyers.length === 0) return;
+
+    setActiveBuyerId((prev) => {
+      if (prev && potentialBuyers.some((buyer) => buyer.id === prev)) {
+        return prev;
+      }
+
+      return potentialBuyers[0].id;
+    });
+  }, [open, potentialBuyers]);
   const updateStatusMutation = useMutation({
     mutationFn: (payload: UpdatePropertyStatusPayload) =>
       propertyPostManagementService.updatePropertyStatus(postId, payload),
@@ -117,10 +147,10 @@ const getPotentialBuyersQuery = useQuery({
         return;
       }
 
-      if (selectedBuyerId) {
+      if (activeBuyerId) {
         payload.buyers = [
           {
-            buyerId: selectedBuyerId,
+            buyerId: activeBuyerId,
             soldPrice: parsedSoldPrice,
             saleDate: new Date(saleDate).toISOString(),
           },
@@ -143,7 +173,7 @@ const getPotentialBuyersQuery = useQuery({
             <p className="text-xs text-gray">
               Changing status for{" "}
               <span className="font-semibold text-gray">{propertyTitle}</span>{" "}
-              <span className="text-primary"> (#{postId})</span>
+              <span className="text-primary"> ({displayPostId})</span>
             </p>
           </div>
         </div>
@@ -205,38 +235,74 @@ const getPotentialBuyersQuery = useQuery({
 
             <div className="px-5 pb-5">
               <div className="rounded-xl border border-gray/15 bg-white p-4">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <div className="h-12 w-12 rounded-full bg-gray/10" />
+                <div className="space-y-4">
+                  {potentialBuyers.map((buyer) => {
+                    const isSelected = buyer.id === activeBuyerId;
+                    const buyerId = formatBuyerId(buyer.id);
 
-                    <div className="space-y-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <p className="text-sm font-semibold text-gray">
-                          Mr. Abul Hasan
-                        </p>
-                        <p className="text-xs text-gray">
-                          <span className="text-gray">ID:</span> #4421
-                        </p>
-                      </div>
+                    return (
+                      <button
+                        key={buyer.id}
+                        type="button"
+                        onClick={() => setActiveBuyerId(buyer.id)}
+                        className="flex w-full items-start justify-between gap-4 border-0 bg-transparent p-0 text-left"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="h-12 w-12 overflow-hidden rounded-full bg-gray/10">
+                            {buyer.image ? (
+                              <Image
+                                src={buyer.image}
+                                height={48}
+                                width={48}
+                                className="h-full w-full object-cover"
+                                alt={buyer.name || "Buyer"}
+                              />
+                            ) : null}
+                          </div>
 
-                      <div className="flex flex-wrap items-center gap-3 text-xs text-gray">
-                        <span className="inline-flex items-center gap-2">
-                          <Phone className="h-3.5 w-3.5" />
-                          +88017...12
-                        </span>
-                        <span className="text-gray/20">•</span>
-                        <span className="inline-flex items-center gap-2">
-                          <Mail className="h-3.5 w-3.5" />
-                          abul.h@example.com
-                        </span>
-                      </div>
-                    </div>
-                  </div>
+                          <div className="space-y-1">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <p className="text-sm font-semibold text-gray">
+                                {buyer.name}
+                              </p>
+                              <p className="text-xs text-gray">
+                                <span className="text-gray">ID:</span> {" "}
+                                {buyerId ? `#${buyerId}` : "--"}
+                              </p>
+                            </div>
 
-                  {/* small badge */}
-                  <div className="grid h-6 w-6 place-items-center rounded-full border border-primary/20 bg-primary/10">
-                    <Check className="h-3.5 w-3.5 text-primary" />
-                  </div>
+                            <div className="flex flex-wrap items-center gap-3 text-xs text-gray">
+                              <span className="inline-flex items-center gap-2">
+                                <Phone className="h-3.5 w-3.5" />
+                                {buyer.phone || "--"}
+                              </span>
+                              <span className="text-gray/20">•</span>
+                              <span className="inline-flex items-center gap-2">
+                                <Mail className="h-3.5 w-3.5" />
+                                {buyer.email || "--"}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* small badge */}
+                        <div
+                          className={cn(
+                            "grid h-6 w-6 place-items-center rounded-full border",
+                            isSelected
+                              ? "border-primary/20 bg-primary/10"
+                              : "border-gray/15 bg-white",
+                          )}
+                        >
+                          {isSelected ? (
+                            <Check className="h-3.5 w-3.5 text-primary" />
+                          ) : (
+                            <span className="h-2 w-2 rounded-full bg-gray/30" />
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
 
                 <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">

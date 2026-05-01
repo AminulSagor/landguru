@@ -133,29 +133,38 @@ export const filterNegotiationItems = (
     return items;
   }
 
-  return items.filter((item) =>
-    [
-      item.negotiationId,
+  return items.filter((item) => {
+    const values = [
+      item.negotiationId ?? "",
       item.status ?? "",
-      item.postTitle,
+      item.postTitle ?? "",
       item.postLocation ?? "",
-      item.postId,
-      item.seller.name,
-      item.seller.phone,
-    ]
-      .join(" ")
-      .toLowerCase()
-      .includes(normalizedSearch),
-  );
+      item.postId ?? "",
+      item.seller?.name ?? "",
+      item.seller?.phone ?? "",
+    ];
+
+    return values.join(" ").toLowerCase().includes(normalizedSearch);
+  });
 };
 
 export const sortNegotiationItems = (
   items: SellPostNegotiationItem[],
   sort: QuoteRequoteSortKey,
 ): SellPostNegotiationItem[] => {
+  const getSafeTime = (value?: string): number => {
+    if (!value) {
+      return 0;
+    }
+
+    const time = new Date(value).getTime();
+
+    return Number.isFinite(time) ? time : 0;
+  };
+
   return [...items].sort((firstItem, secondItem) => {
-    const firstTime = new Date(firstItem.lastActionAt).getTime();
-    const secondTime = new Date(secondItem.lastActionAt).getTime();
+    const firstTime = getSafeTime(firstItem.lastActionAt);
+    const secondTime = getSafeTime(secondItem.lastActionAt);
 
     return sort === "newest_first"
       ? secondTime - firstTime

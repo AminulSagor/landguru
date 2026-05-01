@@ -229,8 +229,8 @@ export default function QuoteRequoteClient({
     onSuccess: (data, item) => {
       toast.success("Seller offer resent successfully.");
       handleSuccessDialogOpen({
-        postId: formatPostId(item.postId),
-        sellerName: item.seller.name,
+        postId: formatPostId(item.postId ?? ""),
+        sellerName: item.seller?.name ?? "",
         mandatoryFee: data.mandatoryFee,
         optionalFee: data.optionalFee,
         currencySymbol,

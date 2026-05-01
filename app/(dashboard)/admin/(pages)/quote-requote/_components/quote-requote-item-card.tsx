@@ -86,10 +86,14 @@ function getRequoteBadgeClasses(requoteCount: number) {
 }
 
 function PostCell({ item }: { item: SellPostNegotiationItem }) {
+  const postTitle = item.postTitle ?? "Untitled post";
+  const postImage = item.postImage ?? null;
+  const postId = item.postId ?? "";
+
   return (
     <div className="flex min-w-[280px] items-center gap-3">
       <div className="relative h-[54px] w-[54px] shrink-0 overflow-hidden rounded-lg border border-gray/10 bg-secondary">
-        <RemoteImage src={item.postImage} alt={item.postTitle} />
+        <RemoteImage src={postImage} alt={postTitle} />
       </div>
 
       <div className="min-w-0">
@@ -98,11 +102,11 @@ function PostCell({ item }: { item: SellPostNegotiationItem }) {
         </span>
 
         <p className="mt-2 line-clamp-1 text-[15px] font-bold leading-5 text-gray">
-          {item.postTitle}
+          {postTitle}
         </p>
 
         <p className="mt-1 line-clamp-1 text-xs font-medium text-primary">
-          {formatPostId(item.postId)}
+          {formatPostId(postId)}
         </p>
       </div>
     </div>
@@ -110,25 +114,29 @@ function PostCell({ item }: { item: SellPostNegotiationItem }) {
 }
 
 function SellerCell({ item }: { item: SellPostNegotiationItem }) {
+  const sellerName = item.seller?.name ?? "Unknown seller";
+  const sellerPhone = item.seller?.phone ?? "";
+  const sellerImage = item.seller?.image ?? null;
+
   return (
     <div className="flex min-w-[220px] items-center gap-3">
       <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full border border-gray/10 bg-secondary">
-        {item.seller.image ? (
-          <RemoteImage src={item.seller.image} alt={item.seller.name} />
+        {sellerImage ? (
+          <RemoteImage src={sellerImage} alt={sellerName} />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-xs font-bold text-gray">
-            {getInitials(item.seller.name)}
+            {getInitials(sellerName)}
           </div>
         )}
       </div>
 
       <div className="min-w-0">
         <p className="line-clamp-1 text-sm font-bold leading-5 text-gray">
-          {item.seller.name}
+          {sellerName}
         </p>
         <p className="text-xs font-semibold text-primary">Seller</p>
         <p className="line-clamp-1 text-[11px] font-medium text-primary/80">
-          {item.seller.phone}
+          {sellerPhone}
         </p>
       </div>
     </div>
@@ -143,7 +151,7 @@ function QuoteCell({ item }: { item: SellPostNegotiationItem }) {
           Admin Last Quote
         </p>
         <p className="mt-0.5 text-lg font-semibold leading-none text-primary">
-          {formatCurrency(item.adminLastQuote)}
+          {formatCurrency(item.adminLastQuote ?? null)}
         </p>
       </div>
 
@@ -152,7 +160,7 @@ function QuoteCell({ item }: { item: SellPostNegotiationItem }) {
           User New Counter
         </p>
         <p className="mt-1 text-[18px] font-extrabold leading-none text-gray">
-          {formatCurrency(item.userNewCounter)}
+          {formatCurrency(item.userNewCounter ?? null)}
         </p>
       </div>
     </div>
@@ -160,7 +168,8 @@ function QuoteCell({ item }: { item: SellPostNegotiationItem }) {
 }
 
 function RequoteCell({ item }: { item: SellPostNegotiationItem }) {
-  const badgeStyles = getRequoteBadgeClasses(item.requoteCount);
+  const requoteCount = item.requoteCount ?? 0;
+  const badgeStyles = getRequoteBadgeClasses(requoteCount);
 
   return (
     <div className="flex min-w-[120px] flex-col items-center justify-center">
@@ -184,13 +193,13 @@ function RequoteCell({ item }: { item: SellPostNegotiationItem }) {
             badgeStyles.countClass,
           )}
         >
-          {item.requoteCount}
+          {requoteCount}
         </p>
       </div>
 
       <div className="mt-2 flex items-center gap-1 text-[11px] font-medium text-primary/80">
         <Clock3 size={12} />
-        <span>{formatTimeAgo(item.lastActionAt)}</span>
+        <span>{formatTimeAgo(item.lastActionAt ?? "")}</span>
       </div>
     </div>
   );
