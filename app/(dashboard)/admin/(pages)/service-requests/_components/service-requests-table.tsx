@@ -308,7 +308,7 @@ export default function ServiceRequestsTable({
                     <div className="mt-1 text-xs text-gray">
                       {formatDisplayIdSafe(
                         "SRV",
-                        item.service.displayId,
+                        undefined,
                         item.service.id,
                       )}
                     </div>
@@ -318,7 +318,7 @@ export default function ServiceRequestsTable({
                     <div className="text-primary">
                       {formatDisplayIdSafe(
                         "POST",
-                        item.parentPost.displayId,
+                        undefined,
                         item.parentPost.id,
                       )}
                     </div>

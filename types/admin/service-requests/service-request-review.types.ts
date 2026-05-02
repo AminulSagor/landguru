@@ -1,13 +1,13 @@
 export interface ServiceRequestReviewAgent {
   id: string;
   name: string;
-  photo?: string | null;
-  phone?: string | null;
+  photo: string | null;
+  phone: string;
 }
 
 export interface ServiceRequestReviewTiming {
-  startedAt?: string | null;
-  submittedAt?: string | null;
+  startedAt: string | null;
+  submittedAt: string | null;
 }
 
 export interface ServiceRequestReviewActivityLog {
@@ -29,12 +29,12 @@ export interface ServiceRequestReviewResponse {
   assignmentId: string;
   status: string;
   serviceName: string;
-  agent?: ServiceRequestReviewAgent | null;
-  timings?: ServiceRequestReviewTiming | null;
-  activityLog?: ServiceRequestReviewActivityLog[] | null;
-  deliverables?: ServiceRequestReviewDeliverable[] | null;
-  lastFeedback?: {
-    feedback?: string | null;
-    createdAt?: string | null;
+  agent: ServiceRequestReviewAgent | null;
+  timings: ServiceRequestReviewTiming | null;
+  activityLog: ServiceRequestReviewActivityLog[];
+  deliverables: ServiceRequestReviewDeliverable[];
+  lastFeedback: {
+    feedback: string | null;
+    createdAt: string | null;
   } | null;
 }

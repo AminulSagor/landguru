@@ -35,6 +35,8 @@ const Page = async ({ searchParams }: PageProps) => {
     limit,
   });
 
+  console.log("🚀 ~ file: page.tsx:49 ~ Page ~ response:", response.data);
+
   return (
     <div className="space-y-5">
       <QuoteRequoteClient

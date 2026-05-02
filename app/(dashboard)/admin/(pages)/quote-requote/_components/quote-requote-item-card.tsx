@@ -86,9 +86,9 @@ function getRequoteBadgeClasses(requoteCount: number) {
 }
 
 function PostCell({ item }: { item: SellPostNegotiationItem }) {
-  const postTitle = item.postTitle ?? "Untitled post";
-  const postImage = item.postImage ?? null;
-  const postId = item.postId ?? "";
+  const postTitle = item.post?.title ?? "Untitled post";
+  const postImage = item.post?.image ?? null;
+  const postId = item.post?.id ?? "";
 
   return (
     <div className="flex min-w-[280px] items-center gap-3">
@@ -151,7 +151,7 @@ function QuoteCell({ item }: { item: SellPostNegotiationItem }) {
           Admin Last Quote
         </p>
         <p className="mt-0.5 text-lg font-semibold leading-none text-primary">
-          {formatCurrency(item.adminLastQuote ?? null)}
+          {formatCurrency(item.pricing?.adminLastQuote ?? null)}
         </p>
       </div>
 
@@ -160,7 +160,7 @@ function QuoteCell({ item }: { item: SellPostNegotiationItem }) {
           User New Counter
         </p>
         <p className="mt-1 text-[18px] font-extrabold leading-none text-gray">
-          {formatCurrency(item.userNewCounter ?? null)}
+          {formatCurrency(item.pricing?.userNewCounter ?? null)}
         </p>
       </div>
     </div>

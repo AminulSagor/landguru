@@ -1,6 +1,5 @@
 import { serviceClient } from "@/service/base/axios.client";
 import type {
-  ServiceRequestListApiResponse,
   ServiceRequestListQueryParams,
   ServiceRequestListResponse,
 } from "@/types/admin/service-requests/service-requests-list.types";
@@ -9,7 +8,7 @@ export const serviceRequestsListService = {
   async getServiceRequests(
     params: ServiceRequestListQueryParams,
   ): Promise<ServiceRequestListResponse> {
-    const response = await serviceClient.get<ServiceRequestListApiResponse>(
+    const response = await serviceClient.get<ServiceRequestListResponse>(
       "/property-services/service-requests",
       {
         params: {
@@ -23,6 +22,6 @@ export const serviceRequestsListService = {
       },
     );
 
-    return response.data as ServiceRequestListResponse;
+    return response.data;
   },
 };

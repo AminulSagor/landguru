@@ -6,29 +6,38 @@ export type SellPostNegotiationTab =
 export type SellPostNegotiationStatus =
   | "QUOTED"
   | "ACTIVE"
+  | "PENDING_ADMIN"
   | "PAYMENT_PENDING_REVIEW"
   | string;
 
 export type SellPostNegotiationSeller = {
-  id?: string;
-  name?: string;
-  phone?: string;
-  image?: string | null;
+  id: string;
+  name: string;
+  phone: string;
+  image: string | null;
+};
+
+export type SellPostNegotiationPost = {
+  id: string;
+  title: string;
+  image: string | null;
+  location: string | null;
+};
+
+export type SellPostNegotiationPricing = {
+  adminLastQuote: number | null;
+  userNewCounter: number | null;
 };
 
 export type SellPostNegotiationItem = {
   negotiationId: string;
-  postId?: string;
-  postTitle?: string;
-  postImage?: string | null;
+  status?: SellPostNegotiationStatus;
+  post?: SellPostNegotiationPost;
   seller?: SellPostNegotiationSeller;
-  adminLastQuote?: number | null;
-  userNewCounter?: number | null;
+  pricing?: SellPostNegotiationPricing;
   requoteCount?: number;
   lastActionAt?: string;
-  status?: SellPostNegotiationStatus;
   isActionRequired?: boolean;
-  postLocation?: string | null;
 };
 
 export type SellPostNegotiationsMeta = {

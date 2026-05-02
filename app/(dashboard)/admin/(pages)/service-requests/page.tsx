@@ -290,28 +290,21 @@ function buildAssignPayload(
   );
 
   const serviceKey =
-    item.serviceKey ??
-    item.service.key ??
+    item.service.serviceKey ??
     matchingAssignment?.serviceKey ??
     item.service.name;
   const responseDeadline =
     item.responseDeadline !== undefined
       ? item.responseDeadline
       : matchingAssignment?.responseDeadline ?? null;
-  const serviceDescription =
-    item.serviceDescription ??
-    item.service.description ??
-    `Handle ${item.service.name} request for this property post.`;
-  const serviceFeeBDT =
-    item.feeAmount !== undefined
-      ? item.feeAmount ?? 0
-      : matchingAssignment?.feeAmount ?? 0;
-  const autoReassign = item.autoReassign ?? matchingAssignment?.autoReassign ?? false;
+  const serviceDescription = `Handle ${item.service.name} request for this property post.`;
+  const serviceFeeBDT = item.service.feeAmount ?? matchingAssignment?.feeAmount ?? 0;
+  const autoReassign = matchingAssignment?.autoReassign ?? false;
 
   return {
     postId: formatDisplayIdSafe(
       "POST",
-      item.parentPost.displayId,
+      undefined,
       item.parentPost.id,
     ),
     sellPostId: item.parentPost.id,
@@ -321,7 +314,7 @@ function buildAssignPayload(
     zoneLabel: item.parentPost.location || resolveZoneLabel(post),
     serviceTitle: item.service.name,
     serviceDesc: serviceDescription,
-    documents: getDocuments(post, item.documents),
+    documents: getDocuments(post),
     serviceFeeBDT,
     deadlineLabel: toDisplayDate(responseDeadline),
     responseDeadlineISO: responseDeadline ?? undefined,
@@ -401,12 +394,12 @@ function buildServiceDetails(
 
   const serviceDisplayId = formatDisplayIdSafe(
     "SRV",
-    item.service.displayId,
+    undefined,
     item.service.id,
   );
   const postDisplayId = formatDisplayIdSafe(
     "POST",
-    item.parentPost.displayId,
+    undefined,
     item.parentPost.id,
   );
 

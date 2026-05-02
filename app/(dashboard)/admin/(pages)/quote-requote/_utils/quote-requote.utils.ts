@@ -137,9 +137,9 @@ export const filterNegotiationItems = (
     const values = [
       item.negotiationId ?? "",
       item.status ?? "",
-      item.postTitle ?? "",
-      item.postLocation ?? "",
-      item.postId ?? "",
+      item.post?.title ?? "",
+      item.post?.location ?? "",
+      item.post?.id ?? "",
       item.seller?.name ?? "",
       item.seller?.phone ?? "",
     ];

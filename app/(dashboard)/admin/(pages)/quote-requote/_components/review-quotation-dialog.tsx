@@ -211,9 +211,13 @@ export default function ReviewQutationDialog({
 
   const sym = "৳";
   const userCounter =
-    reviewDetailsQuery.data?.userCounter.total ?? item?.userNewCounter ?? 0;
+    reviewDetailsQuery.data?.userCounter.total ??
+    item?.pricing?.userNewCounter ??
+    0;
   const adminLast =
-    reviewDetailsQuery.data?.previousQuote.total ?? item?.adminLastQuote ?? 0;
+    reviewDetailsQuery.data?.previousQuote.total ??
+    item?.pricing?.adminLastQuote ??
+    0;
   const userCounterMandatory = reviewDetailsQuery.data?.userCounter.mandatory ?? 0;
   const userCounterOptional = reviewDetailsQuery.data?.userCounter.optional ?? 0;
   const previousMandatory = reviewDetailsQuery.data?.previousQuote.mandatory ?? 0;
@@ -245,7 +249,7 @@ export default function ReviewQutationDialog({
       toast.success("Counter-offer sent successfully.");
       onControl(false);
       onSuccessDialogOpen({
-        postId: formatPostId(item?.postId),
+        postId: formatPostId(item?.post?.id),
         sellerName: item?.seller?.name ?? "",
         mandatoryFee: variables.mandatoryFee,
         optionalFee: variables.optionalFee,
@@ -311,7 +315,7 @@ export default function ReviewQutationDialog({
           <p className="mt-1 text-xs font-semibold text-light-gray">
             Negotiating Post{" "}
             <span className="font-extrabold text-gray">
-              {formatPostId(item?.postId)}
+              {formatPostId(item?.post?.id)}
             </span>{" "}
             with{" "}
             <span className="font-extrabold text-gray">
