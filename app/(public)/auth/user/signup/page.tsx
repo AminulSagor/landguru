@@ -209,11 +209,26 @@ const SignUpPage = () => {
           fullName: stepFourData.fullName,
           email: stepFourData.email,
           photoUrl,
-          division: stepFourData.division?.value || "",
-          district: stepFourData.district?.value || "",
-          upazila: stepFourData.upazila?.value || "",
-          unionOrCityCorp: stepFourData.pouroshovaOrUnion?.value || "",
-          wardNo: stepFourData.wardNo?.value || "",
+          division:
+            typeof stepFourData.division === "string"
+              ? stepFourData.division
+              : stepFourData.division?.value || "",
+          district:
+            typeof stepFourData.district === "string"
+              ? stepFourData.district
+              : stepFourData.district?.value || "",
+          upazila:
+            typeof stepFourData.upazila === "string"
+              ? stepFourData.upazila
+              : stepFourData.upazila?.value || "",
+          unionOrCityCorp:
+            typeof stepFourData.pouroshovaOrUnion === "string"
+              ? stepFourData.pouroshovaOrUnion
+              : stepFourData.pouroshovaOrUnion?.value || "",
+          wardNo:
+            typeof stepFourData.wardNo === "string"
+              ? stepFourData.wardNo
+              : stepFourData.wardNo?.value || "",
           postalCode: stepFourData.postalCode,
           fullAddress: stepFourData.fullAddress,
         });

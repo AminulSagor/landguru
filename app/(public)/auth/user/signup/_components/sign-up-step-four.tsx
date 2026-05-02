@@ -18,7 +18,6 @@ import {
 } from "@/bd-location-data/bd-address"; 
 import AuthStepper from "@/components/steppers/auth-stepper";
 import { HookFormTextInput } from "@/components/inputs/text-input";
-import { HookFormSingleSelect } from "@/components/inputs/select/single.select";
 import { HookFormTextareaInput } from "@/components/inputs/text-area";
 
 export type SignUpStepFourFormValues = {
@@ -28,12 +27,12 @@ export type SignUpStepFourFormValues = {
   email: string;
   phone: string;
 
-  division: Option | null;
-  district: Option | null;
-  upazila: Option | null;
+  division: Option | string | null;
+  district: Option | string | null;
+  upazila: Option | string | null;
 
-  pouroshovaOrUnion: Option | null; // no data yet
-  wardNo: Option | null; // no data yet
+  pouroshovaOrUnion: Option | string | null; // no data yet
+  wardNo: Option | string | null; // no data yet
 
   postalCode: string;
   fullAddress: string;
@@ -78,17 +77,21 @@ const SignUpStepFour = ({ phone, onNext, onBack }: Props) => {
   const division = watch("division");
   const district = watch("district");
 
-  const divisionKey = (division?.value as DivisionKey) ?? null;
+  const divisionKey = React.useMemo(() => {
+    if (!division) return null;
+    if (typeof division === "string") return (division as DivisionKey) ?? null;
+    return (division as Option).value as DivisionKey;
+  }, [division]);
 
   const districtOptions = React.useMemo(
     () => getDistrictOptionsByDivision(divisionKey),
     [divisionKey]
   );
 
-  const upazilaOptions = React.useMemo(
-    () => getUpazilaOptionsByDistrict(district?.value ?? null),
-    [district]
-  );
+  const upazilaOptions = React.useMemo(() => {
+    const districtVal = !district ? null : typeof district === "string" ? district : (district as Option).value;
+    return getUpazilaOptionsByDistrict(districtVal ?? null);
+  }, [district]);
 
   React.useEffect(() => {
     return () => {
@@ -194,12 +197,11 @@ const SignUpStepFour = ({ phone, onNext, onBack }: Props) => {
                 endAdornment={<Lock size={16} className="text-black/30" />}
               />
 
-              <HookFormSingleSelect<SignUpStepFourFormValues>
+              <HookFormTextInput<SignUpStepFourFormValues>
                 name="district"
                 control={control}
                 label="District"
-                placeholder="Select"
-                options={districtOptions}
+                placeholder={districtOptions?.[0]?.label ?? "Enter district"}
                 disabled={!division}
                 rules={{ required: "District is required" }}
                 onChange={() => {
@@ -207,14 +209,14 @@ const SignUpStepFour = ({ phone, onNext, onBack }: Props) => {
                   setValue("pouroshovaOrUnion", null);
                   setValue("wardNo", null);
                 }}
+                inputClassName="h-12 px-4"
               />
 
-              <HookFormSingleSelect<SignUpStepFourFormValues>
+              <HookFormTextInput<SignUpStepFourFormValues>
                 name="division"
                 control={control}
                 label="Division"
-                placeholder="Select"
-                options={DIVISION_OPTIONS}
+                placeholder={DIVISION_OPTIONS?.[0]?.label ?? "Enter division"}
                 rules={{ required: "Division is required" }}
                 onChange={() => {
                   setValue("district", null);
@@ -222,40 +224,41 @@ const SignUpStepFour = ({ phone, onNext, onBack }: Props) => {
                   setValue("pouroshovaOrUnion", null);
                   setValue("wardNo", null);
                 }}
+                inputClassName="h-12 px-4"
               />
 
-              <HookFormSingleSelect<SignUpStepFourFormValues>
+              <HookFormTextInput<SignUpStepFourFormValues>
                 name="upazila"
                 control={control}
                 label="Upazila"
-                placeholder="Select"
-                options={upazilaOptions}
+                placeholder={upazilaOptions?.[0]?.label ?? "Enter upazila"}
                 disabled={!district}
                 rules={{ required: "Upazila is required" }}
                 onChange={() => {
                   setValue("pouroshovaOrUnion", null);
                   setValue("wardNo", null);
                 }}
+                inputClassName="h-12 px-4"
               />
 
               {/* Not available from your current dataset */}
-              <HookFormSingleSelect<SignUpStepFourFormValues>
+              <HookFormTextInput<SignUpStepFourFormValues>
                 name="pouroshovaOrUnion"
                 control={control}
                 label="Pouroshova/City Corp/Union"
-                placeholder="Select"
-                options={[]}
+                placeholder="Enter pouroshova or union"
                 disabled
+                inputClassName="h-12 px-4"
               />
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <HookFormSingleSelect<SignUpStepFourFormValues>
+                <HookFormTextInput<SignUpStepFourFormValues>
                   name="wardNo"
                   control={control}
                   label="Ward No"
-                  placeholder="Select"
-                  options={[]}
+                  placeholder="Enter ward no"
                   disabled
+                  inputClassName="h-12 px-4"
                 />
 
                 <HookFormTextInput<SignUpStepFourFormValues>
