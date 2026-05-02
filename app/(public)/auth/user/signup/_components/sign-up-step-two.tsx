@@ -6,17 +6,27 @@ import Button from "@/components/buttons/button";
 
 import { ArrowRight } from "lucide-react";
 import AuthStepper from "@/components/steppers/auth-stepper";
+import CircleLoader from "@/components/loaders/circle-loader";
 
 type Props = {
   phone: string;
-  onNext: () => void;
+  onNext: (otp: string) => Promise<void> | void;
   onBack: () => void;
-  onResend?: () => void;
+  onResend?: () => Promise<void> | void;
+  isSubmitting?: boolean;
+  isResending?: boolean;
 };
 
 const pad2 = (n: number) => String(n).padStart(2, "0");
 
-const SignUpStepTwo = ({ phone, onNext, onBack, onResend }: Props) => {
+const SignUpStepTwo = ({
+  phone,
+  onNext,
+  onBack,
+  onResend,
+  isSubmitting = false,
+  isResending = false,
+}: Props) => {
   const [digits, setDigits] = React.useState<string[]>(["", "", "", ""]);
   const inputsRef = React.useRef<Array<HTMLInputElement | null>>([]);
   const [seconds, setSeconds] = React.useState(59);
@@ -75,7 +85,7 @@ const SignUpStepTwo = ({ phone, onNext, onBack, onResend }: Props) => {
   };
 
   const resend = () => {
-    if (seconds > 0) return;
+    if (seconds > 0 || isResending) return;
     setSeconds(59);
     onResend?.();
   };
@@ -150,9 +160,10 @@ const SignUpStepTwo = ({ phone, onNext, onBack, onResend }: Props) => {
               <button
                 type="button"
                 onClick={resend}
+                disabled={isResending}
                 className="text-primary font-semibold hover:underline"
               >
-                Resend code
+                {isResending ? "Sending..." : "Resend code"}
               </button>
             )}
           </div>
@@ -161,10 +172,16 @@ const SignUpStepTwo = ({ phone, onNext, onBack, onResend }: Props) => {
             <Button
               type="button"
               className="w-full"
-              disabled={!isComplete}
-              onClick={onNext}
+              disabled={!isComplete || isSubmitting}
+              onClick={() => onNext(code)}
             >
-              Verify &amp; Proceed <ArrowRight size={20} />
+              {isSubmitting ? (
+                <CircleLoader />
+              ) : (
+                <>
+                  Verify &amp; Proceed <ArrowRight size={20} />
+                </>
+              )}
             </Button>
           </div>
         </div>

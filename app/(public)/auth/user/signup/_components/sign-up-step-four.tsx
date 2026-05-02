@@ -21,7 +21,7 @@ import { HookFormTextInput } from "@/components/inputs/text-input";
 import { HookFormSingleSelect } from "@/components/inputs/select/single.select";
 import { HookFormTextareaInput } from "@/components/inputs/text-area";
 
-type FormValues = {
+export type SignUpStepFourFormValues = {
   photo: File | null;
 
   fullName: string;
@@ -41,7 +41,7 @@ type FormValues = {
 
 type Props = {
   phone: string; // from step 1
-  onNext: (data: FormValues) => void;
+  onNext: (data: SignUpStepFourFormValues) => void;
   onBack: () => void;
 };
 
@@ -54,7 +54,7 @@ const normalizePhone = (v: string) => {
 const SignUpStepFour = ({ phone, onNext, onBack }: Props) => {
   const [previewUrl, setPreviewUrl] = React.useState<string>("");
 
-  const { control, handleSubmit, setValue, watch } = useForm<FormValues>({
+  const { control, handleSubmit, setValue, watch } = useForm<SignUpStepFourFormValues>({
     defaultValues: {
       photo: null,
 
@@ -108,7 +108,7 @@ const SignUpStepFour = ({ phone, onNext, onBack }: Props) => {
     setPreviewUrl(url);
   };
 
-  const submit = (data: FormValues) => {
+  const submit = (data: SignUpStepFourFormValues) => {
     onNext(data);
   };
 
@@ -168,7 +168,7 @@ const SignUpStepFour = ({ phone, onNext, onBack }: Props) => {
 
           <form onSubmit={handleSubmit(submit)} className="mt-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <HookFormTextInput<FormValues>
+              <HookFormTextInput<SignUpStepFourFormValues>
                 name="fullName"
                 control={control}
                 label="Full Name"
@@ -176,7 +176,7 @@ const SignUpStepFour = ({ phone, onNext, onBack }: Props) => {
                 inputClassName="h-12 px-4"
               />
 
-              <HookFormTextInput<FormValues>
+              <HookFormTextInput<SignUpStepFourFormValues>
                 name="email"
                 control={control}
                 label="Email Address"
@@ -185,7 +185,7 @@ const SignUpStepFour = ({ phone, onNext, onBack }: Props) => {
                 inputClassName="h-12 px-4"
               />
 
-              <HookFormTextInput<FormValues>
+              <HookFormTextInput<SignUpStepFourFormValues>
                 name="phone"
                 control={control}
                 label="Phone Number"
@@ -194,7 +194,7 @@ const SignUpStepFour = ({ phone, onNext, onBack }: Props) => {
                 endAdornment={<Lock size={16} className="text-black/30" />}
               />
 
-              <HookFormSingleSelect<FormValues>
+              <HookFormSingleSelect<SignUpStepFourFormValues>
                 name="district"
                 control={control}
                 label="District"
@@ -209,7 +209,7 @@ const SignUpStepFour = ({ phone, onNext, onBack }: Props) => {
                 }}
               />
 
-              <HookFormSingleSelect<FormValues>
+              <HookFormSingleSelect<SignUpStepFourFormValues>
                 name="division"
                 control={control}
                 label="Division"
@@ -224,7 +224,7 @@ const SignUpStepFour = ({ phone, onNext, onBack }: Props) => {
                 }}
               />
 
-              <HookFormSingleSelect<FormValues>
+              <HookFormSingleSelect<SignUpStepFourFormValues>
                 name="upazila"
                 control={control}
                 label="Upazila"
@@ -239,28 +239,26 @@ const SignUpStepFour = ({ phone, onNext, onBack }: Props) => {
               />
 
               {/* Not available from your current dataset */}
-              <HookFormSingleSelect<FormValues>
+              <HookFormSingleSelect<SignUpStepFourFormValues>
                 name="pouroshovaOrUnion"
                 control={control}
                 label="Pouroshova/City Corp/Union"
                 placeholder="Select"
                 options={[]}
                 disabled
-                rules={{ required: "Required" }}
               />
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <HookFormSingleSelect<FormValues>
+                <HookFormSingleSelect<SignUpStepFourFormValues>
                   name="wardNo"
                   control={control}
                   label="Ward No"
                   placeholder="Select"
                   options={[]}
                   disabled
-                  rules={{ required: "Required" }}
                 />
 
-                <HookFormTextInput<FormValues>
+                <HookFormTextInput<SignUpStepFourFormValues>
                   name="postalCode"
                   control={control}
                   label="Postal Code"
@@ -269,7 +267,7 @@ const SignUpStepFour = ({ phone, onNext, onBack }: Props) => {
               </div>
 
               <div className="md:col-span-2">
-                <HookFormTextareaInput<FormValues>
+                <HookFormTextareaInput<SignUpStepFourFormValues>
                   name="fullAddress"
                   control={control}
                   label="Full Address"
