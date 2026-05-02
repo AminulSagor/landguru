@@ -15,11 +15,12 @@ import {
 import { ProfileOverviewData } from "@/app/(dashboard)/user/types/profile";
 import { demoProfileOverview } from "@/app/(dashboard)/user/dummy-data/profile";
 import Link from "next/link";
+import { logoutUser } from "@/utils/logout.utils";
 
 export default function ProfileOverview({
   data = demoProfileOverview,
 
-  onLogout,
+  onLogout = logoutUser,
 }: {
   data?: ProfileOverviewData;
   onEditProfile?: () => void;
