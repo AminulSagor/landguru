@@ -7,12 +7,23 @@ import { Share2 } from "lucide-react";
 type Props = {
   /** Google map embed url */
   mapEmbedUrl?: string;
+  /** Address or location text for map query */
+  address?: string;
 };
 
 const DEFAULT_MAP_EMBED =
   "https://www.google.com/maps?q=Dhaka%20Bangladesh&output=embed";
 
-const LandDiagramCard = ({ mapEmbedUrl }: Props) => {
+const LandDiagramCard = ({ mapEmbedUrl, address }: Props) => {
+  const cleanedAddress = address?.trim();
+  const embedUrl =
+    mapEmbedUrl ||
+    (cleanedAddress
+      ? `https://www.google.com/maps?q=${encodeURIComponent(
+          cleanedAddress,
+        )}&output=embed`
+      : DEFAULT_MAP_EMBED);
+
   return (
     <Card>
       <div className="flex items-center gap-2">
@@ -28,7 +39,7 @@ const LandDiagramCard = ({ mapEmbedUrl }: Props) => {
       <div className="mt-4 rounded-2xl overflow-hidden border border-black/10 bg-black/5">
         <iframe
           title="Land Shape Diagram"
-          src={mapEmbedUrl || DEFAULT_MAP_EMBED}
+          src={embedUrl}
           className="w-full h-70 md:h-80"
           loading="lazy"
           referrerPolicy="no-referrer-when-downgrade"

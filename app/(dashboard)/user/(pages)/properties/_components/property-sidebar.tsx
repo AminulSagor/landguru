@@ -64,7 +64,7 @@ const PropertySidebar = ({
         </button>
       </Card>
 
-      <LandDiagramCard />
+      <LandDiagramCard address={locationText || undefined} />
 
       <Card className="p-5">
         <p className="font-extrabold text-black mb-2">Posted By</p>

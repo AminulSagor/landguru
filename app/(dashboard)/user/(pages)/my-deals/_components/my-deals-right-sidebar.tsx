@@ -66,7 +66,7 @@ const MyDealsRightSidebar: FC<Props> = ({
         </button>
       </Card>
 
-      <LandDiagramCard />
+      <LandDiagramCard address={property.location || undefined} />
     </div>
   );
 };
