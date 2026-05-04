@@ -15,12 +15,12 @@ type FormValues = {
 };
 
 type Props = {
-  onNext: () => void;
+  onSubmit: (password: string) => void | Promise<void>;
   onBack: () => void;
-  setPassword?: (password: string) => void;
+  isLoading?: boolean;
 };
 
-const ForgotPasswordStepThree = ({ onNext, onBack, setPassword }: Props) => {
+const ForgotPasswordStepThree = ({ onSubmit, onBack, isLoading }: Props) => {
   const [showPass, setShowPass] = React.useState(false);
   const [showConfirm, setShowConfirm] = React.useState(false);
 
@@ -31,10 +31,7 @@ const ForgotPasswordStepThree = ({ onNext, onBack, setPassword }: Props) => {
 
   const password = watch("password");
 
-  const onSubmit = (data: FormValues) => {
-    setPassword?.(data.password);
-    onNext();
-  };
+  const handleFormSubmit = (data: FormValues) => onSubmit(data.password);
 
   return (
     <div className="py-10">
@@ -53,7 +50,10 @@ const ForgotPasswordStepThree = ({ onNext, onBack, setPassword }: Props) => {
             To make your account secure, you need to enter a password.
           </p>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="mt-7 space-y-5">
+          <form
+            onSubmit={handleSubmit(handleFormSubmit)}
+            className="mt-7 space-y-5"
+          >
             <HookFormTextInput<FormValues>
               name="password"
               control={control}
@@ -99,8 +99,8 @@ const ForgotPasswordStepThree = ({ onNext, onBack, setPassword }: Props) => {
             />
 
             <div className="pt-4">
-              <Button type="submit" className="w-full">
-                Next <ArrowRight size={20} />
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? "Saving..." : "Next"} <ArrowRight size={20} />
               </Button>
             </div>
           </form>

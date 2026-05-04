@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import {
   CalendarDays,
@@ -5,11 +7,38 @@ import {
   Gift,
   MapPinPlusInside,
 } from "lucide-react";
-import { featuredProperties } from "@/app/(dashboard)/user/dummy-data/property";
 import PropertyCard from "@/components/cards/property-card";
 import Link from "next/link";
+import { fetchSellPostListings } from "@/service/users/properties.services";
+import { PropertyListing } from "@/types/property/property.listing";
 
 const HomePage = () => {
+  const [properties, setProperties] = React.useState<PropertyListing[]>([]);
+
+  React.useEffect(() => {
+    let active = true;
+
+    const loadProperties = async () => {
+      try {
+        const response = await fetchSellPostListings({ page: 1, limit: 6 });
+        if (active) {
+          setProperties(response.data ?? []);
+        }
+      } catch (error) {
+        if (active) {
+          setProperties([]);
+        }
+        console.error("Failed to load sell posts", error);
+      }
+    };
+
+    loadProperties();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
   return (
     <div className="py-24 bg-gray-50 min-h-screen">
       <h1 className="font-semibold text-2xl text-black">Welcome Back, User!</h1>
@@ -68,7 +97,7 @@ const HomePage = () => {
         </div>
 
         <div className="mt-4 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {featuredProperties.map((p) => (
+          {properties.map((p) => (
             <PropertyCard key={p.id} property={p} />
           ))}
         </div>

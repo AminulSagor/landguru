@@ -3,13 +3,14 @@
 import React from "react";
 import Card from "@/components/cards/card";
 import Button from "@/components/buttons/button";
-import { Property } from "@/app/(dashboard)/user/types/property";
+import type { PropertyDetails } from "@/types/property/property.details";
+import { IMAGE } from "@/constants/image-paths";
 import Dialog from "@/components/dialogs/dialog";
 
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  property: Property;
+  property: PropertyDetails;
   onSuccess: () => void;
 };
 
@@ -34,7 +35,7 @@ const AppointmentModal = ({
           <div className="flex gap-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={property.coverImage}
+              src={property.photos?.[0] ?? IMAGE.property}
               alt={property.title}
               className="h-16 w-16 rounded-xl object-cover"
             />
@@ -43,15 +44,14 @@ const AppointmentModal = ({
                 {property.title}
               </p>
               <p className="text-sm text-black/50">
-                Price: {property.currencySymbol ?? "৳"}{" "}
-                {property.price.toLocaleString("en-IN")}
+                Price: ৳ {property.askingPrice.toLocaleString("en-IN")}
               </p>
 
               <div className="mt-2 flex flex-wrap gap-2">
                 <span className="px-3 py-1 rounded-full text-xs font-extrabold bg-primary text-white">
-                  {property.tag}
+                  {property.propertyType}
                 </span>
-                {property.verified && (
+                {property.seller?.isVerified && (
                   <span className="px-3 py-1 rounded-full text-xs font-extrabold bg-primary/10 text-primary">
                     Verified
                   </span>

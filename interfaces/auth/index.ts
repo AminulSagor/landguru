@@ -7,4 +7,6 @@ export interface LoginFormValues {
 //signup
 export interface SignUpStepOneForm {
   phone: string;
+  forgetPassword: boolean;
+
 }

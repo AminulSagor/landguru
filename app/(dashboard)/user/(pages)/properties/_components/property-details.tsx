@@ -2,8 +2,8 @@
 
 import React from "react";
 
-import { Property } from "@/app/(dashboard)/user/types/property";
-import { featuredProperties } from "@/app/(dashboard)/user/dummy-data/property";
+import { fetchSellPostDetails } from "@/service/users/properties.services";
+import type { PropertyDetails as PropertyDetailsDto } from "@/types/property/property.details";
 
 import BuyStepper from "@/components/steppers/buy-stepper";
 import PropertyHero from "@/app/(dashboard)/user/(pages)/properties/_components/property-hero";
@@ -17,17 +17,54 @@ import SuccessModal from "@/app/(dashboard)/user/(pages)/properties/_components/
 
 
 const PropertyDetails = ({ propertyId }: { propertyId: string }) => {
-  const property = featuredProperties.find(
-    (p: Property) => p.id === propertyId,
+  const [property, setProperty] = React.useState<PropertyDetailsDto | null>(
+    null,
   );
+  const [loading, setLoading] = React.useState(true);
+  const [hasError, setHasError] = React.useState(false);
 
   const [unlocked, setUnlocked] = React.useState(false);
   const [appointmentOpen, setAppointmentOpen] = React.useState(false);
   const [successOpen, setSuccessOpen] = React.useState(false);
 
-  if (!property) {
+  React.useEffect(() => {
+    let isActive = true;
+
+    setLoading(true);
+    setHasError(false);
+
+    fetchSellPostDetails(propertyId)
+      .then((data) => {
+        if (!isActive) return;
+        setProperty(data);
+      })
+      .catch(() => {
+        if (!isActive) return;
+        setHasError(true);
+      })
+      .finally(() => {
+        if (!isActive) return;
+        setLoading(false);
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [propertyId]);
+
+  if (loading) {
     return (
-      <div className="py-24 text-center text-black/60">Property not found</div>
+      <div className="py-24 text-center text-black/60">
+        Loading property...
+      </div>
+    );
+  }
+
+  if (hasError || !property) {
+    return (
+      <div className="py-24 text-center text-black/60">
+        Property not found
+      </div>
     );
   }
 
@@ -40,7 +77,7 @@ const PropertyDetails = ({ propertyId }: { propertyId: string }) => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 xl:gap-14">
         <div className="col-span-12 lg:col-span-8 mt-5 space-y-10">
           <PropertyImages property={property} />
-          <PropertyMetrics />
+          <PropertyMetrics property={property} />
           <div>
             {!unlocked ? (
               <PropertyLocked onUnlock={() => setUnlocked(true)} />

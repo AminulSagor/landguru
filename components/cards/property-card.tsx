@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { MapPin } from "lucide-react";
-import { Property } from "@/app/(dashboard)/user/types/property";
+import { PropertyListing } from "@/types/property/property.listing";
 import Link from "next/link";
 
 function formatBDT(n: number) {
@@ -29,17 +29,33 @@ function TagPill({
 export default function PropertyCard({
   property,
 }: {
-  property: Property;
+  property: PropertyListing;
   onViewDetails?: (id: string) => void;
 }) {
-  const currency = property.currencySymbol ?? "৳";
+  const imageUrl =
+    "image" in property && property.image
+      ? property.image
+      : "coverImage" in property && property.coverImage
+        ? property.coverImage
+        : "/images/properties/demo-property.avif";
+  const tag =
+    "propertyType" in property ? property.propertyType : property.tag;
+  const mode = "status" in property ? property.status : property.mode;
+  const locationText =
+    "location" in property
+      ? property.location ?? ""
+      : property.locationText ?? "";
+  const currency =
+    "currencySymbol" in property && property.currencySymbol
+      ? property.currencySymbol
+      : "৳";
 
   return (
     <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
       {/* image */}
       <div className="relative h-44 w-full">
         <Image
-          src={property.coverImage}
+          src={imageUrl}
           alt={property.title}
           fill
           className="object-cover"
@@ -48,11 +64,15 @@ export default function PropertyCard({
 
         {/* pills */}
         <div className="absolute left-3 top-3 flex flex-wrap gap-2">
-          <TagPill className="bg-blue-600 text-white">{property.tag}</TagPill>
-          <TagPill className="bg-white/90 text-blue-700 ring-1 ring-blue-200">
-            {property.mode}
-          </TagPill>
-          {property.verified && (
+          {tag && (
+            <TagPill className="bg-blue-600 text-white">{tag}</TagPill>
+          )}
+          {mode && (
+            <TagPill className="bg-white/90 text-blue-700 ring-1 ring-blue-200">
+              {mode}
+            </TagPill>
+          )}
+          {"verified" in property && property.verified && (
             <TagPill className="bg-emerald-600 text-white">Verified</TagPill>
           )}
         </div>
@@ -64,7 +84,7 @@ export default function PropertyCard({
 
         <div className="mt-2 flex items-center gap-1 text-xs text-gray-500">
           <MapPin size={14} />
-          <span>{property.locationText}</span>
+          <span>{locationText}</span>
         </div>
 
         <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-3">
