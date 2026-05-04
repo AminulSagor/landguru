@@ -10,7 +10,7 @@ import Button from "@/components/buttons/button";
 import Dialog from "@/components/dialogs/dialog";
 import { cn } from "@/utils/classnames.utils";
 import { propertyPostReviewService } from "@/service/admin/property/property-post-review.service";
-import { getErrorMessage } from "../../_utils/property-posts.utils";
+import { getErrorMessage } from "../../../../../../../utils/property-posts.utils";
 import type { ReviewPropertyPostPayload } from "@/types/admin/property-post/property.types";
 
 export default function PendingReviewFooter({

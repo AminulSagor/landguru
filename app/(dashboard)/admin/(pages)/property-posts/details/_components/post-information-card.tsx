@@ -5,12 +5,12 @@ import { useState } from "react";
 import Card from "@/components/cards/card";
 import Avatar from "@/app/(dashboard)/admin/(pages)/property-posts/details/_components/avatar";
 import type { PropertyPostItem } from "@/types/admin/property-post/property.types";
-import { formatBdt } from "@/app/(dashboard)/admin/(pages)/property-posts/_utils/properties-management-table.utils";
+import { formatBdt } from "@/utils/properties-management-table.utils";
 import { MetricUnit } from "@/app/(dashboard)/admin/types/property.types";
 import {
   convertLandAmount,
   normalizeLandUnit,
-} from "@/app/(dashboard)/admin/(pages)/property-posts/_utils/land-unit.utils";
+} from "@/utils/land-unit.utils";
 
 function getAddressText(property: PropertyPostItem) {
   if (property.address?.fullAddress?.trim()) {

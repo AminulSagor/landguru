@@ -5,11 +5,11 @@ import Card from "@/components/cards/card";
 import { MetricUnit } from "@/app/(dashboard)/admin/types/property.types";
 import FieldBox from "@/app/(dashboard)/admin/(pages)/property-posts/details/_components/field-box";
 import type { PropertyPostItem } from "@/types/admin/property-post/property.types";
-import { formatBdt } from "@/app/(dashboard)/admin/(pages)/property-posts/_utils/properties-management-table.utils";
+import { formatBdt } from "@/utils/properties-management-table.utils";
 import {
   convertPricePerUnit,
   normalizeLandUnit,
-} from "@/app/(dashboard)/admin/(pages)/property-posts/_utils/land-unit.utils";
+} from "@/utils/land-unit.utils";
 
 export default function PriceCompareCard({
   unit,

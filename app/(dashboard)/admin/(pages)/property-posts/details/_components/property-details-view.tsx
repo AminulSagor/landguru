@@ -19,7 +19,7 @@ import AuthenticityCard from "@/app/(dashboard)/admin/(pages)/property-posts/det
 import PendingReviewFooter from "@/app/(dashboard)/admin/(pages)/property-posts/details/_components/pending-review-footer";
 import UpdateStatusSection from "@/app/(dashboard)/admin/(pages)/property-posts/details/_components/update-status-section";
 import type { PropertyPostItem } from "@/types/admin/property-post/property.types";
-import { formatBdt } from "@/app/(dashboard)/admin/(pages)/property-posts/_utils/properties-management-table.utils";
+import { formatBdt } from "@/utils/properties-management-table.utils";
 import { formatDisplayId } from "@/utils/id.utils";
 
 type Props = { property: PropertyPostItem };

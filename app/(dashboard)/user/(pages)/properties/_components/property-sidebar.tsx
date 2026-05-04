@@ -3,9 +3,10 @@
 import React from "react";
 import Card from "@/components/cards/card";
 import Button from "@/components/buttons/button";
-import { MapPin } from "lucide-react";
+import { CheckCircle2, MapPin } from "lucide-react";
 import type { PropertyDetails } from "@/types/property/property.details";
 import LandDiagramCard from "@/app/(dashboard)/user/(pages)/properties/_components/land-diagram-card";
+import Image from "next/image";
 
 const PropertySidebar = ({
   property,
@@ -14,20 +15,25 @@ const PropertySidebar = ({
   property: PropertyDetails;
   onRequest: () => void;
 }) => {
+  const address = property.address;
   const locationText =
-    property.fullAddress ||
+    address?.fullAddress ||
     [
-      property.unionOrCityCorp,
-      property.wardNo,
-      property.upazila,
-      property.district,
-      property.division,
-      property.postalCode ? `-${property.postalCode}` : null,
+      address?.unionOrCityCorp,
+      address?.wardNo,
+      address?.upazila,
+      address?.district,
+      address?.division,
+      address?.postalCode ? `-${address.postalCode}` : null,
     ]
       .filter(Boolean)
       .join(", ");
 
   const postedOn = formatPostedDate(property.createdAt);
+  const sellerName = property.seller?.fullName ?? "N/A";
+  const sellerAvatar = property.seller?.photoUrl ?? null;
+  const sellerVerified = Boolean(property.seller?.isVerified);
+  const sellerInitials = getInitials(sellerName);
 
   return (
     <div className="space-y-5 w-full">
@@ -63,11 +69,30 @@ const PropertySidebar = ({
       <Card className="p-5">
         <p className="font-extrabold text-black mb-2">Posted By</p>
         <div className="flex items-center gap-3">
-          <div className="h-12 w-12 rounded-full bg-black/10" />
+          <div className="relative h-12 w-12 overflow-hidden rounded-full bg-black/10">
+            {sellerAvatar ? (
+              <Image
+                src={sellerAvatar}
+                alt={sellerName}
+                fill
+                className="object-cover"
+                sizes="48px"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center text-xs font-extrabold text-black/50">
+                {sellerInitials}
+              </div>
+            )}
+          </div>
           <div>
-            <p className="font-extrabold text-black">
-              {property.seller?.name ?? "N/A"}
-            </p>
+            <div className="flex items-center gap-2">
+              <p className="font-extrabold text-black">{sellerName}</p>
+              {sellerVerified ? (
+                <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-extrabold text-primary">
+                  <CheckCircle2 size={12} /> Verified
+                </span>
+              ) : null}
+            </div>
             <p className="text-xs text-black/50">Posted: {postedOn}</p>
           </div>
         </div>
@@ -91,4 +116,17 @@ function formatPostedDate(value: string) {
     month: "short",
     day: "numeric",
   });
+}
+
+function getInitials(value: string) {
+  const trimmed = value.trim();
+  if (!trimmed || trimmed === "N/A") return "NA";
+
+  const parts = trimmed.split(" ").filter(Boolean);
+  if (!parts.length) return "NA";
+
+  const first = parts[0]?.[0] ?? "";
+  const last = parts.length > 1 ? parts[parts.length - 1][0] : "";
+
+  return `${first}${last}`.toUpperCase();
 }

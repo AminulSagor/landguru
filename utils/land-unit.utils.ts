@@ -1,5 +1,7 @@
 export type LandUnit = "Katha" | "Decimal" | "Bigha" | "Sqft";
 
+export const LAND_UNITS: LandUnit[] = ["Katha", "Decimal", "Bigha", "Sqft"];
+
 // Common BD approximations; adjust if backend uses region-specific values.
 const UNIT_TO_SQFT: Record<LandUnit, number> = {
   Katha: 720,

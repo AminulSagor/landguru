@@ -27,6 +27,7 @@ export const fetchSellPostDetails = async (postId: string) => {
     const response = await serviceClient.get<PropertyDetails>(
         `/sell-posts/${postId}`,
     );
+    //console.log("Fetched property details:", response.data);
     return response.data;
 };
 

@@ -2,7 +2,7 @@
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-import { buildPaginationItems } from "../_utils/properties-management-table.utils";
+import { buildPaginationItems } from "../../../../../../utils/properties-management-table.utils";
 
 type PropertyPostsPaginationProps = {
   currentPage: number;

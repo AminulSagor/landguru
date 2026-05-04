@@ -17,7 +17,7 @@ import {
   PAGE_SIZE,
   SEARCH_DEBOUNCE_MS,
   STATUS_OPTIONS,
-} from "../_utils/property-posts.utils";
+} from "../../../../../../utils/property-posts.utils";
 
 export default function PropertyPostsClient() {
   const [searchValue, setSearchValue] = React.useState("");

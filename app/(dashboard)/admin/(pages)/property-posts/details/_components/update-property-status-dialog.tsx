@@ -20,7 +20,7 @@ import {
   PropertyPostStatus,
   UpdatePropertyStatusPayload,
 } from "@/types/admin/property-post/property.types";
-import { getErrorMessage } from "../../_utils/property-posts.utils";
+import { getErrorMessage } from "../../../../../../../utils/property-posts.utils";
 
 type StatusKey = "active" | "pending" | "sold" | "reject";
 

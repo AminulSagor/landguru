@@ -1,14 +1,30 @@
 export type PropertySeller = {
-  name: string;
-  avatar: string | null;
+  fullName: string;
+  id: string;
+  photoUrl: string | null;
   isVerified: boolean;
+};
+
+export type PropertyAddress = {
+  id: string;
+  sellPostId: string;
+  division: string | null;
+  district: string | null;
+  upazila: string | null;
+  unionOrCityCorp: string | null;
+  wardNo: string | null;
+  postalCode: string | null;
+  fullAddress: string | null;
 };
 
 export type PropertyDetails = {
   id: string;
+  sellPostId: string;
+  previousTransactionId: string | null;
   sellerId: string;
   seller: PropertySeller;
   status: string;
+  isResell: boolean;
   title: string;
   description: string;
   propertyType: string;
@@ -28,13 +44,7 @@ export type PropertyDetails = {
   mandatoryServiceFee: number | null;
   optionalServiceFee: number | null;
   rejectionReason: string | null;
-  division: string | null;
-  district: string | null;
-  upazila: string | null;
-  unionOrCityCorp: string | null;
-  wardNo: string | null;
-  postalCode: string | null;
-  fullAddress: string | null;
+  address: PropertyAddress | null;
   photos: string[];
   videoUrl: string | null;
   deedFiles: string[];

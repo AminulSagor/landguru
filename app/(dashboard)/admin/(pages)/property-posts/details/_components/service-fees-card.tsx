@@ -4,7 +4,7 @@ import React from "react";
 import Card from "@/components/cards/card";
 import FieldBox from "@/app/(dashboard)/admin/(pages)/property-posts/details/_components/field-box";
 import type { PropertyPostItem } from "@/types/admin/property-post/property.types";
-import { formatBdt } from "@/app/(dashboard)/admin/(pages)/property-posts/_utils/properties-management-table.utils";
+import { formatBdt } from "@/utils/properties-management-table.utils";
 
 export default function ServiceFeesCard({
   property,

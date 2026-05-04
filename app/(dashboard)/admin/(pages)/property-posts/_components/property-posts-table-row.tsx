@@ -17,7 +17,7 @@ import {
   getStatusClasses,
   getStatusLabel,
   getStatusMeta,
-} from "../_utils/properties-management-table.utils";
+} from "../../../../../../utils/properties-management-table.utils";
 
 type PropertyPostsTableRowProps = {
   property: PropertyPostItem;
