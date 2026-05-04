@@ -31,3 +31,20 @@ export const fetchSellPostDetails = async (postId: string) => {
     return response.data;
 };
 
+type AppointmentRequestPayload = {
+    sellPostId: string;
+    buyerName: string;
+    buyerPhone: string;
+    buyerAddress: string;
+};
+
+export const requestSellPostAppointment = async (
+    payload: AppointmentRequestPayload,
+) => {
+    const response = await serviceClient.post(
+        "/sell-posts/appointments/request",
+        payload,
+    );
+    return response.data;
+};
+

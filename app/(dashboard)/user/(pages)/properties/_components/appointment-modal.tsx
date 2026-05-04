@@ -6,6 +6,7 @@ import Button from "@/components/buttons/button";
 import type { PropertyDetails } from "@/types/property/property.details";
 import { IMAGE } from "@/constants/image-paths";
 import Dialog from "@/components/dialogs/dialog";
+import { requestSellPostAppointment } from "@/service/users/properties.services";
 
 type Props = {
   open: boolean;
@@ -20,6 +21,38 @@ const AppointmentModal = ({
   property,
   onSuccess,
 }: Props) => {
+  const [buyerName, setBuyerName] = React.useState("Farhan");
+  const [buyerPhone, setBuyerPhone] = React.useState("+8801700000000");
+  const [buyerAddress, setBuyerAddress] = React.useState(
+    "Banani, Banani Thana, Dhaka North City Corporation, Dhaka-1213, Dhaka, Bangladesh.",
+  );
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
+
+  const handleSubmit = async () => {
+    if (!buyerName || !buyerPhone || !buyerAddress) {
+      setErrorMessage("Please fill in all required fields.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    setErrorMessage(null);
+
+    try {
+      await requestSellPostAppointment({
+        sellPostId: property.id,
+        buyerName,
+        buyerPhone,
+        buyerAddress,
+      });
+      onSuccess();
+    } catch (error) {
+      setErrorMessage("Unable to request appointment. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange} position="center" size="sm">
       <div className="p-2">
@@ -65,7 +98,8 @@ const AppointmentModal = ({
           <Field label="Full Name *">
             <input
               className="w-full h-12 rounded-xl border border-black/10 bg-white px-4 text-sm font-semibold outline-none focus:border-primary"
-              defaultValue="Farhan"
+              value={buyerName}
+              onChange={(event) => setBuyerName(event.target.value)}
               placeholder="Your name"
             />
           </Field>
@@ -73,7 +107,8 @@ const AppointmentModal = ({
           <Field label="Phone Number *">
             <input
               className="w-full h-12 rounded-xl border border-black/10 bg-white px-4 text-sm font-semibold outline-none focus:border-primary"
-              defaultValue="+8801700000000"
+              value={buyerPhone}
+              onChange={(event) => setBuyerPhone(event.target.value)}
               placeholder="+8801..."
             />
           </Field>
@@ -81,14 +116,23 @@ const AppointmentModal = ({
           <Field label="Your Address *">
             <textarea
               className="w-full min-h-22.5 rounded-xl border border-black/10 bg-white px-4 py-3 text-sm font-semibold outline-none focus:border-primary resize-none"
-              defaultValue="Banani, Banani Thana, Dhaka North City Corporation, Dhaka-1213, Dhaka, Bangladesh."
+              value={buyerAddress}
+              onChange={(event) => setBuyerAddress(event.target.value)}
               placeholder="Your address"
             />
           </Field>
         </div>
 
-        <Button className="w-full mt-6 h-12 rounded-xl" onClick={onSuccess}>
-          Request for appointment
+        {errorMessage ? (
+          <p className="mt-3 text-sm text-red-600">{errorMessage}</p>
+        ) : null}
+
+        <Button
+          className="w-full mt-6 h-12 rounded-xl"
+          onClick={handleSubmit}
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? "Requesting..." : "Request for appointment"}
         </Button>
       </div>
     </Dialog>
