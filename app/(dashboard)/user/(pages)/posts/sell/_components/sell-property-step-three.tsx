@@ -15,7 +15,7 @@ type ServiceItem = {
 type Props = {
   defaultValues?: Partial<StepThreeValues>;
   onBack: () => void;
-  onNext: (data: StepThreeValues) => void;
+  onNext: (data: StepThreeValues) => void | Promise<void>;
 };
 
 const MANDATORY_SERVICES: ServiceItem[] = [
@@ -24,10 +24,10 @@ const MANDATORY_SERVICES: ServiceItem[] = [
     label: "Ownership History Validation",
     mandatory: true,
   },
-  { id: "pentagraph_map", label: "Pentagraph Map", mandatory: true },
+  { id: "pentagraph_map", label: "Pentagraph Map Verification", mandatory: true },
   {
-    id: "physical_estimate_border_demarcation",
-    label: "Physical estimate & Border Demarcation",
+    id: "physical_estimate",
+    label: "Physical Estimate",
     mandatory: true,
   },
   {
@@ -39,16 +39,13 @@ const MANDATORY_SERVICES: ServiceItem[] = [
 
 const OPTIONAL_SERVICES: ServiceItem[] = [
   {
-    id: "registration_deed_writing",
-    label: "Property Registration/ Deed Writing Service",
+    id: "deed_writing",
+    label: "Deed Writing",
   },
   {
-    id: "namjari_dcr_pouro_update",
-    label: "Namjari/ DCR/ Pouro City Corp Record Update",
+    id: "risk_analysis",
+    label: "Risk Analysis",
   },
-  { id: "inheritance_dispute_analysis", label: "Inheritance Dispute Analysis" },
-  { id: "gov_acquisition_risk", label: "Government Acquisition Risk" },
-  { id: "court_case_verification", label: "Court case verification" },
 ];
 
 function SectionTitle({
@@ -136,10 +133,10 @@ export default function SellPropertyStepThreeForm({
     setValue("optionalServiceIds", next, { shouldValidate: true });
   };
 
-  const submit = (data: StepThreeValues) => {
+  const submit = async (data: StepThreeValues) => {
     // always enforce mandatory
     const mandatory = MANDATORY_SERVICES.map((s) => s.id);
-    onNext({
+    await onNext({
       mandatoryServiceIds: mandatory,
       optionalServiceIds: data.optionalServiceIds ?? [],
     });

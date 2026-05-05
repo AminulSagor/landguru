@@ -6,7 +6,7 @@ import Button from "@/components/buttons/button";
 import type { PropertyDetails } from "@/types/property/property.details";
 import { IMAGE } from "@/constants/image-paths";
 import Dialog from "@/components/dialogs/dialog";
-import { requestSellPostAppointment } from "@/service/users/properties.services";
+import { requestSellPostAppointment } from "@/service/users/properties/properties.services";
 
 type Props = {
   open: boolean;

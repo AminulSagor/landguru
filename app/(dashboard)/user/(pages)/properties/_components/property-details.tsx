@@ -2,7 +2,7 @@
 
 import React from "react";
 
-import { fetchSellPostDetails } from "@/service/users/properties.services";
+import { fetchSellPostDetails } from "@/service/users/properties/properties.services";
 import type { PropertyDetails as PropertyDetailsDto } from "@/types/property/property.details";
 
 import BuyStepper from "@/components/steppers/buy-stepper";

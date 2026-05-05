@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@import "react-datepicker/dist/react-datepicker.css";
+@import "react-datepicker/dist/react-datepicker.css";
 
 :root {
   --background: #ffffff;
@@ -74,4 +76,33 @@ body {
     padding-left: 11rem; /* px-24 */
     padding-right: 12rem;
   }
+}
+
+.react-datepicker-popper {
+  z-index: 9999 !important;
+}
+
+.react-datepicker {
+  border: 1px solid rgba(100, 116, 139, 0.15) !important;
+  border-radius: 14px !important;
+  overflow: hidden;
+  font-family: inherit !important;
+  box-shadow: 0 18px 45px rgba(16, 24, 40, 0.18);
+}
+
+.react-datepicker__header {
+  background: #ffffff !important;
+  border-bottom: 1px solid rgba(100, 116, 139, 0.15) !important;
+}
+
+.react-datepicker__day--selected,
+.react-datepicker__day--keyboard-selected,
+.react-datepicker__time-list-item--selected {
+  background: #1f6e80 !important;
+  color: white !important;
+}
+
+.react-datepicker__day:hover,
+.react-datepicker__time-list-item:hover {
+  background: rgba(31, 110, 128, 0.1) !important;
 }

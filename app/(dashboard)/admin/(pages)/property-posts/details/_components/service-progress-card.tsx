@@ -1,13 +1,27 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import Card from "@/components/cards/card";
 import Button from "@/components/buttons/button";
 import AssignAgentDialog from "@/app/(dashboard)/admin/(pages)/property-posts/details/_components/assign-agent-dialog";
-import type { PropertyPostItem } from "@/types/admin/property-post/property.types";
+import type {
+  PropertyPostDocument,
+  PropertyPostItem,
+} from "@/types/admin/property-post/property.types";
 import { formatDisplayId } from "@/utils/id.utils";
 
 type ProgressStatus = "none" | "pending" | "in_progress" | "submitted" | "verified";
+
+type ServiceRow = {
+  label: string;
+  id?: string;
+  status?: string;
+  hasAgent: boolean;
+  serviceKey?: string;
+  serviceName?: string;
+  feeAmount?: number | null;
+  responseDeadline?: string | null;
+};
 
 function humanizeServiceKey(serviceKey: string) {
   return serviceKey
@@ -41,6 +55,28 @@ function parseProgressText(value?: string | null) {
   };
 }
 
+function resolveDocuments(property: PropertyPostItem): PropertyPostDocument[] {
+  if (property.documents?.length) {
+    return property.documents;
+  }
+
+  const fallback: PropertyPostDocument[] = [];
+
+  (property.deedFiles ?? []).forEach((fileUrl) => {
+    fallback.push({ fileUrl, category: "DEED" });
+  });
+
+  (property.khatianFiles ?? []).forEach((fileUrl) => {
+    fallback.push({ fileUrl, category: "KHATIAN" });
+  });
+
+  (property.otherFiles ?? []).forEach((fileUrl) => {
+    fallback.push({ fileUrl, category: "OTHER" });
+  });
+
+  return fallback;
+}
+
 
 export default function ServiceProgressCard({
   property,
@@ -48,25 +84,36 @@ export default function ServiceProgressCard({
   property: PropertyPostItem;
 }) {
   const [open, setOpen] = useState(false);
+  const [selectedService, setSelectedService] = useState<ServiceRow | null>(null);
+  const documents = useMemo(() => resolveDocuments(property), [property]);
+  const address =
+    property.fullAddress || property.address?.fullAddress || undefined;
   const selectedServices = property.selectedServiceslist?.length
     ? property.selectedServiceslist.map((service) => service.serviceKey)
     : property.selectedServices ?? [];
-  const selectedServiceLabels = selectedServices.map((service) =>
-    humanizeServiceKey(service),
-  );
-  const serviceRowsSource =
+  const serviceRowsSource: ServiceRow[] =
     property.serviceAssignments && property.serviceAssignments.length > 0
       ? property.serviceAssignments.map((assignment) => ({
-          label: assignment.serviceName || humanizeServiceKey(assignment.serviceKey),
+          label:
+            assignment.serviceName || humanizeServiceKey(assignment.serviceKey),
           id: assignment.id,
           status: assignment.status,
           hasAgent: Boolean(assignment.agentId),
+          serviceKey: assignment.serviceKey,
+          serviceName:
+            assignment.serviceName || humanizeServiceKey(assignment.serviceKey),
+          feeAmount: assignment.feeAmount ?? null,
+          responseDeadline: assignment.responseDeadline ?? null,
         }))
-      : selectedServiceLabels.map((label) => ({
-          label,
+      : selectedServices.map((serviceKey) => ({
+          label: humanizeServiceKey(serviceKey),
           id: undefined,
           status: undefined,
           hasAgent: false,
+          serviceKey,
+          serviceName: humanizeServiceKey(serviceKey),
+          feeAmount: null,
+          responseDeadline: null,
         }));
   const progressFromApi = parseProgressText(property.servicesProgress);
   const fallbackTotal = serviceRowsSource.length;
@@ -80,6 +127,12 @@ export default function ServiceProgressCard({
   const noteText =
     total > done ? `${total - done} service(s) still pending` : undefined;
   const postRef = formatDisplayId("POST", property.id);
+  const handleOpenChange = (value: boolean) => {
+    setOpen(value);
+    if (!value) {
+      setSelectedService(null);
+    }
+  };
 
   return (
     <Card>
@@ -134,7 +187,7 @@ export default function ServiceProgressCard({
                         kind: "view" as const,
                         label: "View",
                       };
-                const disabled = action.kind === "disabled";
+                const disabled = false;
                 return (
                   <tr
                     key={`${row.label}-${idx}`}
@@ -173,7 +226,10 @@ export default function ServiceProgressCard({
                           action.kind === "review" ? "primary" : "secondary"
                         }
                         disabled={disabled}
-                        onClick={() => setOpen(true)}
+                        onClick={() => {
+                          setSelectedService(row);
+                          setOpen(true);
+                        }}
                       >
                         {action.label}
                       </Button>
@@ -185,7 +241,18 @@ export default function ServiceProgressCard({
           </table>
         </div>
       </div>
-      <AssignAgentDialog open={open} onOpenChange={setOpen} postId={postRef} />
+      <AssignAgentDialog
+        open={open}
+        onOpenChange={handleOpenChange}
+        postId={postRef}
+        sellPostId={property.id}
+        serviceKey={selectedService?.serviceKey}
+        serviceName={selectedService?.serviceName}
+        feeAmount={selectedService?.feeAmount ?? undefined}
+        responseDeadline={selectedService?.responseDeadline ?? undefined}
+        documents={documents}
+        address={address}
+      />
     </Card>
   );
 }

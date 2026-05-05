@@ -18,8 +18,8 @@ export interface AvailableAgentItem {
 
 export interface AvailableAgentsMeta {
   total: number;
-  page: number;
-  limit: number;
+  page: string;
+  limit: string;
   totalPages: number;
 }
 

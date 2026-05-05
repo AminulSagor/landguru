@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import PropertyCard from "@/components/cards/property-card";
 import Link from "next/link";
-import { fetchSellPostListings } from "@/service/users/properties.services";
+import { fetchSellPostListings } from "@/service/users/properties/properties.services";
 import { PropertyListing } from "@/types/property/property.listing";
 
 const HomePage = () => {

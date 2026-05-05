@@ -35,8 +35,8 @@ export type StepOneValues = {
   division: Option | null;
   district: Option | null;
   upazila: Option | null;
-  pouroshovaOrUnion: Option | null; // no data yet
-  wardNo: Option | null; // no data yet
+  pouroshovaOrUnion: string;
+  wardNo: string;
   postalCode: string;
   fullAddress: string;
 };

@@ -30,7 +30,7 @@ type SellPostAllData = {
 type Props = {
   allData: SellPostAllData;
   onBack: () => void;
-  onSubmit: (values: StepFourValues) => void | Promise<void>;
+  onSubmit: (values: StepFourValues) => Promise<boolean>;
 };
 
 function formatBDT(n: number) {
@@ -159,8 +159,10 @@ export default function SellPropertyStepFourReview({
   const khatianDocs = step2?.khatianDocuments ?? [];
 
   const handleSubmit = async () => {
-    await onSubmit({ data: "" });
-    setDialogOpen(true);
+    const success = await onSubmit({ data: "" });
+    if (success) {
+      setDialogOpen(true);
+    }
   };
 
   return (

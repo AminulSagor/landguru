@@ -21,7 +21,7 @@ import { FaVideo } from "react-icons/fa";
 type Props = {
   defaultValues?: Partial<StepTwoValues>;
   onBack: () => void;
-  onNext: (data: StepTwoValues) => void;
+  onNext: (data: StepTwoValues) => void | Promise<void>;
 };
 
 const MAX_PHOTOS = 5;
@@ -217,8 +217,8 @@ export default function SellPropertyStepTwoForm({
     setValue(key, next, { shouldValidate: true });
   };
 
-  const submit = (data: StepTwoValues) => {
-    onNext(data);
+  const submit = async (data: StepTwoValues) => {
+    await onNext(data);
   };
 
   return (
