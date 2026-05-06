@@ -1,3 +1,6 @@
+"use client";
+
+import React from "react";
 import { PropertyRequest } from "@/app/(dashboard)/user/types/property-request";
 import Button from "@/components/buttons/button";
 import Card from "@/components/cards/card";
@@ -12,23 +15,41 @@ import {
   Square,
   Wallet,
 } from "lucide-react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function PropertyRequestCard({
   item,
 }: {
   item: PropertyRequest;
 }) {
+  const router = useRouter();
   const budgetText = `৳ ${item.budgetMin.toLocaleString()} - ৳ ${item.budgetMax.toLocaleString()}`;
+  const href = `/user/properties/request/details/${item.id}`;
+
+  const handleNavigate = () => {
+    router.push(href);
+  };
 
   return (
-    <Card
-      className={cn(
-        "rounded-2xl border bg-secondary",
-        "px-6 py-5 md:px-7 md:py-6",
-        "shadow-sm",
-      )}
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={handleNavigate}
+      onKeyDown={(event: React.KeyboardEvent<HTMLDivElement>) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          handleNavigate();
+        }
+      }}
+      className="outline-none"
     >
+      <Card
+        className={cn(
+          "rounded-2xl border bg-secondary",
+          "px-6 py-5 md:px-7 md:py-6",
+          "shadow-sm transition hover:shadow-md cursor-pointer",
+        )}
+      >
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
@@ -52,16 +73,14 @@ export default function PropertyRequestCard({
           </div>
         </div>
 
-        <Link
-          href={`/user/properties/request/details/${item.id}`}
+        <span
           className={cn(
             "mt-1 inline-flex h-9 w-9 items-center justify-center rounded-full",
-            "text-gray/60 hover:text-gray",
-            "transition",
+            "text-gray/60",
           )}
         >
           <ChevronRight size={18} />
-        </Link>
+        </span>
       </div>
 
       {/* Info grid (like screenshot) */}
@@ -99,12 +118,13 @@ export default function PropertyRequestCard({
       </div>
 
       {/* CTA */}
-      <div className="mt-6">
-        <Button className="w-full">
-          <CheckCircle2 className="mr-2 h-5 w-5" />I have this property
-        </Button>
-      </div>
-    </Card>
+        <div className="mt-6">
+          <Button className="w-full" onClick={handleNavigate}>
+            <CheckCircle2 className="mr-2 h-5 w-5" />I have this property
+          </Button>
+        </div>
+      </Card>
+    </div>
   );
 }
 

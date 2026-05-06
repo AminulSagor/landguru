@@ -7,21 +7,30 @@ import Button from "@/components/buttons/button";
 
 import { HookFormSingleSelect } from "@/components/inputs/select/single.select";
 import { HookFormTextInput } from "@/components/inputs/text-input";
+import {
+  DIVISION_OPTIONS,
+  getDistrictOptionsByDivision,
+  getUpazilaOptionsByDistrict,
+  DivisionKey,
+} from "@/bd-location-data/bd-address";
 import { ListFilter } from "lucide-react";
-
-type Option = { label: string; value: string };
+import {
+  type Option,
+} from "@/types/property/property-filters.types";
+import { usePropertyFilters } from "@/app/(dashboard)/user/(pages)/properties/_components/property-filters.context";
 
 type FiltersForm = {
   division: Option | null;
   district: Option | null;
   upazila: Option | null;
-  pouroshovaOrUnion: Option | null;
-  wardNo: Option | null;
+  pouroshovaOrUnion: string;
+  wardNo: string;
   minPrice: string;
   maxPrice: string;
 };
 
 const PROPERTY_TYPES = [
+  "All",
   "Plain Land",
   "Flat",
   "Commercial",
@@ -30,35 +39,87 @@ const PROPERTY_TYPES = [
 ] as const;
 
 export default function PropertyFilters() {
-  const [activeType, setActiveType] =
-    React.useState<(typeof PROPERTY_TYPES)[number]>("Plain Land");
+  const { filters, updateFilters, resetFilters } = usePropertyFilters();
+
+  const [activeType, setActiveType] = React.useState<
+    (typeof PROPERTY_TYPES)[number]
+  >(filters.propertyType as (typeof PROPERTY_TYPES)[number]);
 
   // slider UI state (visual like SS)
-  const [price, setPrice] = React.useState<[number, number]>([50, 80]); // lakh
-  const [sellable, setSellable] = React.useState<[number, number]>([7, 20]); // katha
-  const [plot, setPlot] = React.useState<[number, number]>([7, 20]); // katha
-  const [road, setRoad] = React.useState<[number, number]>([200, 750]); // meters
+  const [price, setPrice] = React.useState<[number, number]>(
+    filters.priceRange,
+  ); // lakh
+  const [sellable, setSellable] = React.useState<[number, number]>(
+    filters.sellableRange,
+  ); // katha
+  const [plot, setPlot] = React.useState<[number, number]>(filters.plotRange); // katha
+  const [road, setRoad] = React.useState<[number, number]>(filters.roadRange); // meters
 
-  const { control, reset } = useForm<FiltersForm>({
+  const { control, reset, getValues, watch, setValue } =
+    useForm<FiltersForm>({
     defaultValues: {
-      division: null,
-      district: null,
-      upazila: null,
-      pouroshovaOrUnion: null,
-      wardNo: null,
-      minPrice: "",
-      maxPrice: "",
+      division: filters.division,
+      district: filters.district,
+      upazila: filters.upazila,
+      pouroshovaOrUnion: filters.pouroshovaOrUnion,
+      wardNo: filters.wardNo,
+      minPrice: filters.minPrice,
+      maxPrice: filters.maxPrice,
     },
-    mode: "onChange",
-  });
+      mode: "onChange",
+    });
+
+  const division = watch("division");
+  const district = watch("district");
+  const divisionKey = (division?.value as DivisionKey) ?? null;
+
+  const districtOptions = React.useMemo(
+    () => getDistrictOptionsByDivision(divisionKey),
+    [divisionKey],
+  );
+
+  const upazilaOptions = React.useMemo(
+    () => getUpazilaOptionsByDistrict(district?.value ?? null),
+    [district],
+  );
+
+  React.useEffect(() => {
+    setActiveType(filters.propertyType as (typeof PROPERTY_TYPES)[number]);
+    setPrice(filters.priceRange);
+    setSellable(filters.sellableRange);
+    setPlot(filters.plotRange);
+    setRoad(filters.roadRange);
+    reset({
+      division: filters.division,
+      district: filters.district,
+      upazila: filters.upazila,
+      pouroshovaOrUnion: filters.pouroshovaOrUnion,
+      wardNo: filters.wardNo,
+      minPrice: filters.minPrice,
+      maxPrice: filters.maxPrice,
+    });
+  }, [filters, reset]);
 
   const resetAll = () => {
-    setActiveType("Plain Land");
-    setPrice([50, 80]);
-    setSellable([7, 20]);
-    setPlot([7, 20]);
-    setRoad([200, 750]);
-    reset();
+    resetFilters();
+  };
+
+  const applyFilters = () => {
+    const values = getValues();
+    updateFilters({
+      propertyType: activeType,
+      priceRange: price,
+      sellableRange: sellable,
+      plotRange: plot,
+      roadRange: road,
+      division: values.division,
+      district: values.district,
+      upazila: values.upazila,
+      pouroshovaOrUnion: values.pouroshovaOrUnion,
+      wardNo: values.wardNo,
+      minPrice: values.minPrice,
+      maxPrice: values.maxPrice,
+    });
   };
 
   return (
@@ -113,7 +174,7 @@ export default function PropertyFilters() {
           value={`৳ ${toBDT(price[0])} - ৳ ${toBDT(price[1])}`}
         >
           <DoubleSlider
-            min={1}
+            min={0}
             max={500}
             step={1}
             value={price}
@@ -127,7 +188,7 @@ export default function PropertyFilters() {
           value={`${sellable[0]} Katha - ${sellable[1]} Katha`}
         >
           <DoubleSlider
-            min={1}
+            min={0}
             max={100}
             step={1}
             value={sellable}
@@ -141,7 +202,7 @@ export default function PropertyFilters() {
           value={`${plot[0]} Katha - ${plot[1]} Katha`}
         >
           <DoubleSlider
-            min={1}
+            min={0}
             max={100}
             step={1}
             value={plot}
@@ -167,37 +228,52 @@ export default function PropertyFilters() {
             control={control}
             label="Division"
             placeholder="Select your division"
-            options={[]}
+            options={DIVISION_OPTIONS}
+            onChange={() => {
+              setValue("district", null);
+              setValue("upazila", null);
+              setValue("pouroshovaOrUnion", "");
+              setValue("wardNo", "");
+            }}
           />
           <HookFormSingleSelect<FiltersForm>
             name="district"
             control={control}
             label="District"
-            placeholder="Select your division"
-            options={[]}
+            placeholder="Select your district"
+            options={districtOptions}
+            disabled={!division}
+            onChange={() => {
+              setValue("upazila", null);
+              setValue("pouroshovaOrUnion", "");
+              setValue("wardNo", "");
+            }}
           />
           <HookFormSingleSelect<FiltersForm>
             name="upazila"
             control={control}
-            label="Upazilla"
+            label="Upazila"
             placeholder="Select your upazilla"
-            options={[]}
+            options={upazilaOptions}
+            disabled={!district}
+            onChange={() => {
+              setValue("pouroshovaOrUnion", "");
+              setValue("wardNo", "");
+            }}
           />
-          <HookFormSingleSelect<FiltersForm>
+          <HookFormTextInput<FiltersForm>
             name="pouroshovaOrUnion"
             control={control}
             label="Pouroshova/City Corp/Union"
-            placeholder="Select your Pouroshova/City Corp *"
-            options={[]}
-            disabled
+            placeholder="Enter Pouroshova/City Corp/Union"
+            inputClassName="h-12 px-4"
           />
-          <HookFormSingleSelect<FiltersForm>
+          <HookFormTextInput<FiltersForm>
             name="wardNo"
             control={control}
             label="Ward No"
-            placeholder="Select Ward No"
-            options={[]}
-            disabled
+            placeholder="Enter Ward No"
+            inputClassName="h-12 px-4"
           />
 
           {/* Optional: manual min/max fields if you want */}
@@ -217,7 +293,9 @@ export default function PropertyFilters() {
           </div>
         </div>
 
-        <Button className="w-full h-12 rounded-xl">Apply Filters</Button>
+        <Button className="w-full h-12 rounded-xl" onClick={applyFilters}>
+          Apply Filters
+        </Button>
       </div>
     </Card>
   );

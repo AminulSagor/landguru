@@ -4,52 +4,93 @@ import React from "react";
 import { Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { PropertyRequest } from "@/app/(dashboard)/user/types/property-request";
 import PropertyRequestCard from "@/app/(dashboard)/user/(pages)/properties/_components/property-request-list";
+import { usePropertyFilters } from "@/app/(dashboard)/user/(pages)/properties/_components/property-filters.context";
+import { applyPropertyFiltersToRequests } from "@/utils/property-filters.utils";
+import type { BuyPostListMeta } from "@/types/post/buy/wanted-needs.types";
 
 const PAGE_SIZE = 6;
 
+type Props = {
+  items: PropertyRequest[];
+  meta?: BuyPostListMeta | null;
+  page?: number;
+  onPageChange?: (n: number) => void;
+};
+
 export default function PropertyRequestGrid({
   items,
-}: {
-  items: PropertyRequest[];
-}) {
+  meta,
+  page,
+  onPageChange,
+}: Props) {
   const [sort, setSort] = React.useState<"high" | "low">("high");
   const [query, setQuery] = React.useState("");
-  const [page, setPage] = React.useState(1);
+  const [localPage, setLocalPage] = React.useState(1);
+  const { filters, filtersApplied } = usePropertyFilters();
+
+  const currentPage = page ?? localPage;
+  const handlePageChange = onPageChange ?? setLocalPage;
+  const limit = meta?.limit ?? PAGE_SIZE;
+
+  const locationText = React.useMemo(() => {
+    const parts = [
+      filters.wardNo ? `Ward ${filters.wardNo}` : "",
+      filters.pouroshovaOrUnion,
+      filters.upazila?.label,
+      filters.district?.label,
+      filters.division?.label,
+    ].filter((value) => value && String(value).trim().length > 0);
+
+    if (!filtersApplied || parts.length === 0) return "All locations";
+
+    return parts.join(", ");
+  }, [filters, filtersApplied]);
 
   const filtered = React.useMemo(() => {
     const q = query.trim().toLowerCase();
 
-    const data = (items ?? []).filter((p) => {
+    const baseItems = filtersApplied
+      ? applyPropertyFiltersToRequests(items ?? [], filters)
+      : items ?? [];
+
+    const data = baseItems.filter((p) => {
       if (!q) return true;
       const hay = `${p.title ?? ""} ${p.location ?? ""}`.toLowerCase();
       return hay.includes(q);
     });
 
     return data;
-  }, [items, query]);
+  }, [items, query, filtersApplied, filters]);
 
-  const total = filtered.length;
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const hasSearch = query.trim().length > 0;
+  const total = meta?.total ?? filtered.length;
+  const displayTotal = filtersApplied || hasSearch ? filtered.length : total;
+  const totalPages = Math.max(
+    1,
+    meta?.totalPages ?? Math.ceil(total / limit),
+  );
 
   const pageItems = React.useMemo(() => {
-    const start = (page - 1) * PAGE_SIZE;
+    if (meta) return filtered;
+
+    const start = (currentPage - 1) * PAGE_SIZE;
     return filtered.slice(start, start + PAGE_SIZE);
-  }, [filtered, page]);
+  }, [filtered, currentPage, meta]);
 
   React.useEffect(() => {
-    if (page > totalPages) setPage(1);
-  }, [page, totalPages]);
+    if (!meta && currentPage > totalPages) {
+      handlePageChange(1);
+    }
+  }, [currentPage, totalPages, handlePageChange, meta]);
 
   return (
     <div>
       {/* Title */}
       <div>
         <h2 className="text-xl font-semibold text-black">
-          Showing 40 Properties
+          Showing {displayTotal} Properties
         </h2>
-        <p className="mt-1 text-sm text-black/55">
-          Banasree, Ward No. 25, Dhaka South City Corporation
-        </p>
+        <p className="mt-1 text-sm text-black/55">{locationText}</p>
       </div>
 
       {/* Sort + Search */}
@@ -61,7 +102,7 @@ export default function PropertyRequestGrid({
             value={sort}
             onChange={(e) => {
               setSort(e.target.value as "high" | "low");
-              setPage(1);
+              handlePageChange(1);
             }}
             className="h-10 rounded-md border border-black/10 bg-white px-5 text-sm text-black outline-none focus:border-gray/40"
           >
@@ -79,7 +120,7 @@ export default function PropertyRequestGrid({
             value={query}
             onChange={(e) => {
               setQuery(e.target.value);
-              setPage(1);
+              handlePageChange(1);
             }}
             placeholder="Search location, area"
             className="h-11 w-full rounded-xl border border-black/10 bg-white pl-10 pr-4 text-sm font-semibold text-black outline-none placeholder:text-black/30 focus:border-gray/40"
@@ -98,9 +139,19 @@ export default function PropertyRequestGrid({
 
       {/* Bottom */}
       <div className="mt-8 flex flex-col-reverse gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm text-black/50">Showing 1 to 6 of 120 results</p>
+        <p className="text-sm text-black/50">
+          Showing {displayTotal === 0 ? 0 : (currentPage - 1) * limit + 1} to{" "}
+          {displayTotal === 0
+            ? 0
+            : Math.min(currentPage * limit, displayTotal)}{" "}
+          of {displayTotal} results
+        </p>
 
-        <Pagination page={page} totalPages={totalPages} onChange={setPage} />
+        <Pagination
+          page={currentPage}
+          totalPages={totalPages}
+          onChange={handlePageChange}
+        />
       </div>
     </div>
   );

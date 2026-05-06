@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useRouter } from "next/navigation";
 import {
   MapPin,
   Image as ImageIcon,
@@ -96,6 +97,7 @@ export default function SellPropertyStepFourReview({
   onBack,
   onSubmit,
 }: Props) {
+  const router = useRouter();
   const step1 = allData.step1;
   const step2 = allData.step2;
 
@@ -482,9 +484,12 @@ export default function SellPropertyStepFourReview({
             </div>
           </div>
 
-          <div className="mt-5">
-            <Button className="w-full" onClick={() => setDialogOpen(false)}>
+          <div className="mt-5 flex items-center justify-end gap-3">
+            <Button variant="secondary" onClick={() => setDialogOpen(false)}>
               Close
+            </Button>
+            <Button onClick={() => router.push("/user/dashboard")}>
+              Go to Dashboard
             </Button>
           </div>
         </div>

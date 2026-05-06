@@ -27,7 +27,7 @@ export function formatDisplayIdSafe(
   id?: string,
 ) {
   if (typeof displayId === "string" && displayId.trim()) {
-    return displayId.startsWith("#") ? displayId : `#${displayId}`;
+    return displayId.startsWith("#") ? displayId : `${displayId}`;
   }
   return formatDisplayId(prefix, id);
 }
