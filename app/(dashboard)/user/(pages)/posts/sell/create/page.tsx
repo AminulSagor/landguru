@@ -112,7 +112,11 @@ export default function CreateSellPostPage() {
   const goBack = () => setCurrentStep((s) => Math.max(1, s - 1));
 
   const uploadFile = React.useCallback(
-    async (file: File, type: UploadType, preferKey = false) => {
+    async (
+      file: File,
+      type: UploadType,
+      options?: { preferKey?: boolean; returnSignedUrl?: boolean },
+    ) => {
       const presignedResponse = await uploadService.getPresignedUploadUrl({
         filename: file.name,
         contentType: file.type || "application/octet-stream",
@@ -123,16 +127,24 @@ export default function CreateSellPostPage() {
         resolvePresignedUrls(presignedResponse);
       await uploadService.uploadToPresignedUrl(uploadUrl, file);
 
-      return preferKey ? fileKey || fileUrl : fileUrl;
+      if (options?.returnSignedUrl) {
+        return uploadUrl;
+      }
+
+      return options?.preferKey ? fileKey || fileUrl : fileUrl;
     },
     [],
   );
 
   const uploadFiles = React.useCallback(
-    async (files: File[], type: UploadType, preferKey = false) => {
+    async (
+      files: File[],
+      type: UploadType,
+      options?: { preferKey?: boolean; returnSignedUrl?: boolean },
+    ) => {
       if (!files.length) return [] as string[];
       return Promise.all(
-        files.map((file) => uploadFile(file, type, preferKey)),
+        files.map((file) => uploadFile(file, type, options)),
       );
     },
     [uploadFile],
@@ -202,17 +214,17 @@ export default function CreateSellPostPage() {
       const deedFiles = await uploadFiles(
         step2.deedDocuments ?? [],
         "DEED",
-        true,
+        { returnSignedUrl: true },
       );
       const khatianFiles = await uploadFiles(
         step2.khatianDocuments ?? [],
         "DEED",
-        true,
+        { returnSignedUrl: true },
       );
       const otherFiles = await uploadFiles(
         step2.otherDocuments ?? [],
         "DEED",
-        true,
+        { returnSignedUrl: true },
       );
 
       const response = await updateSellPostStepTwo({

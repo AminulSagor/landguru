@@ -294,7 +294,7 @@ export default function BuyPostStepTwoReview({
             <Button variant="secondary" onClick={() => setDialogOpen(false)}>
               Close
             </Button>
-            <Button onClick={() => router.push("/dashboard")}>
+            <Button onClick={() => router.push("/user/dashboard")}>
               Go to Dashboard
             </Button>
           </div>

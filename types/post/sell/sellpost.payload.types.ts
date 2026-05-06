@@ -25,9 +25,9 @@ export type createSellPostStepOnePayload = {
 export type createSellPostStepTwoPayload = {
   photos?: string[];        // public image URLs
   videoUrl?: string;        // public video URL
-  deedFiles?: string[];     // private file paths
-  khatianFiles?: string[];  // private file paths
-  otherFiles?: string[];    // private file paths
+  deedFiles?: string[];     // signed URLs
+  khatianFiles?: string[];  // signed URLs
+  otherFiles?: string[];    // signed URLs
 };
 
 export type createSellPostStepThreePayload = {

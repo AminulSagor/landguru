@@ -26,6 +26,7 @@ export const updateSellPostStepOne = async (params: {
     postId: string;
     payload: createSellPostStepOnePayload;
 }): Promise<createSellpostStepOneResponse> => {
+    console.log("Updating Sell Post Step One with payload:", params.payload);
     const response = await serviceClient.patch<createSellpostStepOneResponse>(
         `/sell-posts/draft/${params.postId}`,
         params.payload,
@@ -41,6 +42,7 @@ export const updateSellPostStepTwo = async (params: {
     postId: string;
     payload: createSellPostStepTwoPayload;
 }): Promise<createSellpostStepTwoResponse> => {
+    console.log("Updating Sell Post Step Two with payload:", params.payload);
     const response = await serviceClient.patch<createSellpostStepTwoResponse>(
         `/sell-posts/draft/${params.postId}`,
         params.payload,
@@ -49,6 +51,7 @@ export const updateSellPostStepTwo = async (params: {
         },
     );
     console.log("Update Sell Post Step Two Response:", response.data);
+    console.log(response.status);
     return response.data;
 };
 
@@ -56,6 +59,7 @@ export const updateSellPostStepThree = async (params: {
     postId: string;
     payload: createSellPostStepThreePayload;
 }): Promise<createSellpostStepThreeResponse> => {
+    console.log("Updating Sell Post Step Three with payload:", params.payload);
     const response = await serviceClient.patch<createSellpostStepThreeResponse>(
         `/sell-posts/draft/${params.postId}`,
         params.payload,
@@ -68,6 +72,7 @@ export const updateSellPostStepThree = async (params: {
 };
 
 export const submitForReview = async (postId: string): Promise<submitForReviewResponse> => {
+    console.log("Submitting Sell Post for Review with postId:", postId);
     const response = await serviceClient.post<submitForReviewResponse>(
         `/sell-posts/${postId}/submit`
     );
