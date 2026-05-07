@@ -36,7 +36,7 @@ export default function MYPropertyFilters({
   // demo counts (like ss small badges)
   const counts = {
     buyPosts: 1,
-    quoted: 1,
+    offers: 1,
   };
 
   const resetAll = () => {
@@ -136,18 +136,12 @@ export default function MYPropertyFilters({
             />
 
             <RadioRow
-              label="Pending"
-              checked={status === "Pending"}
-              onClick={() => setStatus("Pending")}
-            />
-
-            <RadioRow
-              label="Quoted"
-              checked={status === "Quoted"}
-              onClick={() => setStatus("Quoted")}
+              label="Offers"
+              checked={status === "Offers"}
+              onClick={() => setStatus("Offers")}
               rightBadge={
-                counts.quoted ? (
-                  <CountBadge tone="red">{counts.quoted}</CountBadge>
+                counts.offers ? (
+                  <CountBadge tone="red">{counts.offers}</CountBadge>
                 ) : null
               }
             />
@@ -156,6 +150,18 @@ export default function MYPropertyFilters({
               label="Active"
               checked={status === "Active"}
               onClick={() => setStatus("Active")}
+            />
+
+            <RadioRow
+              label="In Review"
+              checked={status === "In Review"}
+              onClick={() => setStatus("In Review")}
+            />
+
+            <RadioRow
+              label="Accepted"
+              checked={status === "Accepted"}
+              onClick={() => setStatus("Accepted")}
             />
 
             <RadioRow

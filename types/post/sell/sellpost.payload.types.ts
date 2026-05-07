@@ -1,26 +1,6 @@
-export type createSellPostStepOnePayload = {
-    title: string;
-    description: string;
-    propertyType: string;
-    isPropertyShareable: boolean;
-    sellableAmount: number;
-    sellableUnit: string;
-    askingPricePerUnit: number;
-    askingPrice: number;
-    roadDistanceMin?: number;
-    roadDistanceMax?: number;
-    plotSize?: number;
-    plotUnit?: string;
-    shareAmount?: number;
-    shareUnit?: string;
-    division?: string;
-    district?: string;
-    upazila?: string;
-    unionOrCityCorp?: string;
-    wardNo?: string;
-    postalCode?: string;
-    fullAddress?: string;
-};
+import type { CreateOfferDraftStep1Request } from "@/types/post/buy/wanted-needs.types";
+
+export type createSellPostStepOnePayload = CreateOfferDraftStep1Request;
 
 export type createSellPostStepTwoPayload = {
   photos?: string[];        // public image URLs

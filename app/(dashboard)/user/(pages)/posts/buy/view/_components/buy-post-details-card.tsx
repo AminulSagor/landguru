@@ -13,12 +13,56 @@ import {
 import Card from "@/components/cards/card";
 import type { BuyPostDetails } from "@/app/(dashboard)/user/dummy-data/buy-post-data";
 import { formatDisplayId } from "@/utils/id.utils";
+import {
+  convertLandAmount,
+  LAND_UNITS,
+  normalizeLandUnit,
+  type LandUnit,
+} from "@/utils/land-unit.utils";
 
 export default function BuyPostRequestDetailsCard({
   data,
 }: {
   data: BuyPostDetails;
 }) {
+  const defaultUnit = React.useMemo<LandUnit>(() => {
+    return (
+      normalizeLandUnit(data.requiredLandSizeUnit) ||
+      normalizeLandUnit(data.requiredPlotSizeUnit) ||
+      "Katha"
+    );
+  }, [data.requiredLandSizeUnit, data.requiredPlotSizeUnit]);
+
+  const [unit, setUnit] = React.useState<LandUnit>(defaultUnit);
+
+  React.useEffect(() => {
+    setUnit(defaultUnit);
+  }, [defaultUnit]);
+
+  const handleChangeUnit = React.useCallback(() => {
+    setUnit((current) => {
+      const index = LAND_UNITS.indexOf(current);
+      const nextIndex = index >= 0 ? (index + 1) % LAND_UNITS.length : 0;
+      return LAND_UNITS[nextIndex];
+    });
+  }, []);
+
+  const requiredLandSize = formatLandMetric(
+    data.requiredLandSizeValue ?? null,
+    data.requiredLandSizeUnit ?? null,
+    unit,
+  );
+  const requiredPlotSize = formatLandMetric(
+    data.requiredPlotSizeValue ?? null,
+    data.requiredPlotSizeUnit ?? null,
+    unit,
+  );
+  const distanceFromRoad = formatDistance(
+    data.roadDistanceMin ?? null,
+    data.roadDistanceMax ?? null,
+    data.distanceFromRoad,
+  );
+
   return (
     <Card className="rounded-2xl border border-gray/15 bg-white p-6">
       {/* header */}
@@ -59,21 +103,23 @@ export default function BuyPostRequestDetailsCard({
         <InfoRow
           icon={<Ruler className="h-5 w-5 text-primary" />}
           label="REQUIRED LAND SIZE"
-          value={data.requiredLandSize}
+          value={requiredLandSize}
           rightAction="Change Metrics"
+          onRightActionClick={handleChangeUnit}
         />
 
         <InfoRow
           icon={<TriangleRight className="h-5 w-5 text-primary" />}
           label="REQUIRED PLOT SIZE"
-          value={data.requiredPlotSize}
+          value={requiredPlotSize}
           rightAction="Change Metrics"
+          onRightActionClick={handleChangeUnit}
         />
 
         <InfoRow
           icon={<Route className="h-5 w-5 text-primary" />}
           label="DISTANCE FROM ROAD"
-          value={data.distanceFromRoad}
+          value={distanceFromRoad}
         />
 
         <InfoRow
@@ -126,12 +172,14 @@ function InfoRow({
   label,
   value,
   rightAction,
+  onRightActionClick,
   valueClassName,
 }: {
   icon: React.ReactNode;
   label: string;
   value: string;
   rightAction?: string;
+  onRightActionClick?: () => void;
   valueClassName?: string;
 }) {
   return (
@@ -146,7 +194,11 @@ function InfoRow({
           </p>
 
           {rightAction ? (
-            <button className="text-xs font-extrabold text-primary hover:opacity-80">
+            <button
+              type="button"
+              onClick={onRightActionClick}
+              className="text-xs font-extrabold text-primary hover:opacity-80"
+            >
               {rightAction}
             </button>
           ) : null}
@@ -176,4 +228,41 @@ function toStatusLabel(s: string) {
   if (v === "pending_admin_review") return "Pending";
   if (v === "draft") return "Draft";
   return "Active";
+}
+
+function formatLandMetric(
+  value: number | null,
+  unit: string | null,
+  targetUnit: LandUnit,
+) {
+  if (value == null && !unit) return "N/A";
+  if (value == null) return unit ?? "N/A";
+
+  const normalizedFrom = normalizeLandUnit(unit);
+  const normalizedTo = normalizeLandUnit(targetUnit);
+
+  if (!normalizedFrom || !normalizedTo) {
+    return `Min ${formatLandValue(value)} ${unit ?? ""}`.trim();
+  }
+
+  const converted = convertLandAmount(value, normalizedFrom, normalizedTo);
+  if (converted == null) return "N/A";
+  return `Min ${formatLandValue(converted)} ${normalizedTo}`;
+}
+
+function formatDistance(
+  minValue: number | null,
+  maxValue: number | null,
+  fallback: string,
+) {
+  if (minValue == null && maxValue == null) return fallback || "N/A";
+  if (minValue != null && maxValue != null) return `${minValue}m-${maxValue}m`;
+  if (minValue != null) return `>= ${minValue}m`;
+  return `<= ${maxValue ?? 0}m`;
+}
+
+function formatLandValue(value: number) {
+  return value.toLocaleString("en-IN", {
+    maximumFractionDigits: 4,
+  });
 }

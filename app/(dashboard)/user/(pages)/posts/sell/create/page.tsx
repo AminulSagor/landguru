@@ -26,9 +26,23 @@ import {
   updateSellPostStepTwo,
   submitForReview,
 } from "@/service/users/posts/create.sellpost.service";
+
+import {
+  createOfferDraftStep1,
+  updateOfferDraftStep2,
+  submitOfferDraft,
+} from "@/service/users/properties/properties.services";
+
 import { uploadService } from "@/service/base/upload.service";
-import type { PresignedUploadUrlResponse, UploadType } from "@/types/base/upload.types";
+import type {
+  PresignedUploadUrlResponse,
+  UploadType,
+} from "@/types/base/upload.types";
 import type { ApiError } from "@/types/auth/signup.types";
+import type {
+  CreateOfferDraftStep1Request,
+  DraftEntityResponse,
+} from "@/types/post/buy/wanted-needs.types";
 
 type SellPostData = {
   step1?: StepOneValues;
@@ -96,18 +110,46 @@ const calculateAskingPrice = (step1: StepOneValues) => {
 const toOptionalNumber = (value?: number) =>
   Number.isFinite(value) ? Number(value) : undefined;
 
+const resolveDraftId = (response: DraftEntityResponse) =>
+  response.id ||
+  response.offerId ||
+  response.draftOfferId ||
+  response.postId ||
+  response.data?.id ||
+  response.data?.offerId ||
+  response.data?.draftOfferId ||
+  response.data?.postId ||
+  null;
+
 export default function CreateSellPostPage() {
   const [currentStep, setCurrentStep] = React.useState<number>(1);
   const [data, setData] = React.useState<SellPostData>({});
   const [draftId, setDraftId] = React.useState<string | null>(null);
   const [isSaving, setIsSaving] = React.useState(false);
 
-  const steps: StepperStep[] = [
-    { id: 1, title: "Property Details" },
-    { id: 2, title: "Visuals" },
-    { id: 3, title: "Services" },
-    { id: 4, title: "Review" },
-  ];
+  const [buyPostId, setBuyPostId] = React.useState<string | null>(null);
+  const [isPageReady, setIsPageReady] = React.useState(false);
+
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setBuyPostId(params.get("offerFor"));
+    setIsPageReady(true);
+  }, []);
+
+  const isOfferFlow = Boolean(buyPostId);
+
+  const steps: StepperStep[] = isOfferFlow
+    ? [
+        { id: 1, title: "Property Details" },
+        { id: 2, title: "Visuals" },
+        { id: 3, title: "Review" },
+      ]
+    : [
+        { id: 1, title: "Property Details" },
+        { id: 2, title: "Visuals" },
+        { id: 3, title: "Services" },
+        { id: 4, title: "Review" },
+      ];
 
   const goBack = () => setCurrentStep((s) => Math.max(1, s - 1));
 
@@ -143,12 +185,14 @@ export default function CreateSellPostPage() {
       options?: { preferKey?: boolean; returnSignedUrl?: boolean },
     ) => {
       if (!files.length) return [] as string[];
-      return Promise.all(
-        files.map((file) => uploadFile(file, type, options)),
-      );
+      return Promise.all(files.map((file) => uploadFile(file, type, options)));
     },
     [uploadFile],
   );
+
+  if (!isPageReady) {
+    return null;
+  }
 
   const handleStepOne = async (step1: StepOneValues) => {
     if (isSaving) return;
@@ -157,7 +201,7 @@ export default function CreateSellPostPage() {
     try {
       const askingPrice = calculateAskingPrice(step1);
 
-      const payload = {
+      const payload: CreateOfferDraftStep1Request = {
         title: step1.adTitle.trim(),
         description: step1.description.trim(),
         propertyType: step1.propertyType,
@@ -169,7 +213,9 @@ export default function CreateSellPostPage() {
         roadDistanceMin: toOptionalNumber(step1.distanceMin),
         roadDistanceMax: toOptionalNumber(step1.distanceMax),
         plotSize: toOptionalNumber(step1.plotSize),
-        plotUnit: Number.isFinite(step1.plotSize) ? step1.plotSizeUnit : undefined,
+        plotUnit: Number.isFinite(step1.plotSize)
+          ? step1.plotSizeUnit
+          : undefined,
         shareAmount: step1.shareUnitEnabled
           ? toOptionalNumber(step1.shareUnitAmount)
           : undefined,
@@ -183,16 +229,20 @@ export default function CreateSellPostPage() {
         fullAddress: step1.fullAddress?.trim() || undefined,
       };
 
-      const response = draftId
-        ? await updateSellPostStepOne({ postId: draftId, payload })
-        : await createSellPostStepOne(payload);
+      const response = isOfferFlow
+        ? await createOfferDraftStep1(buyPostId as string, payload)
+        : draftId
+          ? await updateSellPostStepOne({ postId: draftId, payload })
+          : await createSellPostStepOne(payload);
 
-      setDraftId(response.id);
+      setDraftId(resolveDraftId(response as DraftEntityResponse));
       setData((prev) => ({ ...prev, step1 }));
       setCurrentStep(2);
       toast.success("Property details saved.");
     } catch (error) {
-      toast.error(getApiErrorMessage(error, "Failed to save property details."));
+      toast.error(
+        getApiErrorMessage(error, "Failed to save property details."),
+      );
     } finally {
       setIsSaving(false);
     }
@@ -208,24 +258,38 @@ export default function CreateSellPostPage() {
 
     try {
       const photos = await uploadFiles(step2.photos ?? [], "AVATAR");
+
+      if (isOfferFlow) {
+        const response = await updateOfferDraftStep2(draftId, {
+          photos,
+        });
+
+        setDraftId(resolveDraftId(response));
+        setData((prev) => ({ ...prev, step2 }));
+        setCurrentStep(3);
+        toast.success("Visuals saved.");
+        return;
+      }
+
       const videoUrl = step2.video
         ? await uploadFile(step2.video, "AVATAR")
         : undefined;
-      const deedFiles = await uploadFiles(
-        step2.deedDocuments ?? [],
-        "DEED",
-        { returnSignedUrl: true },
-      );
+
+      const deedFiles = await uploadFiles(step2.deedDocuments ?? [], "DEED", {
+        returnSignedUrl: true,
+      });
+
       const khatianFiles = await uploadFiles(
         step2.khatianDocuments ?? [],
         "DEED",
-        { returnSignedUrl: true },
+        {
+          returnSignedUrl: true,
+        },
       );
-      const otherFiles = await uploadFiles(
-        step2.otherDocuments ?? [],
-        "DEED",
-        { returnSignedUrl: true },
-      );
+
+      const otherFiles = await uploadFiles(step2.otherDocuments ?? [], "DEED", {
+        returnSignedUrl: true,
+      });
 
       const response = await updateSellPostStepTwo({
         postId: draftId,
@@ -291,7 +355,11 @@ export default function CreateSellPostPage() {
     setIsSaving(true);
 
     try {
-      await submitForReview(draftId);
+      if (isOfferFlow) {
+        await submitOfferDraft(draftId);
+      } else {
+        await submitForReview(draftId);
+      }
       setData((prev) => ({ ...prev, step4 }));
       toast.success("Post submitted for review.");
       return true;
@@ -308,7 +376,11 @@ export default function CreateSellPostPage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <ArrowLeft size={28} />
-          <h1 className="text-xl font-semibold text-black">Create Sell Post</h1>
+          <h1 className="text-xl font-semibold text-black">
+            {isOfferFlow
+              ? "Create new Sell Post and Offer"
+              : "Create Sell Post"}
+          </h1>
         </div>
 
         <button className="text-primary text-base font-semibold">
@@ -349,13 +421,14 @@ export default function CreateSellPostPage() {
           {/* STEP 2 */}
           {currentStep === 2 && (
             <SellPropertyStepTwoForm
+              mode={isOfferFlow ? "offer" : "normal"}
               defaultValues={data.step2}
               onBack={goBack}
               onNext={handleStepTwo}
             />
           )}
-          {/* STEP 3 */}
-          {currentStep === 3 && (
+
+          {!isOfferFlow && currentStep === 3 && (
             <SellPropertyStepThreeForm
               defaultValues={data.step3}
               onBack={goBack}
@@ -363,8 +436,21 @@ export default function CreateSellPostPage() {
             />
           )}
 
-          {currentStep === 4 && (
+          {isOfferFlow && currentStep === 3 && (
             <SellPropertyStepFourReview
+              mode="offer"
+              allData={{
+                step1: data.step1,
+                step2: data.step2,
+              }}
+              onBack={goBack}
+              onSubmit={handleSubmitForReview}
+            />
+          )}
+
+          {!isOfferFlow && currentStep === 4 && (
+            <SellPropertyStepFourReview
+              mode="normal"
               allData={{
                 step1: data.step1,
                 step2: data.step2,

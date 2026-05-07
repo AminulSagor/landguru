@@ -2,20 +2,77 @@
 "use client";
 
 import * as React from "react";
-import { Search, ChevronDown, MapPin } from "lucide-react";
-import Button from "@/components/buttons/button";
-import { cn } from "@/utils/classnames.utils";
-import Dialog from "@/components/dialogs/dialog";
+import Image from "next/image";
+import { ChevronDown, MapPin, Search } from "lucide-react";
 
-export type ListingStatus = "Active" | "Pending";
+import Button from "@/components/buttons/button";
+import Dialog from "@/components/dialogs/dialog";
+import { cn } from "@/utils/classnames.utils";
+import { formatDisplayId } from "@/utils/id.utils";
+import { IMAGE } from "@/constants/image-paths";
+import { fetchMyActiveSellPosts } from "@/service/users/properties/properties.services";
+import type { MyPostResponseDto } from "@/types/post/buy/wanted-needs.types";
+
+export type ListingStatus = "Active" | "Pending" | "Draft";
 
 export type Listing = {
   id: string;
-  title: string;
-  location: string;
-  price: number;
-  status: ListingStatus;
-  thumbBg: string; // demo only
+  postId?: string | null;
+  title?: string | null;
+  price?: number | string | null;
+  status?: ListingStatus | string | null;
+  propertyType?: string | null;
+  image?: string | null;
+  isVerified?: boolean;
+  createdAt?: string | null;
+  location?: string | null;
+};
+
+const normalizeStatus = (value?: string | null): ListingStatus => {
+  const normalized = String(value || "").toLowerCase();
+  if (normalized === "active") return "Active";
+  if (normalized === "draft") return "Draft";
+  if (normalized.includes("pending")) return "Pending";
+  return "Pending";
+};
+
+const toNumberPrice = (value?: number | string | null) => {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  const digits = String(value ?? "").replace(/[^\d]/g, "");
+  return digits ? Number(digits) : 0;
+};
+
+const formatPrice = (value?: number | string | null) => {
+  const amount = toNumberPrice(value);
+  try {
+    return amount.toLocaleString("en-IN");
+  } catch {
+    return String(amount);
+  }
+};
+
+const mapListing = (post: MyPostResponseDto): Listing | null => {
+  const id = post.id || post.postId || "";
+  if (!id) return null;
+
+  return {
+    id,
+    postId: post.postId,
+    title: post.title ?? "Untitled",
+    price: post.price ?? 0,
+    status: normalizeStatus(post.status),
+    propertyType: post.propertyType ?? null,
+    image: post.image ?? null,
+    isVerified: post.isVerified ?? false,
+    createdAt: post.createdAt ?? null,
+  };
+};
+
+const resolveListingSubtitle = (listing: Listing) => {
+  if (listing.location) return listing.location;
+  if (listing.propertyType) return `Type: ${listing.propertyType}`;
+  const displayId = listing.postId ?? listing.id;
+  return displayId ? `Post ID: ${formatDisplayId("POST", displayId)}` : "Post";
 };
 
 function ListingStatusPill({ status }: { status: ListingStatus }) {
@@ -27,7 +84,14 @@ function ListingStatusPill({ status }: { status: ListingStatus }) {
     );
   }
 
-  // screenshot shows yellow-ish pill → ok to use custom color
+  if (status === "Draft") {
+    return (
+      <span className="inline-flex items-center rounded-full bg-gray/10 px-3 py-1 text-xs font-semibold text-gray/70">
+        Draft
+      </span>
+    );
+  }
+
   return (
     <span className="inline-flex items-center rounded-full bg-[#fff7e6] px-3 py-1 text-xs font-semibold text-[#a35b00]">
       Pending
@@ -41,74 +105,92 @@ export default function SelectPropertyDialog({
   requestTitle,
   requestId,
   onConfirm,
+  isSubmitting,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   requestTitle: string;
   requestId: string | number;
   onConfirm: (listing: Listing) => void;
+  isSubmitting?: boolean;
 }) {
-  const listings = React.useMemo<Listing[]>(
-    () => [
-      {
-        id: "LIST-101",
-        title: "Modern Duplex Villa",
-        location: "Road 11, Banani, Dhaka",
-        price: 4000000,
-        status: "Active",
-        thumbBg: "#f43f5e",
-      },
-      {
-        id: "LIST-102",
-        title: "Commercial Space in Gulshan",
-        location: "Gulshan 1, Dhaka",
-        price: 20000000,
-        status: "Active",
-        thumbBg: "#22c55e",
-      },
-      {
-        id: "LIST-103",
-        title: "3 Bedroom Apartment in Uttara",
-        location: "Sector 4, Uttara, Dhaka",
-        price: 9512000,
-        status: "Active",
-        thumbBg: "#3b82f6",
-      },
-      {
-        id: "LIST-104",
-        title: "Ready Flat in Bashundhara R/A",
-        location: "Block C, Bashundhara R/A",
-        price: 4000000,
-        status: "Pending",
-        thumbBg: "#f59e0b",
-      },
-    ],
-    [],
-  );
-
+  const [listings, setListings] = React.useState<Listing[]>([]);
   const [query, setQuery] = React.useState("");
   const [status, setStatus] = React.useState<"All" | ListingStatus>("Active");
-  const [selectedId, setSelectedId] = React.useState<string>("LIST-101");
+  const [selectedId, setSelectedId] = React.useState<string>("");
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [loadError, setLoadError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
-    if (open) {
-      setQuery("");
-      setStatus("Active");
-      setSelectedId("LIST-101");
-    }
+    if (!open) return;
+    setQuery("");
+    setStatus("Active");
+    setSelectedId("");
   }, [open]);
 
-  const filtered = listings.filter((l) => {
-    const matchesQuery =
-      !query.trim() ||
-      l.title.toLowerCase().includes(query.toLowerCase()) ||
-      l.id.toLowerCase().includes(query.toLowerCase());
+  React.useEffect(() => {
+    if (!open) return;
 
-    const matchesStatus = status === "All" ? true : l.status === status;
+    let active = true;
+    const loadListings = async () => {
+      setIsLoading(true);
+      setLoadError(null);
+
+      try {
+        const response = await fetchMyActiveSellPosts({ page: 1, limit: 50 });
+        if (!active) return;
+
+        const next = (response.posts ?? [])
+          .map(mapListing)
+          .filter((item): item is Listing => Boolean(item));
+
+        setListings(next);
+      } catch (error) {
+        if (!active) return;
+        setListings([]);
+        setLoadError("Failed to load your active posts.");
+      } finally {
+        if (active) setIsLoading(false);
+      }
+    };
+
+    loadListings();
+
+    return () => {
+      active = false;
+    };
+  }, [open]);
+
+  React.useEffect(() => {
+    if (!open) return;
+    if (!listings.length) {
+      setSelectedId("");
+      return;
+    }
+
+    setSelectedId((prev) =>
+      listings.some((item) => item.id === prev) ? prev : listings[0].id,
+    );
+  }, [listings, open]);
+
+  const filtered = listings.filter((l) => {
+    const queryText = query.trim().toLowerCase();
+    const matchesQuery =
+      !queryText ||
+      String(l.title ?? "").toLowerCase().includes(queryText) ||
+      String(l.id ?? "").toLowerCase().includes(queryText) ||
+      String(l.postId ?? "").toLowerCase().includes(queryText);
+
+    const listingStatus = normalizeStatus(
+      typeof l.status === "string" ? l.status : String(l.status ?? ""),
+    );
+    const matchesStatus = status === "All" ? true : listingStatus === status;
+
     return matchesQuery && matchesStatus;
   });
 
-  const selected = filtered.find((x) => x.id === selectedId) ?? listings[0];
+  const selected =
+    filtered.find((item) => item.id === selectedId) ?? filtered[0] ?? null;
 
   return (
     <Dialog
@@ -120,7 +202,7 @@ export default function SelectPropertyDialog({
     >
       <div className="overflow-hidden rounded-2xl">
         {/* Header */}
-        <div className=" bg-white px-6 py-5">
+        <div className="bg-white px-6 py-5">
           <div className="pr-10">
             <h3 className="text-lg font-semibold text-gray">
               Select Property to Offer
@@ -164,6 +246,7 @@ export default function SelectPropertyDialog({
                 <option value="All">Status: All</option>
                 <option value="Active">Status: Active</option>
                 <option value="Pending">Status: Pending</option>
+                <option value="Draft">Status: Draft</option>
               </select>
               <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray/60" />
             </div>
@@ -173,67 +256,89 @@ export default function SelectPropertyDialog({
         {/* List */}
         <div className="px-6 pb-5 pt-4">
           <div className="space-y-3">
-            {filtered.map((l) => {
-              const isSelected = l.id === selectedId;
-              return (
-                <button
-                  key={l.id}
-                  type="button"
-                  onClick={() => setSelectedId(l.id)}
-                  className={cn(
-                    "w-full rounded-2xl border bg-white p-4 text-left transition-all",
-                    isSelected
-                      ? "border-primary shadow-sm"
-                      : "border-gray/20 hover:border-primary/30",
-                  )}
-                >
-                  <div className="flex items-center gap-4">
-                    {/* Thumbnail */}
-                    <div className="h-16 w-16 overflow-hidden rounded-xl bg-secondary">
-                      <div
-                        className="h-full w-full"
-                        style={{ backgroundColor: l.thumbBg, opacity: 0.18 }}
-                      />
-                    </div>
+            {isLoading ? (
+              <div className="rounded-2xl border border-dashed bg-secondary p-10 text-center text-sm text-gray/70">
+                Loading your posts...
+              </div>
+            ) : loadError ? (
+              <div className="rounded-2xl border border-dashed bg-secondary p-10 text-center text-sm text-gray/70">
+                {loadError}
+              </div>
+            ) : (
+              filtered.map((l) => {
+                const isSelected = l.id === selectedId;
+                const displayId = l.postId ?? l.id;
+                const imageUrl = l.image || IMAGE.property;
 
-                    {/* Info */}
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-3">
-                        <p className="truncate text-base font-semibold text-gray">
-                          {l.title}
+                return (
+                  <button
+                    key={l.id}
+                    type="button"
+                    onClick={() => setSelectedId(l.id)}
+                    className={cn(
+                      "w-full rounded-2xl border bg-white p-4 text-left transition-all",
+                      isSelected
+                        ? "border-primary shadow-sm"
+                        : "border-gray/20 hover:border-primary/30",
+                    )}
+                  >
+                    <div className="flex items-center gap-4">
+                      {/* Thumbnail */}
+                      <div className="relative h-16 w-16 overflow-hidden rounded-xl bg-secondary">
+                        <Image
+                          src={imageUrl}
+                          alt={l.title ?? "Listing"}
+                          fill
+                          className="object-cover"
+                          sizes="64px"
+                        />
+                      </div>
+
+                      {/* Info */}
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-3">
+                          <p className="truncate text-base font-semibold text-gray">
+                            {l.title || "Untitled"}
+                          </p>
+                          <ListingStatusPill status={normalizeStatus(l.status as string)} />
+                        </div>
+
+                        <p className="mt-1 text-xs text-gray/50">
+                          {formatDisplayId("POST", displayId)}
                         </p>
-                        <ListingStatusPill status={l.status} />
+
+                        <div className="mt-1 flex items-center gap-2 text-sm text-gray/70">
+                          <MapPin className="h-4 w-4" />
+                          <span className="truncate">
+                            {resolveListingSubtitle(l)}
+                          </span>
+                        </div>
+
+                        <p className="mt-1 text-sm font-semibold text-primary">
+                          ৳ {formatPrice(l.price)}
+                        </p>
                       </div>
 
-                      <div className="mt-1 flex items-center gap-2 text-sm text-gray/70">
-                        <MapPin className="h-4 w-4" />
-                        <span className="truncate">{l.location}</span>
+                      {/* Radio */}
+                      <div
+                        className={cn(
+                          "flex h-5 w-5 items-center justify-center rounded-full border",
+                          isSelected
+                            ? "border-primary bg-primary"
+                            : "border-gray/30 bg-white",
+                        )}
+                      >
+                        {isSelected ? (
+                          <div className="h-2 w-2 rounded-full bg-white" />
+                        ) : null}
                       </div>
-
-                      <p className="mt-1 text-sm font-semibold text-primary">
-                        ৳ {l.price.toLocaleString()}
-                      </p>
                     </div>
+                  </button>
+                );
+              })
+            )}
 
-                    {/* Radio */}
-                    <div
-                      className={cn(
-                        "flex h-5 w-5 items-center justify-center rounded-full border",
-                        isSelected
-                          ? "border-primary bg-primary"
-                          : "border-gray/30 bg-white",
-                      )}
-                    >
-                      {isSelected ? (
-                        <div className="h-2 w-2 rounded-full bg-white" />
-                      ) : null}
-                    </div>
-                  </div>
-                </button>
-              );
-            })}
-
-            {filtered.length === 0 ? (
+            {!isLoading && !loadError && filtered.length === 0 ? (
               <div className="rounded-2xl border border-dashed bg-secondary p-10 text-center text-sm text-gray/70">
                 No listings found. Try a different search.
               </div>
@@ -253,10 +358,10 @@ export default function SelectPropertyDialog({
 
           <Button
             className="h-11 rounded-xl"
-            disabled={!selected}
+            disabled={!selected || isSubmitting}
             onClick={() => selected && onConfirm(selected)}
           >
-            Confirm Offer
+            {isSubmitting ? "Submitting..." : "Confirm Offer"}
           </Button>
         </div>
       </div>

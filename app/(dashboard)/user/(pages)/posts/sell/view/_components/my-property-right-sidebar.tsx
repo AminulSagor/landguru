@@ -43,19 +43,14 @@ const MyPropertyRightSidebar: FC<Props> = ({
           <MapPin size={18} className="text-primary" />
           <p className="font-extrabold text-black">Location</p>
         </div>
-        <p className="text-sm text-black/60">{property.type}</p>
+        <p className="text-sm text-black/60">{property.location || "N/A"}</p>
       </Card>
 
       <Card>
         <p className="font-extrabold text-black mb-2">Description</p>
         <p className="text-sm text-black/60 leading-relaxed">
-          A stunning newly renovated villa featuring an open-concept living
-          area, chef kitchen with top-tier appliances, and a private backyard
-          oasis...
+          {property.description || "No description provided."}
         </p>
-        <button className="mt-2 text-sm font-bold text-primary">
-          Read more
-        </button>
       </Card>
 
       <Card>
@@ -63,8 +58,10 @@ const MyPropertyRightSidebar: FC<Props> = ({
         <div className="flex items-center gap-3">
           <div className="h-12 w-12 rounded-full bg-black/10" />
           <div>
-            <p className="font-extrabold text-black">Farhan</p>
-            <p className="text-xs text-black/50">Posted: 2h ago</p>
+            <p className="font-extrabold text-black">
+              {property.postedByName || "N/A"}
+            </p>
+            <p className="text-xs text-black/50">Posted: {property.time}</p>
           </div>
         </div>
 

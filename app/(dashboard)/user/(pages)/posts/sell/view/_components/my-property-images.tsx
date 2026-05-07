@@ -4,11 +4,14 @@ import Image from "next/image";
 import React from "react";
 
 const MyPropertyImages = ({ property }: { property: ListingCard }) => {
+  const gallery = property.images && property.images.length > 0 ? property.images : [property.image];
+  const mainImage = gallery[0] || property.image;
+
   return (
     <div>
       <div className="overflow-hidden">
         <Image
-          src={property.image}
+          src={mainImage}
           className="w-full h-105 rounded-xl"
           alt={property.title}
           height={100}
@@ -18,14 +21,17 @@ const MyPropertyImages = ({ property }: { property: ListingCard }) => {
 
       {/* thumbnails */}
       <div className="mt-4 grid grid-cols-4 gap-4">
-        {[1, 2, 3].map((i) => (
+        {gallery.slice(1, 5).map((img, i) => (
           <Card key={i} className="overflow-hidden">
-            <div className="h-28 bg-black/5" />
+            <Image
+              src={img}
+              className="h-28 w-full object-cover"
+              alt={`${property.title} thumbnail ${i + 1}`}
+              height={112}
+              width={160}
+            />
           </Card>
         ))}
-        <Card className="flex items-center justify-center bg-primary/5 text-primary font-extrabold">
-          +7
-        </Card>
       </div>
     </div>
   );

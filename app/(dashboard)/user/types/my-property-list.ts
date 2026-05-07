@@ -18,5 +18,22 @@ export type ListingCard = {
   price: number;       // 4000000
   time: string;        // "2h ago"
   image: string;       // image url/path
+  images?: string[];
+  description?: string;
+  location?: string;
+  postedByName?: string;
+  postedByImage?: string;
+  sellableAmount?: number | null;
+  sellableUnit?: string | null;
+  plotSize?: number | null;
+  plotUnit?: string | null;
+  shareAmount?: number | null;
+  shareUnit?: string | null;
+  roadDistanceMin?: number | null;
+  roadDistanceMax?: number | null;
+  sellableAmountText?: string;
+  plotSizeText?: string;
+  shareAmountText?: string;
+  roadDistanceText?: string;
   tags: ListingTag[];
 };

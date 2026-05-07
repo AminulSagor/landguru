@@ -17,7 +17,7 @@ const MyPropertyHero = ({ property, isDraft }: Props) => {
     <div className="space-y-3">
       {/* Back */}
       <Link
-        href={"/dashboard/properties"}
+        href={"/user/properties"}
         className="flex items-center gap-2 text-sm font-semibold text-gray/60 hover:text-gray"
       >
         <ArrowLeft size={16} />

@@ -16,7 +16,7 @@ const OfferedPostHero = ({ property }: Props) => {
     <div className="space-y-4">
       {/* Back (like ss) */}
       <Link
-        href={"/dashboard/properties"}
+        href={"/user/properties"}
         className="inline-flex items-center gap-2 text-sm font-semibold text-gray/60 hover:text-gray"
       >
         <ArrowLeft size={16} />

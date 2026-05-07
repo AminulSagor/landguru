@@ -8,6 +8,29 @@ export type PaginationParams = {
   limit: number;
 };
 
+export type MySellPostStatusDto =
+  | "ACTIVE"
+  | "PENDING"
+  | "DRAFT"
+  | "ARCHIVED"
+  | "REJECTED"
+  | (string & {});
+
+export type MyPostResponseDto = {
+  id: string;
+  postId?: string | null;
+  title?: string | null;
+  price?: number | string | null;
+  propertyType?: string | null;
+  status?: MySellPostStatusDto | string | null;
+  isVerified?: boolean;
+  image?: string | null;
+  createdAt?: string | null;
+  quotesCount?: number | string | null;
+  quoteCount?: number | string | null;
+  offersCount?: number | string | null;
+};
+
 export type PaginatedResponse<T> = {
   data: T[];
   meta?: {
@@ -35,18 +58,15 @@ export type CreateOfferDraftStep1Request = {
   propertyType: PropertyTypeLabel;
   sellableAmount: number;
   sellableUnit: LandSizeUnitLabel;
-  isShareable: boolean;
-  isPropertyShareable: boolean;
-  askingPrice: number;
-  pricePerUnit: number;
   askingPricePerUnit: number;
-  distanceFromRoad?: string;
+  askingPrice: number;
+  isPropertyShareable: boolean;
   roadDistanceMin?: number;
   roadDistanceMax?: number;
-  roadWidthMin?: number;
-  roadWidthMax?: number;
   plotSize?: number;
   plotUnit?: LandSizeUnitLabel;
+  shareAmount?: number;
+  shareUnit?: LandSizeUnitLabel;
   division?: string;
   district?: string;
   upazila?: string;

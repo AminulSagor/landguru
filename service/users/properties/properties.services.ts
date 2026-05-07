@@ -6,12 +6,12 @@ import type {
     CreateOfferDraftStep1Request,
     DraftEntityResponse,
     MakeOfferFromExistingRequest,
+    MyPostResponseDto,
     MyOfferListItem,
     PaginatedResponse,
     PaginationParams,
     PresignUploadRequest,
     PresignUploadResponse,
-    SellPostListItem,
     UpdateOfferDraftStep2Request,
 } from "@/types/post/buy/wanted-needs.types";
 
@@ -89,8 +89,15 @@ export const fetchMyOfferPosts = async (params: PaginationParams) => {
     return response.data;
 };
 
+type MySellPostsResponse =
+    | {
+          posts?: MyPostResponseDto[];
+          total?: number;
+      }
+    | PaginatedResponse<MyPostResponseDto>;
+
 export const fetchMyActiveSellPosts = async (params: PaginationParams) => {
-    const response = await serviceClient.get<PaginatedResponse<SellPostListItem>>(
+    const response = await serviceClient.get<MySellPostsResponse>(
         "/sell-posts/my-posts",
         {
             params: {
@@ -100,8 +107,24 @@ export const fetchMyActiveSellPosts = async (params: PaginationParams) => {
             },
         },
     );
-    console.log("Fetched my active sell posts:", response.data);
-    return response.data;
+
+    const payload = response.data as MySellPostsResponse;
+
+    if (payload && typeof payload === "object" && "posts" in payload) {
+        const posts = payload.posts ?? [];
+        return {
+            posts,
+            total: Number(payload.total ?? posts.length ?? 0),
+        };
+    }
+
+    const data = (payload as PaginatedResponse<MyPostResponseDto>)?.data ?? [];
+    const metaTotal = (payload as PaginatedResponse<MyPostResponseDto>)?.meta?.total;
+
+    return {
+        posts: data,
+        total: Number(metaTotal ?? data.length ?? 0),
+    };
 };
 
 export const makeOfferFromExisting = async (
@@ -149,4 +172,6 @@ export const requestPresignedUpload = async (payload: PresignUploadRequest) => {
     console.log("Received presigned upload response:", response.data);
     return response.data;
 };
+
+
 

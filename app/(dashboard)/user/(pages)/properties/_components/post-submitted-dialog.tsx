@@ -1,11 +1,13 @@
 // 2) components/offers/post-submitted-dialog.tsx
 "use client";
 
-import { Check, ChevronRight, BadgeCheck } from "lucide-react";
-import Card from "@/components/cards/card";
-import { Listing } from "./select-property-dialog";
-import Dialog from "@/components/dialogs/dialog";
+import { ChevronRight, BadgeCheck } from "lucide-react";
 import Image from "next/image";
+
+import Card from "@/components/cards/card";
+import Dialog from "@/components/dialogs/dialog";
+import { IMAGE } from "@/constants/image-paths";
+import { Listing } from "./select-property-dialog";
 
 export default function PostSubmittedDialog({
   open,
@@ -20,12 +22,19 @@ export default function PostSubmittedDialog({
     listing ??
     ({
       id: "LIST-101",
-      title: "Modern Duplex Villa",
-      location: "Road 11, Banani, Dhaka",
-      price: 4000000,
-      status: "Active",
-      thumbBg: "#f43f5e",
+      title: "Offer Post",
+      price: 0,
+      status: "Pending",
+      image: IMAGE.property,
     } as Listing);
+
+  const priceText = formatPrice(safeListing.price);
+  const imageUrl = safeListing.image || IMAGE.property;
+  const statusLabel = normalizeStatus(
+    typeof safeListing.status === "string"
+      ? safeListing.status
+      : String(safeListing.status ?? ""),
+  );
 
   return (
     <Dialog
@@ -55,39 +64,43 @@ export default function PostSubmittedDialog({
 
         <Card className="mt-6 rounded-2xl">
           <div className="flex items-center gap-4">
-            <div className="h-16 w-16 overflow-hidden rounded-xl bg-secondary">
-              <div
-                className="h-full w-full"
-                style={{ backgroundColor: safeListing.thumbBg, opacity: 0.18 }}
+            <div className="relative h-16 w-16 overflow-hidden rounded-xl bg-secondary">
+              <Image
+                src={imageUrl}
+                alt={safeListing.title || "Listing"}
+                fill
+                className="object-cover"
+                sizes="64px"
               />
             </div>
 
             <div className="min-w-0 flex-1">
               <p className="truncate text-base font-semibold text-gray">
-                {safeListing.title}
+                {safeListing.title || "Untitled"}
               </p>
 
               <div className="mt-1 flex items-center gap-2">
                 <p className="text-sm text-gray/60">Asking Price:</p>
                 <p className="text-sm font-semibold text-primary">
-                  ৳ {safeListing.price.toLocaleString()}
+                  ৳ {priceText}
                 </p>
               </div>
 
               <div className="mt-2 flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center rounded-md bg-primary/10 px-2 py-1 text-xs font-semibold text-primary">
-                  Flat
-                </span>
+                {safeListing.propertyType ? (
+                  <span className="inline-flex items-center rounded-md bg-primary/10 px-2 py-1 text-xs font-semibold text-primary">
+                    {safeListing.propertyType}
+                  </span>
+                ) : null}
 
-                {/* screenshot pill colors */}
-                <span className="inline-flex items-center rounded-md bg-[#fff7e6] px-2 py-1 text-xs font-semibold text-[#a35b00]">
-                  Active
-                </span>
+                <StatusPill status={statusLabel} />
 
-                <span className="inline-flex items-center gap-1 rounded-md bg-green/10 px-2 py-1 text-xs font-semibold text-green">
-                  <BadgeCheck className="h-3.5 w-3.5" />
-                  Verified
-                </span>
+                {safeListing.isVerified ? (
+                  <span className="inline-flex items-center gap-1 rounded-md bg-green/10 px-2 py-1 text-xs font-semibold text-green">
+                    <BadgeCheck className="h-3.5 w-3.5" />
+                    Verified
+                  </span>
+                ) : null}
               </div>
             </div>
 
@@ -103,5 +116,55 @@ export default function PostSubmittedDialog({
         </div>
       </div>
     </Dialog>
+  );
+}
+
+const normalizeStatus = (value?: string | null) => {
+  const normalized = String(value || "").toLowerCase();
+  if (normalized === "active") return "Active";
+  if (normalized === "draft") return "Draft";
+  if (normalized.includes("pending")) return "Pending";
+  return "Pending";
+};
+
+const formatPrice = (value?: number | string | null) => {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    try {
+      return value.toLocaleString("en-IN");
+    } catch {
+      return String(value);
+    }
+  }
+
+  const digits = String(value ?? "").replace(/[^\d]/g, "");
+  const amount = digits ? Number(digits) : 0;
+  try {
+    return amount.toLocaleString("en-IN");
+  } catch {
+    return String(amount);
+  }
+};
+
+function StatusPill({ status }: { status: string }) {
+  if (status === "Active") {
+    return (
+      <span className="inline-flex items-center rounded-md bg-green/10 px-2 py-1 text-xs font-semibold text-green">
+        Active
+      </span>
+    );
+  }
+
+  if (status === "Draft") {
+    return (
+      <span className="inline-flex items-center rounded-md bg-gray/10 px-2 py-1 text-xs font-semibold text-gray/70">
+        Draft
+      </span>
+    );
+  }
+
+  return (
+    <span className="inline-flex items-center rounded-md bg-[#fff7e6] px-2 py-1 text-xs font-semibold text-[#a35b00]">
+      Pending
+    </span>
   );
 }
