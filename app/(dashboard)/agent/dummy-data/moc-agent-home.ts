@@ -23,6 +23,8 @@ export type ScheduleItem = {
   code: string;
   client: string;
   address: string;
+  assignmentId?: string;
+  clientPhoto?: string;
 };
 
 export const mockAgentHome = {
@@ -67,6 +69,8 @@ export const mockAgentHome = {
       code: "#SERV892-POST-1042",
       client: "Farhan",
       address: "Block-C, Banani, Banani Thana, Dhaka North City Corporation...",
+      clientPhoto: "https://example.com/profiles/farhan.jpg",
+      assignmentId: "uuid-assignment-123",
     },
     {
       time: "12:30 PM",
@@ -74,6 +78,8 @@ export const mockAgentHome = {
       code: "#SERV892-POST-1042",
       client: "Farhan",
       address: "Block-C, Banani, Banani Thana, Dhaka North City Corporation...",
+      clientPhoto: "https://example.com/profiles/farhan.jpg",
+      assignmentId: "uuid-assignment-124",
     },
     {
       time: "4:30 PM",
@@ -81,6 +87,7 @@ export const mockAgentHome = {
       code: "#SERV892-POST-1042",
       client: "Farhan",
       address: "Block-C, Banani, Banani Thana, Dhaka North City Corporation...",
+      clientPhoto: "https://example.com/profiles/farhan.jpg",
     },
   ],
 };

@@ -1,4 +1,5 @@
 import axios from "axios";
+import { formatApiError } from "@/lib/format-api-error";
 
 import type {
   PropertyPostItem,
@@ -124,15 +125,7 @@ export function matchesServiceType(
 }
 
 export function getErrorMessage(error: unknown) {
-  if (axios.isAxiosError(error)) {
-    return (
-      (typeof error.response?.data?.message === "string" &&
-        error.response.data.message) ||
-      "Failed to load property posts."
-    );
-  }
-
-  return "Failed to load property posts.";
+  return formatApiError(error).message || "Failed to load property posts.";
 }
 
 export function castPropertyPostStatus(value: string) {

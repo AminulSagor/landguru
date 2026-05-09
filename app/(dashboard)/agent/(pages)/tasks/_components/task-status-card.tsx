@@ -52,15 +52,21 @@ function StatusStep({
 export default function TaskStatusCard({
   stage,
 }: {
-  stage: "pending_accepting" | "active";
+  stage: "pending_accepting" | "active" | "submitted" | "completed";
 }) {
   const stepState: Record<StepKey, StepState> =
-    stage === "pending_accepting"
+    stage === "completed"
+      ? { accepted: "done", processing: "done", review: "done" }
+      : stage === "submitted"
+      ? { accepted: "done", processing: "done", review: "active" }
+      : stage === "pending_accepting"
       ? { accepted: "idle", processing: "idle", review: "idle" }
       : { accepted: "done", processing: "active", review: "idle" };
 
-  const progressLineClass = stage === "active" ? "bg-primary" : "bg-gray/15";
-  const progressWidth = stage === "active" ? "50%" : "0%";
+  const progressLineClass =
+    stage === "active" ? "bg-primary" : (stage === "completed" || stage === "submitted") ? "bg-green" : "bg-gray/15";
+  const progressWidth =
+    stage === "completed" ? "100%" : stage === "submitted" ? "75%" : stage === "active" ? "50%" : "0%";
 
   return (
     <Card className="rounded-2xl p-5">

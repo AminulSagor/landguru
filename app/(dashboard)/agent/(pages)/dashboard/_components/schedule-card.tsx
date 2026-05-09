@@ -1,6 +1,8 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
+import Image from "next/image";
 import Card from "@/components/cards/card";
 import Button from "@/components/buttons/button";
 import { MapPin, User } from "lucide-react";
@@ -14,11 +16,23 @@ export default function ScheduleCard({ item }: { item: ScheduleItem }) {
       <h3 className="mt-1 text-base font-extrabold">{item.title}</h3>
       <p className="mt-1 text-sm font-semibold text-gray/50">{item.code}</p>
 
-      <div className="mt-4 flex items-center gap-2 text-sm text-gray/70">
-        <User size={16} className="text-gray/40" />
+      <div className="mt-4 flex items-center gap-3 text-sm text-gray/70">
+        {item.clientPhoto ? (
+          <div className="overflow-hidden rounded-full">
+            <Image
+              src={item.clientPhoto}
+              alt={item.client}
+              width={28}
+              height={28}
+              className="rounded-full object-cover"
+            />
+          </div>
+        ) : (
+          <User size={16} className="text-gray/40" />
+        )}
+
         <p>
-          Client:{" "}
-          <span className="font-extrabold text-gray">{item.client}</span>
+          Client: <span className="font-extrabold text-gray">{item.client}</span>
         </p>
       </div>
 
@@ -29,9 +43,17 @@ export default function ScheduleCard({ item }: { item: ScheduleItem }) {
         <button className="ml-auto text-gray/40 hover:text-gray/70">⌄</button>
       </div>
 
-      <Button variant="secondary" className="w-full mt-5">
-        View Details
-      </Button>
+      {item.assignmentId ? (
+        <Link href={`/agent/tasks/details/${item.assignmentId}`}>
+          <Button variant="secondary" className="w-full mt-5">
+            View Details
+          </Button>
+        </Link>
+      ) : (
+        <Button variant="secondary" className="w-full mt-5">
+          View Details
+        </Button>
+      )}
     </Card>
   );
 }

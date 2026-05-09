@@ -3,6 +3,7 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import toast from "react-hot-toast";
+import { formatApiError } from "@/lib/format-api-error";
 
 import ServiceRequestsOverview from "./_components/service-requests-overview";
 import ServiceRequestsToolbar from "./_components/service-requests-toolbar";
@@ -31,27 +32,7 @@ const DEFAULT_SUMMARY: ServiceRequestsSummaryData = {
   completedToday: 0,
 };
 
-function getErrorMessage(error: unknown): string {
-  if (
-    typeof error === "object" &&
-    error !== null &&
-    "response" in error &&
-    typeof (error as { response?: unknown }).response === "object" &&
-    (error as { response?: { data?: { message?: string } } }).response?.data
-      ?.message
-  ) {
-    return (
-      (error as { response?: { data?: { message?: string } } }).response?.data
-        ?.message ?? "Something went wrong"
-    );
-  }
-
-  if (error instanceof Error && error.message) {
-    return error.message;
-  }
-
-  return "Something went wrong";
-}
+// error formatting centralized in `formatApiError`
 
 function buildOptions(values: string[]): Array<{ label: string; value: string }> {
   return Array.from(
@@ -200,7 +181,7 @@ export default function ServiceRequestPage() {
       return;
     }
 
-    const message = getErrorMessage(activeListError);
+    const { message } = formatApiError(activeListError);
 
     if (lastErrorMessageRef.current !== message) {
       toast.error(message);
@@ -214,7 +195,7 @@ export default function ServiceRequestPage() {
       return;
     }
 
-    const message = getErrorMessage(summaryQuery.error);
+    const { message } = formatApiError(summaryQuery.error);
 
     if (lastSummaryErrorMessageRef.current !== message) {
       toast.error(message);

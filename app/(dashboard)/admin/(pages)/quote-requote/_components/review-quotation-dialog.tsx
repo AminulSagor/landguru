@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
+import { formatApiError } from "@/lib/format-api-error";
 import { Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Dialog from "@/components/dialogs/dialog";
@@ -143,7 +144,7 @@ export default function ReviewQutationDialog({
       router.refresh();
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Failed to send counter-offer.");
+      toast.error(formatApiError(error).message);
     },
   });
 
@@ -161,7 +162,7 @@ export default function ReviewQutationDialog({
       router.refresh();
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Failed to reject negotiation.");
+      toast.error(formatApiError(error).message);
     },
   });
 

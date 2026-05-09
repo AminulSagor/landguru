@@ -2,7 +2,7 @@
 
 import React from "react";
 import { AlertTriangle, CalendarDays, Info } from "lucide-react";
-import { NotificationItem } from "@/app/(dashboard)/agent/dummy-data/mock-notifications";
+import type { AgentUiNotification } from "@/types/notifications.types";
 
 const iconByKind = {
   danger: AlertTriangle,
@@ -10,7 +10,13 @@ const iconByKind = {
   info: Info,
 };
 
-export default function NotificationRow({ item }: { item: NotificationItem }) {
+export default function NotificationRow({
+  item,
+  onClick,
+}: {
+  item: AgentUiNotification;
+  onClick?: (id: string) => void;
+}) {
   const Icon = iconByKind[item.kind];
 
   const leftStrip =
@@ -31,7 +37,11 @@ export default function NotificationRow({ item }: { item: NotificationItem }) {
         : "text-gray/70";
 
   return (
-    <div className="relative">
+    <button
+      type="button"
+      onClick={() => onClick?.(item.id)}
+      className="relative w-full text-left"
+    >
       {/* left strip */}
       <div className={`absolute left-0 top-0 h-full w-1 ${leftStrip}`} />
 
@@ -60,13 +70,13 @@ export default function NotificationRow({ item }: { item: NotificationItem }) {
 
           <p className="mt-1 text-sm leading-6 text-gray/60">
             {item.messageLeft ? <span>{item.messageLeft} </span> : null}
-            <span className="font-extrabold text-gray">
-              {item.highlight}
-            </span>{" "}
-            {item.messageRight ? <span>{item.messageRight}</span> : null}
+            {item.highlight ? (
+              <span className="font-extrabold text-gray">{item.highlight}</span>
+            ) : null}
+            {item.messageRight ? <span> {item.messageRight}</span> : null}
           </p>
         </div>
       </div>
-    </div>
+    </button>
   );
 }
