@@ -1,9 +1,11 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Card from "@/components/cards/card";
 import Button from "@/components/buttons/button";
+import { agentProfileService } from "@/service/agent/agent-profile.service";
+import { uploadFileWithPresign, validateImageFile } from "@/utils/upload.utils";
 import {
   BadgeCheck,
   ChevronRight,
@@ -19,9 +21,169 @@ type VerifiedDoc = {
   idLabel: string;
   idValue: string;
   verified: boolean;
+  frontUrl?: string;
+  backUrl?: string;
+  certificateUrl?: string;
 };
 
 export default function EditProfilePage() {
+  const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [division, setDivision] = useState("");
+  const [district, setDistrict] = useState("");
+  const [upazila, setUpazila] = useState("");
+  const [unionOrCityCorp, setUnionOrCityCorp] = useState("");
+  const [wardNo, setWardNo] = useState("");
+  const [postalCode, setPostalCode] = useState("");
+  const [fullAddress, setFullAddress] = useState("");
+  const [bankName, setBankName] = useState("");
+  const [bankAccountNo, setBankAccountNo] = useState("");
+  const [bankSwiftCode, setBankSwiftCode] = useState("");
+  const [bankRoutingNo, setBankRoutingNo] = useState("");
+  const [photoUrl, setPhotoUrl] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [verifiedDocs, setVerifiedDocs] = useState<VerifiedDoc[]>([]);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [photoError, setPhotoError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    agentProfileService
+      .getProfile()
+      .then((p) => {
+        if (!mounted) return;
+        setFullName(p.fullName ?? p.personalDetails?.fullName ?? "");
+        setPhone(p.phone ?? p.personalDetails?.phone ?? "");
+        setEmail(p.email ?? p.personalDetails?.email ?? "");
+        const flat = p as any;
+        setDivision(p.personalDetails?.division ?? flat.division ?? "");
+        setDistrict(p.personalDetails?.district ?? flat.district ?? "");
+        setUpazila(p.personalDetails?.upazila ?? flat.upazila ?? "");
+        setUnionOrCityCorp(p.personalDetails?.unionOrCityCorp ?? flat.unionOrCityCorp ?? "");
+        setWardNo(p.personalDetails?.wardNo ?? flat.wardNo ?? "");
+        setPostalCode((p.personalDetails?.postalCode ?? flat.postalCode ?? "") as string);
+        setFullAddress(p.personalDetails?.fullAddress ?? flat.fullAddress ?? p.assignedLocation ?? "");
+        setBankName(p.bankInfo?.bankName ?? flat.bankName ?? "");
+        setBankAccountNo(p.bankInfo?.bankAccountNo ?? flat.bankAccountNo ?? "");
+        setBankSwiftCode(p.bankInfo?.bankSwiftCode ?? flat.bankSwiftCode ?? "");
+        setBankRoutingNo(p.bankInfo?.bankRoutingNo ?? flat.bankRoutingNo ?? "");
+        setPhotoUrl(p.photoUrl ?? "");
+        // map verification docs from API shape to UI model
+        try {
+          const v = (p as any).verificationDocs ?? flat ?? {};
+
+          const maskId = (id?: string | null) => {
+            if (!id) return "—";
+            const s = String(id);
+            if (s.length <= 4) return s;
+            const midLen = Math.max(0, s.length - 4);
+            return `${s.slice(0, 2)}${"*".repeat(midLen)}${s.slice(-2)}`;
+          };
+
+          setVerifiedDocs([
+            {
+              title: "National ID (NID)",
+              idLabel: "ID:",
+              idValue: v.nidNumber ? maskId(v.nidNumber) : "—",
+              verified: !!v.isNIDVerified,
+              frontUrl: v.nidFrontUrl ?? undefined,
+              backUrl: v.nidBackUrl ?? undefined,
+            },
+            {
+              title: "TIN Certificate",
+              idLabel: "Tax ID:",
+              idValue: v.tinNumber ? maskId(v.tinNumber) : "—",
+              verified: !!v.isTINVerified,
+              certificateUrl: v.tinCertificateUrl ?? undefined,
+            },
+          ]);
+        } catch (err) {
+          setVerifiedDocs([]);
+        }
+      })
+      .catch((err) => console.error("Failed to load profile", err));
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const body = {
+        fullName,
+        email,
+        photoUrl,
+        phone,
+        division,
+        district,
+        upazila,
+        unionOrCityCorp,
+        wardNo,
+        postalCode,
+        fullAddress,
+        bankName,
+        bankAccountNo,
+        bankSwiftCode,
+        bankRoutingNo,
+      };
+
+      const res = await agentProfileService.updateProfile(body);
+      if (res?.message) alert(res.message);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to update profile");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handlePickPhoto = () => {
+    if (uploadingPhoto) return;
+    setPhotoError(null);
+    fileInputRef.current?.click();
+  };
+
+  const handlePhotoInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+
+    const validation = validateImageFile(file);
+    if (!validation.ok) {
+      setPhotoError(validation.error ?? "Invalid file.");
+      return;
+    }
+
+    setUploadingPhoto(true);
+    setUploadProgress(0);
+    setPhotoError(null);
+
+    try {
+      const uploaded = await uploadFileWithPresign({
+        file,
+        type: "AVATAR",
+        onProgress: setUploadProgress,
+      });
+      const finalUrl = uploaded.fileUrl || uploaded.uploadUrl;
+      if (!finalUrl) throw new Error("Upload succeeded but file URL was missing.");
+
+      const res = await agentProfileService.updatePhoto(finalUrl);
+      setPhotoUrl(finalUrl);
+      if (res?.message) alert(res.message);
+    } catch (err: any) {
+      console.error(err);
+      setPhotoError(err?.message ?? "Failed to upload photo.");
+    } finally {
+      setUploadingPhoto(false);
+      setUploadProgress(0);
+    }
+  };
+
   return (
     <div className="mx-auto max-w-7xl space-y-6">
       {/* header */}
@@ -41,7 +203,7 @@ export default function EditProfilePage() {
           <div className="relative">
             <div className="h-24 w-24 overflow-hidden rounded-full border border-gray/10 bg-secondary">
               <Image
-                src="/images/avatars/avatar.png"
+                src={photoUrl || "/images/avatars/avatar.png"}
                 alt="Profile"
                 width={96}
                 height={96}
@@ -51,7 +213,9 @@ export default function EditProfilePage() {
 
             <button
               type="button"
-              className="absolute bottom-0 right-0 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white shadow-sm hover:opacity-90"
+              onClick={handlePickPhoto}
+              disabled={uploadingPhoto}
+              className="absolute bottom-0 right-0 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white shadow-sm hover:opacity-90 disabled:opacity-60"
               aria-label="Change photo"
             >
               <Pencil size={14} />
@@ -60,10 +224,30 @@ export default function EditProfilePage() {
 
           <button
             type="button"
-            className="mt-2 text-xs font-bold text-primary hover:opacity-80"
+            onClick={handlePickPhoto}
+            disabled={uploadingPhoto}
+            className="mt-2 text-xs font-bold text-primary hover:opacity-80 disabled:opacity-60"
           >
-            Change Photo
+            {uploadingPhoto ? "Uploading..." : "Change Photo"}
           </button>
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handlePhotoInputChange}
+          />
+
+          {uploadingPhoto ? (
+            <p className="mt-2 text-xs font-semibold text-gray/60">
+              Uploading {uploadProgress}%
+            </p>
+          ) : null}
+
+          {photoError ? (
+            <p className="mt-2 text-xs font-semibold text-red-600">{photoError}</p>
+          ) : null}
         </div>
       </div>
 
@@ -72,33 +256,34 @@ export default function EditProfilePage() {
         <SectionTitle icon={<User size={16} />} title="Personal Details" />
 
         <div className="mt-5 grid gap-4 md:grid-cols-3">
-          <TextInput label="Full Name" required value="User Name" />
-          <TextInput label="Phone Number" required value="+8801700000000" />
-          <TextInput label="Email Address" required value="username@email.com" />
+          <TextInput label="Full Name" required value={fullName} onChange={setFullName} />
+          <TextInput label="Phone Number" required value={phone} onChange={setPhone} />
+          <TextInput label="Email Address" required value={email} onChange={setEmail} />
 
-          <SelectInput label="Division" required value="Rajshahi" />
-          <SelectInput label="District" required value="Rajshahi" />
-          <SelectInput label="Upazilla" required value="Bogura" />
+          <TextInput label="Division" required value={division} onChange={setDivision} />
+          <TextInput label="District" required value={district} onChange={setDistrict} />
+          <TextInput label="Upazilla" required value={upazila} onChange={setUpazila} />
 
-          <SelectInput
+          <TextInput
             label="Pouroshova/City Corp/Union"
             required
-            value="Bogura Pouroshova"
+            value={unionOrCityCorp}
+            onChange={setUnionOrCityCorp}
           />
-          <SelectInput label="Ward No" required value="03" />
-          <TextInput label="Postal Code" value="5800" />
+          <TextInput label="Ward No" required value={wardNo} onChange={setWardNo} />
+          <TextInput label="Postal Code" value={postalCode} onChange={setPostalCode} />
         </div>
 
         <div className="mt-4">
           <Label>Full Address</Label>
           <textarea
-            readOnly
             className={[
               "mt-2 w-full rounded-xl border border-gray/10 bg-gray/20",
               "px-4 py-3 text-sm font-semibold",
               "outline-none min-h-[92px]",
             ].join(" ")}
-            value="Holding #45, Ward #03, Bogura Pourashava, Bogura Sadar, Bogura-5800, Rajshahi"
+            value={fullAddress}
+            onChange={(e) => setFullAddress(e.target.value)}
           />
         </div>
       </Card>
@@ -111,14 +296,14 @@ export default function EditProfilePage() {
         />
 
         <div className="mt-5 grid gap-4 md:grid-cols-2">
-          {docs.map((d, idx) => (
+          {verifiedDocs.map((d, idx) => (
             <DocCard key={idx} d={d} />
           ))}
         </div>
 
         <div className="mt-5">
-          <Button className="w-full">
-            Save Changes
+          <Button className="w-full" onClick={handleSave} disabled={saving}>
+            {saving ? "Saving..." : "Save Changes"}
           </Button>
         </div>
       </Card>
@@ -129,15 +314,15 @@ export default function EditProfilePage() {
 
         <div className="mt-5 grid gap-6 md:grid-cols-2">
           <div className="space-y-5">
-            <BankRow label="BANK NAME" value="DBBL" />
+            <TextInput label="BANK NAME" value={bankName} onChange={setBankName} />
             <div className="h-px w-full bg-gray/10" />
-            <BankRow label="SWIFT CODE" value="DBBLBDDH" />
+            <TextInput label="SWIFT CODE" value={bankSwiftCode} onChange={setBankSwiftCode} />
           </div>
 
           <div className="space-y-5">
-            <BankRow label="BANK ACCOUNT NO." value="123456789123" />
+            <TextInput label="BANK ACCOUNT NO." value={bankAccountNo} onChange={setBankAccountNo} />
             <div className="h-px w-full bg-gray/10" />
-            <BankRow label="ROUTING NO." value="123456789123" />
+            <TextInput label="ROUTING NO." value={bankRoutingNo} onChange={setBankRoutingNo} />
           </div>
         </div>
       </Card>
@@ -145,22 +330,7 @@ export default function EditProfilePage() {
   );
 }
 
-/* ---------------- demo docs ---------------- */
-
-const docs: VerifiedDoc[] = [
-  {
-    title: "National ID (NID)",
-    idLabel: "ID:",
-    idValue: "89****321",
-    verified: true,
-  },
-  {
-    title: "TIN Certificate",
-    idLabel: "Tax ID:",
-    idValue: "44***99",
-    verified: true,
-  },
-];
+/* demo docs removed — using API-provided verificationDocs */
 
 /* ---------------- small UI bits ---------------- */
 
@@ -205,11 +375,15 @@ function TextInput({
   required,
   value,
   placeholder,
+  readOnly = false,
+  onChange,
 }: {
   label: string;
   required?: boolean;
   value?: string;
   placeholder?: string;
+  readOnly?: boolean;
+  onChange?: (v: string) => void;
 }) {
   return (
     <div className="space-y-2">
@@ -221,7 +395,8 @@ function TextInput({
       <input
         value={value ?? ""}
         placeholder={placeholder}
-        readOnly
+        readOnly={readOnly}
+        onChange={(e) => onChange?.(e.target.value)}
         className={[
           "w-full rounded-xl border border-gray/10 bg-gray/20",
           "px-4 py-3 text-sm font-semibold bg-gray/20",
@@ -279,12 +454,47 @@ function DocCard({ d }: { d: VerifiedDoc }) {
         </div>
       </div>
 
-      {d.verified && (
-        <div className="inline-flex items-center gap-2 rounded-full bg-green/10 px-3 py-1.5">
-          <BadgeCheck className="text-green" size={16} />
-          <span className="text-xs font-extrabold text-green">Verified</span>
-        </div>
-      )}
+      <div className="flex items-center gap-3">
+        {d.frontUrl && (
+          <a
+            href={d.frontUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="text-xs font-semibold text-primary underline"
+          >
+            Front
+          </a>
+        )}
+
+        {d.backUrl && (
+          <a
+            href={d.backUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="text-xs font-semibold text-primary underline"
+          >
+            Back
+          </a>
+        )}
+
+        {d.certificateUrl && (
+          <a
+            href={d.certificateUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="text-xs font-semibold text-primary underline"
+          >
+            View
+          </a>
+        )}
+
+        {d.verified && (
+          <div className="inline-flex items-center gap-2 rounded-full bg-green/10 px-3 py-1.5">
+            <BadgeCheck className="text-green" size={16} />
+            <span className="text-xs font-extrabold text-green">Verified</span>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

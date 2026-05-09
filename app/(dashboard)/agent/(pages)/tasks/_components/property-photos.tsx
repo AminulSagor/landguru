@@ -18,16 +18,23 @@ export default function PropertyPhotos({
 
       <div className="mt-4 grid grid-cols-4 gap-4">
         {data.photos.slice(0, 3).map((src, idx) => (
-          <div key={idx} className="overflow-hidden rounded-xl border border-gray/10 bg-secondary">
+          <a
+            key={idx}
+            href={src}
+            target="_blank"
+            rel="noreferrer"
+            className="overflow-hidden rounded-xl border border-gray/10 bg-secondary hover:shadow-sm transition"
+          >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={src} alt="photo" className="h-24 w-full object-cover" />
-          </div>
+          </a>
         ))}
 
-        {/* +2 tile */}
-        <div className="flex h-24 items-center justify-center rounded-xl border border-gray/10 bg-primary/5 text-primary font-extrabold">
-          +{data.morePhotosCount}
-        </div>
+        {data.morePhotosCount > 0 ? (
+          <div className="flex h-24 items-center justify-center rounded-xl border border-gray/10 bg-primary/5 text-primary font-extrabold">
+            +{data.morePhotosCount}
+          </div>
+        ) : null}
       </div>
     </Card>
   );

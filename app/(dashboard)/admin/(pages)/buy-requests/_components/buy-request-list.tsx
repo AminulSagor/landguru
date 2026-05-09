@@ -18,6 +18,7 @@ import type {
   BuyRequestTabKey,
 } from "@/types/admin/buy-requests/buy-requests-list.types";
 import Button from "@/components/buttons/button";
+import { formatApiError } from "@/lib/format-api-error";
 import { CircleCheckBig, CircleOff, Download, X } from "lucide-react";
 
 const PAGE_SIZE = 10;
@@ -28,24 +29,7 @@ const BUY_REQUEST_TABS: BuyRequestTabItem[] = [
   { key: "archived", label: "Archived" },
 ];
 
-function getErrorMessage(error: unknown): string {
-  if (
-    typeof error === "object" &&
-    error !== null &&
-    "response" in error &&
-    typeof (error as { response?: { data?: { message?: string } } }).response
-      ?.data?.message === "string"
-  ) {
-    return (error as { response?: { data?: { message?: string } } }).response!
-      .data!.message!;
-  }
-
-  if (error instanceof Error && error.message) {
-    return error.message;
-  }
-
-  return "Failed to load buy requests.";
-}
+// use `formatApiError` for consistent, user-friendly messages
 
 function matchesSearch(item: BuyRequestListItem, query: string): boolean {
   if (!query) {
@@ -134,7 +118,7 @@ export default function BuyRequestList() {
       return;
     }
 
-    const message = getErrorMessage(activeError);
+    const { message } = formatApiError(activeError);
 
     if (lastErrorMessageRef.current !== message) {
       toast.error(message);

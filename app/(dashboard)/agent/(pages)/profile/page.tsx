@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Card from "@/components/cards/card";
 import {
@@ -14,54 +14,63 @@ import {
   Wrench,
 } from "lucide-react";
 import Link from "next/link";
+import { agentProfileService, AgentProfile } from "@/service/agent/agent-profile.service";
 
-type ProfileData = {
-  name: string;
-  agentId: string;
-  agentType: string;
-  verified: boolean;
-  avatarUrl: string;
-
-  totalTaskCompleted: number;
-  totalEarned: number;
-
-  assignedLocationTitle: string;
-  assignedLocation: string;
-
-  services: string[];
-};
-
-const profileData: ProfileData = {
-  name: "Adv. Sahil",
-  agentId: "LAW-2026-0001",
-  agentType: "Lawyer",
-  verified: true,
-  avatarUrl: "/images/avatars/avatar.png",
-
-  totalTaskCompleted: 12,
-  totalEarned: 4000,
-
-  assignedLocationTitle: "Assigned Location:",
-  assignedLocation:
-    "Banani, Banani Thana, Dhaka North City Corporation, Dhaka-1213, Dhaka, Bangladesh.",
-
-  services: [
-    "Ownership History Validation",
-    "Pentagraph Map Validation",
-    "Physical estimate and border demarcation",
-    "Document Organization",
-    "Deed Writing Service",
-    "Namjari/DCR Update/ Pouro City Corp Record Update",
-    "Inheritance Dispute Analysis",
-    "Government Acquisition Risk",
-    "Court Case Verification",
-  ],
-};
+// (mock data removed) 
 
 /* ---------------- page ---------------- */
 
 export default function ProfilePage() {
-  const d = profileData;
+  const [profile, setProfile] = useState<AgentProfile | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    let mounted = true;
+    setLoading(true);
+    agentProfileService
+      .getProfile()
+      .then((p) => {
+        if (!mounted) return;
+        setProfile(p);
+      })
+      .catch((err) => {
+        console.error("Failed to load agent profile", err);
+      })
+      .finally(() => {
+        if (mounted) setLoading(false);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const d = profile
+    ? {
+        name: profile.fullName ?? profile.personalDetails?.fullName ?? "—",
+        agentId: profile.agentIdDisplay ?? profile.agentId ?? "—",
+        agentType: profile.agentType ?? "—",
+        verified: !!profile.isVerified,
+        avatarUrl: profile.photoUrl ?? "/images/avatars/avatar.png",
+        totalTaskCompleted: profile.stats?.totalTaskCompleted ?? 0,
+        totalEarned: profile.stats?.totalEarned ?? 0,
+        assignedLocationTitle: "Assigned Location:",
+        assignedLocation:
+          profile.assignedLocation ?? profile.personalDetails?.fullAddress ?? "",
+        services: profile.services ?? [],
+      }
+    : {
+        name: "—",
+        agentId: "—",
+        agentType: "—",
+        verified: false,
+        avatarUrl: "/images/avatars/avatar.png",
+        totalTaskCompleted: 0,
+        totalEarned: 0,
+        assignedLocationTitle: "Assigned Location:",
+        assignedLocation: "",
+        services: [],
+      };
 
   return (
     <div className="grid gap-6 lg:grid-cols-12 max-w-7xl mx-auto">
@@ -83,13 +92,14 @@ export default function ProfilePage() {
               </div>
 
               {/* edit bubble */}
-              <button
-                type="button"
-                className="absolute bottom-1 right-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white shadow-sm hover:opacity-90"
-                aria-label="Edit profile"
-              >
-                <Pencil size={14} />
-              </button>
+              <Link href="/agent/profile/settings" aria-label="Edit profile">
+                <button
+                  type="button"
+                  className="absolute bottom-1 right-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white shadow-sm hover:opacity-90"
+                >
+                  <Pencil size={14} />
+                </button>
+              </Link>
             </div>
 
             <h2 className="mt-5 text-2xl font-extrabold text-gray">{d.name}</h2>

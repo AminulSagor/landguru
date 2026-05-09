@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
+import { formatApiError } from "@/lib/format-api-error";
 import { Plus } from "lucide-react";
 
 import Button from "@/components/buttons/button";
@@ -21,24 +22,7 @@ import type { UpdateAgentRolePayload } from "@/types/admin/manage/agent-roles/up
 
 const PAGE_SIZE = 10;
 
-function getErrorMessage(error: unknown): string {
-  if (
-    typeof error === "object" &&
-    error !== null &&
-    "response" in error &&
-    typeof (error as { response?: { data?: { message?: string } } }).response?.data
-      ?.message === "string"
-  ) {
-    return (error as { response?: { data?: { message?: string } } }).response!
-      .data!.message!;
-  }
-
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  return "Something went wrong.";
-}
+// use `formatApiError` to normalize API errors to user-friendly messages
 
 export default function ManageAgentRolesPage() {
   const queryClient = useQueryClient();
@@ -67,7 +51,7 @@ export default function ManageAgentRolesPage() {
       queryClient.invalidateQueries({ queryKey: ["agent-roles"] });
     },
     onError: (error) => {
-      toast.error(getErrorMessage(error));
+      toast.error(formatApiError(error).message);
     },
   });
 
@@ -86,7 +70,7 @@ export default function ManageAgentRolesPage() {
       queryClient.invalidateQueries({ queryKey: ["agent-roles"] });
     },
     onError: (error) => {
-      toast.error(getErrorMessage(error));
+      toast.error(formatApiError(error).message);
     },
   });
 
@@ -106,7 +90,7 @@ export default function ManageAgentRolesPage() {
       queryClient.invalidateQueries({ queryKey: ["agent-roles"] });
     },
     onError: (error) => {
-      toast.error(getErrorMessage(error));
+      toast.error(formatApiError(error).message);
     },
   });
 
@@ -119,7 +103,7 @@ export default function ManageAgentRolesPage() {
       queryClient.invalidateQueries({ queryKey: ["agent-roles"] });
     },
     onError: (error) => {
-      toast.error(getErrorMessage(error));
+      toast.error(formatApiError(error).message);
     },
   });
 

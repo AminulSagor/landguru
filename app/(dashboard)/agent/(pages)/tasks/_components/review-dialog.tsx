@@ -3,9 +3,10 @@ import Dialog from "@/components/dialogs/dialog";
 type Props = {
   review: boolean;
   setReview: (v: boolean) => void;
-  setSuccess: (v: boolean) => void;
+  onConfirm: () => void;
+  submitting?: boolean;
 };
-const ReviewDialog = ({ review, setReview, setSuccess }: Props) => {
+const ReviewDialog = ({ review, setReview, onConfirm, submitting = false }: Props) => {
   return (
     <Dialog open={review} onOpenChange={setReview} size="sm">
       <div className="space-y-3">
@@ -18,17 +19,16 @@ const ReviewDialog = ({ review, setReview, setSuccess }: Props) => {
           <Button
             variant="primary"
             className="w-full"
-            onClick={() => {
-              setReview(false);
-              setSuccess(true);
-            }}
+            onClick={onConfirm}
+            disabled={submitting}
           >
-            Yes
+            {submitting ? "Submitting..." : "Yes"}
           </Button>
           <Button
             variant="secondary"
             className="w-full"
             onClick={() => setReview(false)}
+            disabled={submitting}
           >
             Cencel
           </Button>
