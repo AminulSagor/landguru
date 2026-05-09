@@ -1,20 +1,12 @@
 "use client";
 
 import Card from "@/components/cards/card";
+import type { UiTaskDetails } from "@/types/agent/task.types";
 
 export default function TaskDetailsHeader({
   data,
 }: {
-  data: {
-    title: string;
-    serviceKey?: string;
-    code: string;
-    stage: "pending_accepting" | "active" | "completed";
-    statusLabel?: string;
-    acceptBefore?: string;
-    postedAgo: string;
-    updatedAgo?: string;
-  };
+  data: UiTaskDetails;
 }) {
   const isPending = data.stage === "pending_accepting";
   const isCompleted = data.stage === "completed";
