@@ -31,7 +31,7 @@ import {
   createOfferDraftStep1,
   updateOfferDraftStep2,
   submitOfferDraft,
-} from "@/service/users/properties/properties.services";
+} from "@/service/users/posts/createOffer.sellpost.service";
 
 import { uploadService } from "@/service/base/upload.service";
 import type {
@@ -43,6 +43,7 @@ import type {
   CreateOfferDraftStep1Request,
   DraftEntityResponse,
 } from "@/types/post/buy/wanted-needs.types";
+import type { createSellPostStepOnePayload } from "@/types/post/sell/sellpost.payload.types";
 
 type SellPostData = {
   step1?: StepOneValues;
@@ -133,6 +134,14 @@ export default function CreateSellPostPage() {
   React.useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     setBuyPostId(params.get("offerFor"));
+    setDraftId(params.get("draftId"));
+
+    const stepParam = Number(params.get("step"));
+    if (Number.isFinite(stepParam)) {
+      const resolvedStep = Math.min(4, Math.max(1, Math.floor(stepParam)));
+      setCurrentStep(resolvedStep);
+    }
+
     setIsPageReady(true);
   }, []);
 
@@ -173,7 +182,11 @@ export default function CreateSellPostPage() {
         return uploadUrl;
       }
 
-      return options?.preferKey ? fileKey || fileUrl : fileUrl;
+      if (type === "AVATAR" && !options?.preferKey) {
+        return fileUrl;
+      }
+
+      return fileKey || fileUrl;
     },
     [],
   );
@@ -201,17 +214,16 @@ export default function CreateSellPostPage() {
     try {
       const askingPrice = calculateAskingPrice(step1);
 
-      const payload: CreateOfferDraftStep1Request = {
+      const offerStepOnePayload: CreateOfferDraftStep1Request = {
         title: step1.adTitle.trim(),
         description: step1.description.trim(),
         propertyType: step1.propertyType,
         sellableAmount: Number(step1.sellableAmount || 0),
         sellableUnit: step1.sellableUnit,
-        askingPricePerUnit: Number(step1.pricePerKatha || 0),
+        pricePerUnit: Number(step1.pricePerKatha || 0),
         askingPrice: askingPrice,
-        isPropertyShareable: step1.shareUnitEnabled ?? false,
-        roadDistanceMin: toOptionalNumber(step1.distanceMin),
-        roadDistanceMax: toOptionalNumber(step1.distanceMax),
+        isShareable: step1.shareUnitEnabled ?? false,
+        distanceFromRoad: `${toOptionalNumber(step1.distanceMin)} - ${toOptionalNumber(step1.distanceMax)}`,
         plotSize: toOptionalNumber(step1.plotSize),
         plotUnit: Number.isFinite(step1.plotSize)
           ? step1.plotSizeUnit
@@ -225,15 +237,46 @@ export default function CreateSellPostPage() {
         upazila: step1.upazila?.value || undefined,
         unionOrCityCorp: step1.pouroshovaOrUnion?.trim() || undefined,
         wardNo: step1.wardNo?.trim() || undefined,
-        postalCode: step1.postalCode?.trim() || undefined,
+        postalCode: step1.postalCode?.trim(),
+        fullAddress: step1.fullAddress?.trim() || undefined,
+      };
+
+      const sellPostStepOnePayload: createSellPostStepOnePayload = {
+        title: step1.adTitle.trim(),
+        description: step1.description.trim(),
+        propertyType: step1.propertyType,
+        roadDistanceMin: toOptionalNumber(step1.distanceMin),
+        roadDistanceMax: toOptionalNumber(step1.distanceMax),
+        sellableAmount: Number(step1.sellableAmount || 0),
+        sellableUnit: step1.sellableUnit,
+        plotSize: toOptionalNumber(step1.plotSize),
+        plotUnit: Number.isFinite(step1.plotSize)
+          ? step1.plotSizeUnit
+          : undefined,
+        isPropertyShareable: step1.shareUnitEnabled ?? false,
+        shareAmount: step1.shareUnitEnabled
+          ? toOptionalNumber(step1.shareUnitAmount)
+          : undefined,
+        shareUnit: step1.shareUnitEnabled ? step1.shareUnitUnit : undefined,
+        askingPricePerUnit: Number(step1.pricePerKatha || 0),
+        askingPrice,
+        division: step1.division?.value || undefined,
+        district: step1.district?.value || undefined,
+        upazila: step1.upazila?.value || undefined,
+        unionOrCityCorp: step1.pouroshovaOrUnion?.trim() || undefined,
+        wardNo: step1.wardNo?.trim() || undefined,
+        postalCode: step1.postalCode?.trim(),
         fullAddress: step1.fullAddress?.trim() || undefined,
       };
 
       const response = isOfferFlow
-        ? await createOfferDraftStep1(buyPostId as string, payload)
+        ? await createOfferDraftStep1(buyPostId as string, offerStepOnePayload)
         : draftId
-          ? await updateSellPostStepOne({ postId: draftId, payload })
-          : await createSellPostStepOne(payload);
+          ? await updateSellPostStepOne({
+              postId: draftId,
+              payload: sellPostStepOnePayload,
+            })
+          : await createSellPostStepOne(sellPostStepOnePayload);
 
       setDraftId(resolveDraftId(response as DraftEntityResponse));
       setData((prev) => ({ ...prev, step1 }));
@@ -272,23 +315,23 @@ export default function CreateSellPostPage() {
       }
 
       const videoUrl = step2.video
-        ? await uploadFile(step2.video, "AVATAR")
+        ? await uploadFile(step2.video, "VIDEO")
         : undefined;
 
       const deedFiles = await uploadFiles(step2.deedDocuments ?? [], "DEED", {
-        returnSignedUrl: true,
+        preferKey: true,
       });
 
       const khatianFiles = await uploadFiles(
         step2.khatianDocuments ?? [],
-        "DEED",
+        "KHATIAN",
         {
-          returnSignedUrl: true,
+          preferKey: true,
         },
       );
 
-      const otherFiles = await uploadFiles(step2.otherDocuments ?? [], "DEED", {
-        returnSignedUrl: true,
+      const otherFiles = await uploadFiles(step2.otherDocuments ?? [], "OTHER", {
+        preferKey: true,
       });
 
       const response = await updateSellPostStepTwo({
@@ -328,7 +371,8 @@ export default function CreateSellPostPage() {
           ...(step3.optionalServiceIds ?? []),
         ]),
       );
-
+// 47ad5765-36a7-4b32-8dcc-4ead5df94bec
+// 47ad5765-36a7-4b32-8dcc-4ead5df94bec
       const response = await updateSellPostStepThree({
         postId: draftId,
         payload: { selectedServices },

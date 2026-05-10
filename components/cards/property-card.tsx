@@ -43,8 +43,8 @@ export default function PropertyCard({
   const mode = "status" in property ? property.status : property.mode;
   const locationText =
     "location" in property
-      ? property.location ?? ""
-      : property.locationText ?? "";
+      ? property.location ?? "" : "Unknown Location";
+      
   const currency =
     "currencySymbol" in property && property.currencySymbol
       ? property.currencySymbol

@@ -6,13 +6,17 @@ import { ListingCard } from "@/app/(dashboard)/user/types/my-property-list";
 import Button from "@/components/buttons/button";
 import Link from "next/link";
 import { formatDisplayId } from "@/utils/id.utils";
+import { useRouter } from "next/navigation";
 
 type Props = {
   property: ListingCard;
   isDraft: boolean;
+  editHref?: string;
 };
 
-const MyPropertyHero = ({ property, isDraft }: Props) => {
+const MyPropertyHero = ({ property, isDraft, editHref }: Props) => {
+  const router = useRouter();
+
   return (
     <div className="space-y-3">
       {/* Back */}
@@ -52,7 +56,11 @@ const MyPropertyHero = ({ property, isDraft }: Props) => {
 
           {isDraft && (
             <div className="flex items-center gap-3">
-              <Button>Edit</Button>
+              <Button
+                onClick={() => router.push(editHref || "/user/posts/sell/create")}
+              >
+                Edit
+              </Button>
 
               <span className="text-red-500">
                 <Trash size={20} />

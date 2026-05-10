@@ -1,6 +1,6 @@
 export type SignupRole = "user";
 
-export type UploadType = "AVATAR" | "DEED";
+export type UploadType = import("@/types/base/upload.types").UploadType;
 
 export interface SendSignupOtpPayload {
   phone: string;
@@ -73,25 +73,10 @@ export interface CompleteSignupIdentityResponse {
   userId: string;
 }
 
-export interface PresignedUploadUrlPayload {
-  filename: string;
-  contentType: string;
-  type: UploadType;
-}
+export type PresignedUploadUrlPayload = import("@/types/base/upload.types").PresignedUploadUrlPayload;
 
 // Backend may return any of these keys depending on environment/build.
-export interface PresignedUploadUrlResponse {
-  success?: boolean;
-  message?: string;
-  uploadUrl?: string;
-  presignedUrl?: string;
-  putUrl?: string;
-  url?: string;
-  fileUrl?: string;
-  publicUrl?: string;
-  objectUrl?: string;
-  key?: string;
-}
+export type PresignedUploadUrlResponse = import("@/types/base/upload.types").PresignedUploadUrlResponse;
 
 export interface ApiError {
   message?: string;

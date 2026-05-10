@@ -1,4 +1,9 @@
-export type BuyPostPropertyType = "Flat" | "Plain Land" | "Villa" | "Agro Land";
+export type BuyPostPropertyType =
+  | "Flat"
+  | "Plain Land"
+  | "Villa"
+  | "Agro Land"
+  | "Commercial";
 
 export type BuyPostStatus = "active" | "pending_admin_review" | "draft";
 

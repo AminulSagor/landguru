@@ -118,6 +118,7 @@ const MYPropertyDetails = ({ propertyId }: { propertyId: string }) => {
             ? `${toNumber(post.shareAmount, 0)} ${post.shareUnit}`
             : "N/A",
         roadDistanceText: formatRange(post.roadDistanceMin, post.roadDistanceMax),
+        lastCompletedStep: toNullableNumber(post.lastCompletedStep),
         tags: [{ label: statusLabel, variant: statusVariant }],
       };
     };
@@ -167,10 +168,17 @@ const MYPropertyDetails = ({ propertyId }: { propertyId: string }) => {
   const isActive = property?.tags.some((tag) => tag.label === "ACTIVE");
 
   const isDraft = property?.tags.some((tag) => tag.label === "DRAFT");
+  const resolveEditStep = (lastCompletedStep?: number | null) => {
+    const numericStep = Number(lastCompletedStep);
+    if (!Number.isFinite(numericStep)) return 1;
+    return Math.min(4, Math.max(1, Math.floor(numericStep) + 1));
+  };
+  const editStep = resolveEditStep(property.lastCompletedStep);
+  const editHref = `/user/posts/sell/create?draftId=${property.id}&step=${editStep}`;
 
   return (
     <div className="py-20">
-      <MyPropertyHero property={property} isDraft={isDraft} />
+      <MyPropertyHero property={property} isDraft={isDraft} editHref={editHref} />
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 xl:gap-14">
         <div className="col-span-12 lg:col-span-8 mt-5 space-y-10">
           <MyPropertyImages property={property} />
@@ -200,6 +208,7 @@ const MYPropertyDetails = ({ propertyId }: { propertyId: string }) => {
             setOpenRequote={setOpenRequote}
             setOpenPay={setOpenPay}
             isDraft={isDraft}
+            editHref={editHref}
           />
         </div>
       </div>

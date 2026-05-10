@@ -55,24 +55,40 @@ export type MakeOfferFromExistingRequest = {
 export type CreateOfferDraftStep1Request = {
   title: string;
   description: string;
-  propertyType: PropertyTypeLabel;
+
+  propertyType: string;
+
   sellableAmount: number;
-  sellableUnit: LandSizeUnitLabel;
-  askingPricePerUnit: number;
+  sellableUnit: string;
+
+  isShareable: boolean;
+
   askingPrice: number;
-  isPropertyShareable: boolean;
-  roadDistanceMin?: number;
-  roadDistanceMax?: number;
-  plotSize?: number;
-  plotUnit?: LandSizeUnitLabel;
+
+  pricePerUnit: number;
+
+  distanceFromRoad: string;
+
+  // roadDistanceMin?: number;
+  // roadDistanceMax?: number;
   shareAmount?: number;
-  shareUnit?: LandSizeUnitLabel;
+  shareUnit?: string;
+  roadWidthMin?: number;
+  roadWidthMax?: number;
+
+  plotSize?: number;
+  plotUnit?: string;
+
   division?: string;
   district?: string;
   upazila?: string;
+
   unionOrCityCorp?: string;
-  wardNo?: string;
-  postalCode?: string;
+
+  wardNo?: string | number;
+
+  postalCode: string;
+
   fullAddress?: string;
 };
 

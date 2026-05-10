@@ -6,10 +6,12 @@ import { ArrowRight, MapPin } from "lucide-react";
 import { ListingCard } from "@/app/(dashboard)/user/types/my-property-list";
 import Button from "@/components/buttons/button";
 import MyPropertyBillBreakdown from "@/app/(dashboard)/user/(pages)/posts/sell/view/_components/my-property-bill-breakdown";
+import { useRouter } from "next/navigation";
 
 type Props = {
   isQuated: boolean;
   isDraft?: boolean;
+  editHref?: string;
   property: ListingCard;
   setOpenRequote: (d: boolean) => void;
   setOpenPay: (d: boolean) => void;
@@ -21,7 +23,10 @@ const MyPropertyRightSidebar: FC<Props> = ({
   setOpenRequote,
   setOpenPay,
   isDraft = false,
+  editHref,
 }) => {
+  const router = useRouter();
+
   return (
     <div className="space-y-5 w-full">
       <Card>
@@ -66,7 +71,10 @@ const MyPropertyRightSidebar: FC<Props> = ({
         </div>
 
         {isDraft && (
-          <Button className="w-full mt-5">
+          <Button
+            className="w-full mt-5"
+            onClick={() => router.push(editHref || "/user/posts/sell/create")}
+          >
             Continue Editing <ArrowRight size={18} />
           </Button>
         )}

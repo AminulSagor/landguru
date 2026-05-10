@@ -35,5 +35,6 @@ export type ListingCard = {
   plotSizeText?: string;
   shareAmountText?: string;
   roadDistanceText?: string;
+  lastCompletedStep?: number | null;
   tags: ListingTag[];
 };

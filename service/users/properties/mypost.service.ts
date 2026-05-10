@@ -210,7 +210,7 @@ export const fetchMyOfferedPosts = async (
 
 export const fetchMyOfferedPostDetails = async (offerId: string) => {
     const response = await serviceClient.get<OfferedPostDetailsResponseDto>(
-        `/buy-posts/offer-posts/${offerId}`,
+        `/buy-posts/my-posts/${offerId}`,
     );
 
     console.log("fetchMyOfferedPostDetails response:", response.data);

@@ -1,6 +1,11 @@
 export type UploadType =
-  | "AVATAR"
-  | "DEED"
+  | 'AVATAR'
+  | 'DEED'
+  | 'NID'
+  | 'TIN'
+  | 'KHATIAN'
+  | 'VIDEO'
+  | 'OTHER'
   | (string & {});
 
 export interface PresignedUploadUrlPayload {

@@ -38,6 +38,7 @@ import type {
   MySellPostTabDto,
   MyBuyPostTabDto,
 } from "@/types/post/my/mypost.types";
+import type { BuyPostPropertyType } from "@/app/(dashboard)/user/dummy-data/buy-post-data";
 import { PropertyFiltersProvider } from "@/app/(dashboard)/user/(pages)/properties/_components/property-filters.context";
 
 type TabKey = "for-sale" | "wanted" | "my-posts";
@@ -127,23 +128,64 @@ const mapSellPostToListingCard = (post: SellPostDto) => {
   };
 };
 
+const formatBudgetRange = (
+  min?: number | string | null,
+  max?: number | string | null,
+) => {
+  const hasMin = Number.isFinite(Number(min));
+  const hasMax = Number.isFinite(Number(max));
+
+  if (hasMin && hasMax) {
+    return `৳ ${Number(min).toLocaleString()} - ৳ ${Number(max).toLocaleString()}`;
+  }
+  if (hasMin) return `৳ ${Number(min).toLocaleString()}+`;
+  if (hasMax) return `Up to ৳ ${Number(max).toLocaleString()}`;
+  return "Not specified";
+};
+
+const formatBudgetFromBuyPostDto = (post: BuyPostDto) => {
+  const raw = post.budget?.trim();
+  if (raw) {
+    const parts = raw
+      .split(/[-–—]+/)
+      .map((s) => s.replace(/[^\d.]/g, "").trim())
+      .filter(Boolean);
+    if (parts.length >= 2) {
+      const a = Number(parts[0]);
+      const b = Number(parts[1]);
+      if (Number.isFinite(a) && Number.isFinite(b)) {
+        return `৳ ${a.toLocaleString()} - ৳ ${b.toLocaleString()}`;
+      }
+    }
+    if (/^\d/.test(raw.replace(/[^\d.]/g, ""))) {
+      const n = Number(raw.replace(/[^\d.]/g, ""));
+      if (Number.isFinite(n)) return `৳ ${n.toLocaleString()}`;
+    }
+    return raw.startsWith("৳") ? raw : `৳ ${raw}`;
+  }
+  return formatBudgetRange(post.budgetMin, post.budgetMax);
+};
+
+const formatDistanceFromBuyPostDto = (post: BuyPostDto) => {
+  const raw = post.distanceFromRoad?.trim();
+  if (raw) {
+    if (/\bm\b/i.test(raw)) return raw;
+    const compact = raw.replace(/\s+/g, "");
+    const m = /^(\d+)\s*-\s*(\d+)$/.exec(compact);
+    if (m) return `${m[1]}m-${m[2]}m`;
+    return raw;
+  }
+  return formatDistanceRange(
+    Number(post.roadDistanceMin) || undefined,
+    Number(post.roadDistanceMax) || undefined,
+  );
+};
+
 const mapBuyPostToBuyPost = (post: BuyPostDto) => {
   const id = post.id || post.postId || post.shortId || "UNKNOWN";
 
-  const formatBudgetRange = (
-    min?: number | string | null,
-    max?: number | string | null,
-  ) => {
-    const hasMin = Number.isFinite(Number(min));
-    const hasMax = Number.isFinite(Number(max));
-
-    if (hasMin && hasMax) {
-      return `৳ ${Number(min).toLocaleString()} - ৳ ${Number(max).toLocaleString()}`;
-    }
-    if (hasMin) return `৳ ${Number(min).toLocaleString()}+`;
-    if (hasMax) return `Up to ৳ ${Number(max).toLocaleString()}`;
-    return "Not specified";
-  };
+  const landMin = Number(post.landSizeMin ?? post.sizeMin);
+  const landUnit = post.landSizeUnit ?? post.sizeUnit;
 
   const statusMap: Record<string, "active" | "pending_admin_review" | "draft"> =
     {
@@ -154,32 +196,35 @@ const mapBuyPostToBuyPost = (post: BuyPostDto) => {
       DRAFT: "draft",
     };
 
+  const offersCount = Number(
+    post.offersReceived ?? post.offers?.length ?? 0,
+  );
+
   return {
     id,
     title: post.title || "Untitled request",
-    postedText: formatTimeAgo(post.updatedAt || post.createdAt) || "Just now",
+    postedText:
+      formatTimeAgo(post.postedAt || post.updatedAt || post.createdAt) ||
+      "Just now",
     preferredLocation:
       post.location || post.preferredLocation || "Not specified",
-    propertyType: (post.propertyType || "Plain Land") as any,
+    propertyType: (post.propertyType || "Plain Land") as BuyPostPropertyType,
     requiredLandSize: formatMinSize(
-      Number(post.landSizeMin) || undefined,
-      post.landSizeUnit || undefined,
+      Number.isFinite(landMin) ? landMin : undefined,
+      landUnit ?? undefined,
     ),
     requiredPlotSize: formatMinSize(
       Number(post.plotSizeMin) || undefined,
-      post.plotSizeUnit || undefined,
+      post.plotSizeUnit ?? undefined,
     ),
-    distanceFromRoad: formatDistanceRange(
-      Number(post.roadDistanceMin) || undefined,
-      Number(post.roadDistanceMax) || undefined,
-    ),
-    budgetRange: formatBudgetRange(post.budgetMin, post.budgetMax),
+    distanceFromRoad: formatDistanceFromBuyPostDto(post),
+    budgetRange: formatBudgetFromBuyPostDto(post),
     status: statusMap[post.status ?? "ACTIVE"] || "active",
     action:
-      Number(post.offersReceived ?? post.offers?.length ?? 0) > 0
+      offersCount > 0
         ? {
             kind: "offers" as const,
-            count: Number(post.offersReceived ?? post.offers?.length ?? 0),
+            count: offersCount,
           }
         : undefined,
   };
@@ -696,7 +741,7 @@ export default function PropertiesPage() {
               ) : category === "Buy Posts" ? (
                 <div className="col-span-12 md:col-span-8">
                   <BuyPostDataGrid
-                    items={myBuyPosts.map(mapBuyPostToBuyPost) as any}
+                    items={myBuyPosts.map(mapBuyPostToBuyPost)}
                     meta={myBuyPostsMeta}
                     page={myBuyPostsPage}
                     onPageChange={setMyBuyPostsPage}

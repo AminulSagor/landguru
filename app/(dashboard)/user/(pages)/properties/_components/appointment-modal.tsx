@@ -1,9 +1,11 @@
 "use client";
 
 import React from "react";
+import toast from "react-hot-toast";
 import Card from "@/components/cards/card";
 import Button from "@/components/buttons/button";
 import type { PropertyDetails } from "@/types/property/property.details";
+import type { ApiError } from "@/types/auth/signup.types";
 import { IMAGE } from "@/constants/image-paths";
 import Dialog from "@/components/dialogs/dialog";
 import { requestSellPostAppointment } from "@/service/users/properties/properties.services";
@@ -27,16 +29,14 @@ const AppointmentModal = ({
     "Banani, Banani Thana, Dhaka North City Corporation, Dhaka-1213, Dhaka, Bangladesh.",
   );
   const [isSubmitting, setIsSubmitting] = React.useState(false);
-  const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
 
   const handleSubmit = async () => {
     if (!buyerName || !buyerPhone || !buyerAddress) {
-      setErrorMessage("Please fill in all required fields.");
+      toast.error("Please fill in all required fields.");
       return;
     }
 
     setIsSubmitting(true);
-    setErrorMessage(null);
 
     try {
       await requestSellPostAppointment({
@@ -47,7 +47,12 @@ const AppointmentModal = ({
       });
       onSuccess();
     } catch (error) {
-      setErrorMessage("Unable to request appointment. Please try again.");
+      toast.error(
+        getApiErrorMessage(
+          error,
+          "Unable to request appointment. Please try again.",
+        ),
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -123,10 +128,6 @@ const AppointmentModal = ({
           </Field>
         </div>
 
-        {errorMessage ? (
-          <p className="mt-3 text-sm text-red-600">{errorMessage}</p>
-        ) : null}
-
         <Button
           className="w-full mt-6 h-12 rounded-xl"
           onClick={handleSubmit}
@@ -154,4 +155,19 @@ function Field({
       {children}
     </div>
   );
+}
+
+function getApiErrorMessage(error: unknown, fallback: string) {
+  const apiError = error as ApiError;
+  const message = apiError?.response?.data?.message || apiError?.message;
+
+  if (Array.isArray(message) && message.length > 0) {
+    return message[0] || fallback;
+  }
+
+  if (typeof message === "string" && message.trim()) {
+    return message;
+  }
+
+  return fallback;
 }

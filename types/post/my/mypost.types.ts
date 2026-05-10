@@ -234,6 +234,8 @@ export interface BuyPostDto {
 
   offers?: OfferReceivedDto[];
   offersReceived?: number;
+  pendingOffersCount?: number;
+  isDealClosed?: boolean;
   acceptedOffer?: OfferReceivedDto | null;
 
   postedAt?: ApiDateString;

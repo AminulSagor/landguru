@@ -7,6 +7,7 @@ import {
   soldDeals,
 } from "@/app/(dashboard)/user/dummy-data/deals-data";
 import { DealItem } from "@/app/(dashboard)/user/types/deals";
+import type { ListingCard } from "@/app/(dashboard)/user/types/my-property-list";
 import MyDealsHeader from "@/app/(dashboard)/user/(pages)/my-deals/_components/my-deals-header";
 import MyDealsImages from "@/app/(dashboard)/user/(pages)/my-deals/_components/my-deals-images";
 import MyPropertyMetrics from "@/app/(dashboard)/user/(pages)/posts/sell/view/_components/my-property-metrics";
@@ -33,6 +34,16 @@ const MYDealsDetails = ({ propertyId }: { propertyId: string }) => {
   }
 
   const isSold = property.tag === "sold";
+  const metricsProperty: ListingCard = {
+    id: property.postId,
+    title: property.title,
+    type: property.typeLabel,
+    price: Number(property.price.replaceAll(",", "")) || 0,
+    time: property.timeLabel,
+    image: property.imageUrl,
+    location: property.location,
+    tags: [],
+  };
 
   return (
     <div className="py-20">
@@ -40,7 +51,7 @@ const MYDealsDetails = ({ propertyId }: { propertyId: string }) => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 xl:gap-14">
         <div className="col-span-12 lg:col-span-8 mt-5 space-y-10">
           <MyDealsImages property={property} />
-          <MyPropertyMetrics />
+          <MyPropertyMetrics property={metricsProperty} />
           <MyDealsPropertyUnlocked />
         </div>
 
