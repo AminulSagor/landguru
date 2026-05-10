@@ -25,7 +25,11 @@ export type PropertyRequestDetails = {
   propertyType: PropertyRequestPropertyType;
 
   requiredLandSize: string;
+  requiredLandSizeValue?: number | null;
+  requiredLandSizeUnit?: string | null;
   requiredPlotSize: string;
+  requiredPlotSizeValue?: number | null;
+  requiredPlotSizeUnit?: string | null;
 
   distanceFromRoad: string;
 
@@ -135,7 +139,11 @@ const mapWantedDetails = (item: BuyPostListItem): PropertyRequestDetails => {
     location: resolveLocation(item) || "Not specified",
     propertyType: (item.propertyType ?? "Plain Land") as PropertyRequestPropertyType,
     requiredLandSize: formatMinSize(item.landSizeMin, item.landSizeUnit),
+    requiredLandSizeValue: Number.isFinite(item.landSizeMin) ? Number(item.landSizeMin) : null,
+    requiredLandSizeUnit: item.landSizeUnit ?? null,
     requiredPlotSize: formatMinSize(item.plotSizeMin, item.plotSizeUnit),
+    requiredPlotSizeValue: Number.isFinite(item.plotSizeMin) ? Number(item.plotSizeMin) : null,
+    requiredPlotSizeUnit: item.plotSizeUnit ?? null,
     distanceFromRoad: formatDistanceRange(
       item.roadDistanceMin,
       item.roadDistanceMax,

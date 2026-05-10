@@ -27,6 +27,12 @@ import Button from "@/components/buttons/button";
 import { formatDisplayId } from "@/utils/id.utils";
 import { makeOfferFromExisting } from "@/service/users/properties/properties.services";
 import type { ApiError } from "@/types/auth/signup.types";
+import {
+  convertLandAmount,
+  LAND_UNITS,
+  normalizeLandUnit,
+  type LandUnit,
+} from "@/utils/land-unit.utils";
 
 import { PropertyRequestDetails } from "@/app/(dashboard)/user/(pages)/properties/request/details/[id]/page";
 
@@ -40,7 +46,33 @@ export default function RequestPropertyDetailsView({
 }: {
   request: PropertyRequestDetails;
 }) {
+  const defaultUnit = React.useMemo<LandUnit>(() => {
+    return (
+      normalizeLandUnit(request.requiredLandSizeUnit) ||
+      normalizeLandUnit(request.requiredPlotSizeUnit) ||
+      "Katha"
+    );
+  }, [request.requiredLandSizeUnit, request.requiredPlotSizeUnit]);
+
+  const [unit, setUnit] = React.useState<LandUnit>(defaultUnit);
+
+  React.useEffect(() => {
+    setUnit(defaultUnit);
+  }, [defaultUnit]);
+
   const budgetText = `৳ ${request.budgetMin.toLocaleString()} - ৳ ${request.budgetMax.toLocaleString()}`;
+  const requiredLandSize = formatLandMetric(
+    request.requiredLandSizeValue ?? null,
+    request.requiredLandSizeUnit ?? null,
+    unit,
+    request.requiredLandSize,
+  );
+  const requiredPlotSize = formatLandMetric(
+    request.requiredPlotSizeValue ?? null,
+    request.requiredPlotSizeUnit ?? null,
+    unit,
+    request.requiredPlotSize,
+  );
 
   const [openSelect, setOpenSelect] = React.useState(false);
   const [openSubmitted, setOpenSubmitted] = React.useState(false);
@@ -69,6 +101,14 @@ export default function RequestPropertyDetailsView({
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleChangeUnit = () => {
+    setUnit((current) => {
+      const index = LAND_UNITS.indexOf(current);
+      const nextIndex = index >= 0 ? (index + 1) % LAND_UNITS.length : 0;
+      return LAND_UNITS[nextIndex];
+    });
   };
 
   return (
@@ -130,14 +170,16 @@ export default function RequestPropertyDetailsView({
                 <ReqRow
                   icon={<Ruler className="h-5 w-5" />}
                   label="Required Land Size"
-                  value={request.requiredLandSize}
+                  value={requiredLandSize}
                   rightLink="Change Metrics"
+                  onRightLinkClick={handleChangeUnit}
                 />
                 <ReqRow
                   icon={<Square className="h-5 w-5" />}
                   label="Required Plot Size"
-                  value={request.requiredPlotSize}
+                  value={requiredPlotSize}
                   rightLink="Change Metrics"
+                  onRightLinkClick={handleChangeUnit}
                 />
                 <ReqRow
                   icon={<Route className="h-5 w-5" />}
@@ -286,11 +328,13 @@ function ReqRow({
   label,
   value,
   rightLink,
+  onRightLinkClick,
 }: {
   icon: React.ReactNode;
   label: string;
   value: string;
   rightLink?: string;
+  onRightLinkClick?: () => void;
 }) {
   return (
     <div className="flex items-start justify-between gap-4">
@@ -311,6 +355,7 @@ function ReqRow({
       {rightLink ? (
         <button
           type="button"
+          onClick={onRightLinkClick}
           className="mt-1 text-xs font-medium text-primary hover:opacity-80"
         >
           {rightLink}
@@ -318,6 +363,34 @@ function ReqRow({
       ) : null}
     </div>
   );
+}
+
+function formatLandMetric(
+  value: number | null,
+  unit: string | null,
+  targetUnit: LandUnit,
+  fallback: string,
+) {
+  if (value == null && !unit) return fallback || "N/A";
+  if (value == null) return fallback || unit || "N/A";
+
+  const normalizedFrom = normalizeLandUnit(unit);
+  const normalizedTo = normalizeLandUnit(targetUnit);
+
+  if (!normalizedFrom || !normalizedTo) {
+    return fallback || `Min ${formatLandValue(value)} ${unit ?? ""}`.trim();
+  }
+
+  const converted = convertLandAmount(value, normalizedFrom, normalizedTo);
+  if (converted == null) return fallback || "N/A";
+
+  return `Min ${formatLandValue(converted)} ${normalizedTo}`;
+}
+
+function formatLandValue(value: number) {
+  return value.toLocaleString("en-IN", {
+    maximumFractionDigits: 4,
+  });
 }
 
 function OfferingStepper() {

@@ -1,11 +1,12 @@
-export type LandUnit = "Katha" | "Decimal" | "Bigha" | "Sqft";
+export type LandUnit = "Katha" | "Decimal" | "Acre" | "Bigha" | "Sqft";
 
-export const LAND_UNITS: LandUnit[] = ["Katha", "Decimal", "Bigha", "Sqft"];
+export const LAND_UNITS: LandUnit[] = ["Katha", "Decimal", "Acre", "Bigha", "Sqft"];
 
 // Common BD approximations; adjust if backend uses region-specific values.
 const UNIT_TO_SQFT: Record<LandUnit, number> = {
   Katha: 720,
   Decimal: 435.6,
+  Acre: 43560,
   Bigha: 14400,
   Sqft: 1,
 };
@@ -17,6 +18,7 @@ export function normalizeLandUnit(unit?: string | null): LandUnit | null {
 
   if (normalized === "katha") return "Katha";
   if (normalized === "decimal") return "Decimal";
+  if (normalized === "acre" || normalized === "acres") return "Acre";
   if (normalized === "bigha") return "Bigha";
 
   if (
