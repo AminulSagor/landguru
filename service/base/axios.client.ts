@@ -38,6 +38,7 @@ serviceClient.interceptors.response.use(
         const isAuthPage =
           pathname.startsWith("/auth/admin/login") ||
           pathname.startsWith("/auth/agent/login") ||
+          pathname.startsWith("/auth/agent/signup") ||
           pathname.startsWith("/auth/user/login") ||
           pathname.startsWith("/auth/user/signup") ||
           pathname.includes("/forgot-password") ||

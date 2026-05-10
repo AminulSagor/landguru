@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { cn } from "@/utils/classnames.utils";
+import { cn } from "@/lib/utils";
 
 import { Bookmark, User, Clock, Users } from "lucide-react";
 

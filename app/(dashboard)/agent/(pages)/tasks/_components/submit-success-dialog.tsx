@@ -4,8 +4,17 @@ import Image from "next/image";
 type Props = {
   success: boolean;
   setSuccess: (v: boolean) => void;
+  serviceType?: string;
+  title?: string;
+  refId?: string;
 };
-const SubmitSuccessDialog = ({ success, setSuccess }: Props) => {
+const SubmitSuccessDialog = ({
+  success,
+  setSuccess,
+  serviceType = "SERVICE TYPE",
+  title = "—",
+  refId = "—",
+}: Props) => {
   return (
     <Dialog open={success} onOpenChange={setSuccess} position="top" size="sm">
       <div className="space-y-3 flex items-center flex-col">
@@ -20,9 +29,9 @@ const SubmitSuccessDialog = ({ success, setSuccess }: Props) => {
           Your submission wil be reviewed <br /> by your assigned admin soon
         </p>
         <Card className="rounded-xl">
-          <h3 className="text-xs text-gray">SERVICE TYPE</h3>
-          <h1 className="text-base">Ownership history validation</h1>
-          <p className="text-gray text-xs">#SERV892-POST-1042</p>
+          <h3 className="text-xs text-gray">{serviceType}</h3>
+          <h1 className="text-base">{title}</h1>
+          <p className="text-gray text-xs">{refId}</p>
         </Card>
       </div>
     </Dialog>

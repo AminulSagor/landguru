@@ -7,7 +7,7 @@ import { ChevronDown, MapPin, Search } from "lucide-react";
 
 import Button from "@/components/buttons/button";
 import Dialog from "@/components/dialogs/dialog";
-import { cn } from "@/utils/classnames.utils";
+import { cn } from "@/lib/utils";
 import { formatDisplayId } from "@/utils/id.utils";
 import { IMAGE } from "@/constants/image-paths";
 import { fetchMyActiveSellPosts } from "@/service/users/properties/properties.services";

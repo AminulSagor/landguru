@@ -7,15 +7,26 @@ import { CheckCircle2 } from "lucide-react";
 export default function PropertyClientInfo({
   data,
 }: {
-  data: { clientName: string; verified: boolean };
+  data: { clientName: string; verified: boolean; avatarUrl?: string };
 }) {
+  const initial = data.clientName?.trim().charAt(0).toUpperCase() || "?";
+
   return (
     <Card className="rounded-2xl p-6">
       <h3 className="text-sm font-extrabold">Property & Client Info</h3>
 
       <div className="mt-4 rounded-xl bg-secondary/10 px-4 py-4 flex items-center gap-3">
         <div className="h-10 w-10 rounded-full bg-gray/10 overflow-hidden flex items-center justify-center">
-          <span className="text-sm font-extrabold text-gray">F</span>
+          {data.avatarUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={data.avatarUrl}
+              alt={data.clientName || "Client"}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <span className="text-sm font-extrabold text-gray">{initial}</span>
+          )}
         </div>
 
         <div>

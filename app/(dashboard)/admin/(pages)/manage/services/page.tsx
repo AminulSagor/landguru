@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
+import { formatApiError } from "@/lib/format-api-error";
 
 import Card from "@/components/cards/card";
 import ServicesToolbar from "@/app/(dashboard)/admin/(pages)/manage/_components/manage-services-toolbar";
@@ -20,24 +21,7 @@ import type { UpdateServiceTypePayload } from "@/types/admin/manage/services/upd
 
 const PAGE_SIZE = 10;
 
-function getErrorMessage(error: unknown): string {
-  if (
-    typeof error === "object" &&
-    error !== null &&
-    "response" in error &&
-    typeof (error as { response?: { data?: { message?: string } } }).response?.data
-      ?.message === "string"
-  ) {
-    return (error as { response?: { data?: { message?: string } } }).response!
-      .data!.message!;
-  }
-
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  return "Something went wrong.";
-}
+// Use shared `formatApiError` to normalize errors for display
 
 export default function AdminManageServicesPage() {
   const queryClient = useQueryClient();
@@ -70,7 +54,7 @@ export default function AdminManageServicesPage() {
       queryClient.invalidateQueries({ queryKey: ["service-types"] });
     },
     onError: (error) => {
-      toast.error(getErrorMessage(error));
+      toast.error(formatApiError(error).message);
     },
   });
 
@@ -89,7 +73,7 @@ export default function AdminManageServicesPage() {
       queryClient.invalidateQueries({ queryKey: ["service-types"] });
     },
     onError: (error) => {
-      toast.error(getErrorMessage(error));
+      toast.error(formatApiError(error).message);
     },
   });
 
@@ -102,7 +86,7 @@ export default function AdminManageServicesPage() {
       queryClient.invalidateQueries({ queryKey: ["service-types"] });
     },
     onError: (error) => {
-      toast.error(getErrorMessage(error));
+      toast.error(formatApiError(error).message);
     },
   });
 
@@ -122,7 +106,7 @@ export default function AdminManageServicesPage() {
       queryClient.invalidateQueries({ queryKey: ["service-types"] });
     },
     onError: (error) => {
-      toast.error(getErrorMessage(error));
+      toast.error(formatApiError(error).message);
     },
   });
 

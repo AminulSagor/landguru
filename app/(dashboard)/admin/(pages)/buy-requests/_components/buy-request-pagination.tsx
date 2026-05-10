@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { cn } from "@/utils/classnames.utils";
+import { cn } from "@/lib/utils";
 
 function buildVisiblePages(currentPage: number, totalPages: number): Array<number | string> {
   if (totalPages <= 7) {

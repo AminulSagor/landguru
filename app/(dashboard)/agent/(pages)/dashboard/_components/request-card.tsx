@@ -3,6 +3,7 @@
 import React from "react";
 import Card from "@/components/cards/card";
 import Button from "@/components/buttons/button";
+import Link from "next/link";
 import { MapPin } from "lucide-react";
 import { RequestItem } from "@/app/(dashboard)/agent/dummy-data/moc-agent-home";
 
@@ -29,9 +30,17 @@ export default function RequestCard({ item }: { item: RequestItem }) {
         {item.acceptBefore}
       </p>
 
-      <Button className="w-full mt-5 bg-pumpkin hover:opacity-95 text-white">
-        View Details
-      </Button>
+      {item.id ? (
+        <Link href={`/agent/tasks/details/${item.id}`}>
+          <Button className="w-full mt-5 bg-pumpkin hover:opacity-95 text-white">
+            View Details
+          </Button>
+        </Link>
+      ) : (
+        <Button className="w-full mt-5 bg-pumpkin hover:opacity-95 text-white">
+          View Details
+        </Button>
+      )}
     </Card>
   );
 }

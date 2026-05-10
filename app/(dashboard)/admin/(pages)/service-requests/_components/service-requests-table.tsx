@@ -3,7 +3,7 @@
 
 import React from "react";
 import Button from "@/components/buttons/button";
-import { cn } from "@/utils/classnames.utils";
+import { cn } from "@/lib/utils";
 import { formatDisplayIdSafe } from "@/utils/id.utils";
 import { MapPin, Plus, Loader2 } from "lucide-react";
 import type { ServiceRequestListItem } from "@/types/admin/service-requests/service-requests-list.types";

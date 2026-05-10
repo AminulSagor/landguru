@@ -11,11 +11,12 @@ import {
 } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
+import { formatApiError } from "@/lib/format-api-error";
 import { Calendar, Clock, MapPin, SendHorizontal } from "lucide-react";
 
 import Button from "@/components/buttons/button";
 import Dialog from "@/components/dialogs/dialog";
-import { cn } from "@/utils/classnames.utils";
+import { cn } from "@/lib/utils";
 import { scheduleAppointmentService } from "@/service/admin/appointments/schedule-appointment.service";
 import type { SiteVisitRequestItem } from "@/types/admin/appointments/site-visit-requests.types";
 
@@ -108,7 +109,7 @@ export default function ConfirmAppointmentDialog({
       onClose();
     },
     onError: (error) => {
-      toast.error(getErrorMessage(error));
+      toast.error(formatApiError(error).message);
     },
   });
 
@@ -541,25 +542,4 @@ function normalizeScheduleTime(value: string) {
   return null;
 }
 
-function getErrorMessage(error: unknown) {
-  if (
-    typeof error === "object" &&
-    error !== null &&
-    "response" in error &&
-    typeof error.response === "object" &&
-    error.response !== null &&
-    "data" in error.response
-  ) {
-    const responseData = (error.response as { data?: { message?: string } }).data;
-
-    if (typeof responseData?.message === "string" && responseData.message) {
-      return responseData.message;
-    }
-  }
-
-  if (error instanceof Error && error.message) {
-    return error.message;
-  }
-
-  return "Something went wrong while scheduling the appointment.";
-}
+// error formatting delegated to `formatApiError`

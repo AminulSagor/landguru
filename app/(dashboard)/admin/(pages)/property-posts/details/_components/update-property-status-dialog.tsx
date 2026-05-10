@@ -9,7 +9,7 @@ import { Info, Check, Calendar, Mail, Phone, Lock } from "lucide-react";
 import Dialog from "@/components/dialogs/dialog";
 import Card from "@/components/cards/card";
 import Button from "@/components/buttons/button";
-import { cn } from "@/utils/classnames.utils";
+import { cn } from "@/lib/utils";
 import { formatDisplayId } from "@/utils/id.utils";
 import {
   propertyPostManagementService,

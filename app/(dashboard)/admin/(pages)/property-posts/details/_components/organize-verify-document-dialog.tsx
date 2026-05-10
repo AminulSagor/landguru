@@ -8,7 +8,7 @@ import toast from "react-hot-toast";
 import { Eye, Trash2, GripVertical, Upload, Plus, Save } from "lucide-react";
 import Dialog from "@/components/dialogs/dialog";
 import Button from "@/components/buttons/button";
-import { cn } from "@/utils/classnames.utils";
+import { cn } from "@/lib/utils";
 import { propertyPostManagementService } from "@/service/admin/property/property-post-management.service";
 import type {
   PropertyDocumentCategory,

@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
-import { cn } from "@/utils/classnames.utils";
+import { cn } from "@/lib/utils";
 import { UserCog, LogOut } from "lucide-react";
 
 type Props = {

@@ -2,7 +2,7 @@
 
 import React from "react";
 import Card from "@/components/cards/card";
-import { cn } from "@/utils/classnames.utils";
+import { cn } from "@/lib/utils";
 import { Search, ChevronDown } from "lucide-react";
 import type {
   AgentSortOrder,

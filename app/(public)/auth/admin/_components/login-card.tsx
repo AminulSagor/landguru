@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
+import { formatApiError } from "@/lib/format-api-error";
 import { Eye, EyeOff, Lock, User } from "lucide-react";
 import Button from "@/components/buttons/button";
 import CircleLoader from "@/components/loaders/circle-loader";
@@ -75,7 +76,7 @@ export default function LoginCard() {
         return;
       }
 
-      toast.error(apiError.message || "Unable to login. Please try again.");
+      toast.error(formatApiError(error).message);
     } finally {
       setIsLoading(false);
     }

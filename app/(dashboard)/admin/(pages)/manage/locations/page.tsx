@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
+import { formatApiError } from "@/lib/format-api-error";
 
 import Card from "@/components/cards/card";
 import LocationsToolbar from "@/app/(dashboard)/admin/(pages)/manage/_components/locations-toolbar";
@@ -18,24 +19,7 @@ import type { UpdateOperationalZonePayload } from "@/types/admin/manage/location
 const PAGE_SIZE = 10;
 const SEARCH_DEBOUNCE_MS = 400;
 
-function getErrorMessage(error: unknown): string {
-  if (
-    typeof error === "object" &&
-    error !== null &&
-    "response" in error &&
-    typeof (error as { response?: { data?: { message?: string } } }).response?.data
-      ?.message === "string"
-  ) {
-    return (error as { response?: { data?: { message?: string } } }).response!
-      .data!.message!;
-  }
-
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  return "Something went wrong.";
-}
+// error formatting centralized in `formatApiError`
 
 export default function ManageLocationsPage() {
   const queryClient = useQueryClient();
@@ -76,7 +60,7 @@ export default function ManageLocationsPage() {
       queryClient.invalidateQueries({ queryKey: ["operational-zones"] });
     },
     onError: (error) => {
-      toast.error(getErrorMessage(error));
+      toast.error(formatApiError(error).message);
     },
   });
 
@@ -95,7 +79,7 @@ export default function ManageLocationsPage() {
       queryClient.invalidateQueries({ queryKey: ["operational-zones"] });
     },
     onError: (error) => {
-      toast.error(getErrorMessage(error));
+      toast.error(formatApiError(error).message);
     },
   });
 

@@ -3,6 +3,7 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import toast from "react-hot-toast";
+import { formatApiError } from "@/lib/format-api-error";
 
 import AppointmentList from "@/app/(dashboard)/admin/(pages)/appointments/_components/appointment-list";
 import AppointmentStatOverview from "@/app/(dashboard)/admin/(pages)/appointments/_components/appointment-stat-overview";
@@ -91,7 +92,7 @@ const AppointmentsPage = () => {
       return;
     }
 
-    const message = getErrorMessage(activeError);
+    const { message } = formatApiError(activeError);
 
     if (lastErrorMessageRef.current !== message) {
       toast.error(message);
@@ -268,25 +269,4 @@ function buildOptions(values: Array<string | null | undefined>, selected?: strin
   return result.sort((a, b) => a.localeCompare(b));
 }
 
-function getErrorMessage(error: unknown) {
-  if (
-    typeof error === "object" &&
-    error !== null &&
-    "response" in error &&
-    typeof error.response === "object" &&
-    error.response !== null &&
-    "data" in error.response
-  ) {
-    const responseData = (error.response as { data?: { message?: string } }).data;
-
-    if (typeof responseData?.message === "string" && responseData.message) {
-      return responseData.message;
-    }
-  }
-
-  if (error instanceof Error && error.message) {
-    return error.message;
-  }
-
-  return "Something went wrong while loading appointments.";
-}
+// use `formatApiError` for consistent, user-friendly messages

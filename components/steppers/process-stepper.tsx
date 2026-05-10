@@ -1,4 +1,4 @@
-import { cn } from "@/utils/classnames.utils";
+import { cn } from "@/lib/utils";
 import { Check } from "lucide-react";
 
 export type Step = {

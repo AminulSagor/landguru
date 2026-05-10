@@ -9,7 +9,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import Dialog from "@/components/dialogs/dialog";
 import Button from "@/components/buttons/button";
-import { cn } from "@/utils/classnames.utils";
+import { cn } from "@/lib/utils";
 import { serviceRequestAssignmentService } from "@/service/admin/service-requests/service-request-assignment.service";
 import type {
   AvailableAgentFilter,

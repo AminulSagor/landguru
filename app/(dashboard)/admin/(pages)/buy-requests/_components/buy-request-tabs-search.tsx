@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Search, ChevronDown } from "lucide-react";
-import { cn } from "@/utils/classnames.utils";
+import { cn } from "@/lib/utils";
 import type {
   BuyRequestSortKey,
   BuyRequestTabItem,

@@ -6,8 +6,10 @@ import toast from "react-hot-toast";
 import Dialog from "@/components/dialogs/dialog";
 import Card from "@/components/cards/card";
 import Button from "@/components/buttons/button";
-import { cn } from "@/utils/classnames.utils";
+import { cn } from "@/lib/utils";
 import { formatDisplayId } from "@/utils/id.utils";
+// import { cn } from "@/app/";
+import { formatApiError } from "@/lib/format-api-error";
 import {
   MapPin,
   Home,
@@ -37,24 +39,7 @@ type Props = {
   onActionSuccess?: () => void;
 };
 
-function getErrorMessage(error: unknown): string {
-  if (
-    typeof error === "object" &&
-    error !== null &&
-    "response" in error &&
-    typeof (error as { response?: { data?: { message?: string } } }).response
-      ?.data?.message === "string"
-  ) {
-    return (error as { response?: { data?: { message?: string } } }).response!
-      .data!.message!;
-  }
-
-  if (error instanceof Error && error.message) {
-    return error.message;
-  }
-
-  return "Action failed. Please try again.";
-}
+// use `formatApiError` for clearer messages
 
 function SmallTagIcon({
   icon,
@@ -248,7 +233,7 @@ export default function ApprovedDialog({
       onActionSuccess?.();
     },
     onError: (error) => {
-      toast.error(getErrorMessage(error));
+      toast.error(formatApiError(error).message);
     },
   });
 
@@ -265,7 +250,7 @@ export default function ApprovedDialog({
       onActionSuccess?.();
     },
     onError: (error) => {
-      toast.error(getErrorMessage(error));
+      toast.error(formatApiError(error).message);
     },
   });
 

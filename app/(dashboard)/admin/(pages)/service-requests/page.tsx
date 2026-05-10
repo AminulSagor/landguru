@@ -3,6 +3,7 @@
 import React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
+import { formatApiError } from "@/lib/format-api-error";
 
 import ServiceRequestsOverview from "./_components/service-requests-overview";
 import ServiceRequestsToolbar from "./_components/service-requests-toolbar";
@@ -613,7 +614,7 @@ export default function ServiceRequestPage() {
       return;
     }
 
-    const message = getErrorMessage(summaryQuery.error);
+    const { message } = formatApiError(summaryQuery.error);
 
     if (lastSummaryErrorMessageRef.current !== message) {
       toast.error(message);

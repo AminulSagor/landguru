@@ -3,6 +3,7 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import toast from "react-hot-toast";
+import { formatApiError } from "@/lib/format-api-error";
 
 import Card from "@/components/cards/card";
 import { appointmentsSummaryService } from "@/service/admin/appointments/appointments-summary.service";
@@ -21,7 +22,7 @@ const AppointmentStatOverview = () => {
       return;
     }
 
-    const message = getErrorMessage(summaryQuery.error);
+    const { message } = formatApiError(summaryQuery.error);
 
     if (lastErrorMessageRef.current !== message) {
       toast.error(message);
@@ -87,25 +88,4 @@ function StatCard({
   );
 }
 
-function getErrorMessage(error: unknown) {
-  if (
-    typeof error === "object" &&
-    error !== null &&
-    "response" in error &&
-    typeof error.response === "object" &&
-    error.response !== null &&
-    "data" in error.response
-  ) {
-    const responseData = (error.response as { data?: { message?: string } }).data;
-
-    if (typeof responseData?.message === "string" && responseData.message) {
-      return responseData.message;
-    }
-  }
-
-  if (error instanceof Error && error.message) {
-    return error.message;
-  }
-
-  return "Something went wrong while loading appointment summary.";
-}
+// message formatting delegated to `formatApiError`

@@ -6,7 +6,7 @@ import { CheckCircle2 } from "lucide-react";
 
 import { AppointmentTabStatus } from "@/app/(dashboard)/admin/(pages)/appointments/page";
 import Button from "@/components/buttons/button";
-import { cn } from "@/utils/classnames.utils";
+import { cn } from "@/lib/utils";
 import type {
   AgentScheduleItem,
   AgentScheduleStatus,

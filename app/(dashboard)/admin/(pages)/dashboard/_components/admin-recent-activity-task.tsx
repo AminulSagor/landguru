@@ -3,7 +3,7 @@
 import React, { useMemo, useState } from "react";
 import Card from "@/components/cards/card";
 import Button from "@/components/buttons/button";
-import { cn } from "@/utils/classnames.utils";
+import { cn } from "@/lib/utils";
 import { formatDisplayId } from "@/utils/id.utils";
 import {
   MoreHorizontal,
