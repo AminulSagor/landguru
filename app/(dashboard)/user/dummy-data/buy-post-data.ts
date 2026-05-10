@@ -1,4 +1,9 @@
-export type BuyPostPropertyType = "Flat" | "Plain Land" | "Villa" | "Agro Land";
+export type BuyPostPropertyType =
+  | "Flat"
+  | "Plain Land"
+  | "Villa"
+  | "Agro Land"
+  | "Commercial";
 
 export type BuyPostStatus = "active" | "pending_admin_review" | "draft";
 
@@ -19,6 +24,12 @@ export type BuyPost = {
   requiredLandSize: string; // e.g. "Min 5 Katha"
   requiredPlotSize: string; // e.g. "Min 5 Katha"
   distanceFromRoad: string; // e.g. "200m-750m"
+  requiredLandSizeValue?: number | null;
+  requiredLandSizeUnit?: string | null;
+  requiredPlotSizeValue?: number | null;
+  requiredPlotSizeUnit?: string | null;
+  roadDistanceMin?: number | null;
+  roadDistanceMax?: number | null;
   budgetRange: string; // e.g. "৳ 30,00,000 - ৳ 40,00,000"
 
   status: BuyPostStatus;
@@ -135,6 +146,8 @@ export type BuyPostOffer = {
   propertyType: BuyPostPropertyType; // "Flat"
   askingPrice: number; // 4000000
   offeredText: string; // "2h ago"
+  offeredAt?: string;
+  targetPostId?: string;
 };
 
 export type BuyPostDetails = BuyPost & {

@@ -177,3 +177,15 @@ export const agentSchedules: AgentSchedule[] = [
     status: "visited",
   },
 ];
+
+// DEPRECATION NOTICE
+// This file contains demo data only. Replace usages with live API calls.
+export const __IS_DEMO = true;
+
+export async function getLiveOrDemo(..._args: any[]): Promise<{ appointments: Appointment[]; schedules: AgentSchedule[] }> {
+  if (typeof window !== "undefined") {
+    // eslint-disable-next-line no-console
+    console.warn("[DEMO] Using appointment demo data — replace with live API.");
+  }
+  return { appointments, schedules: agentSchedules };
+}

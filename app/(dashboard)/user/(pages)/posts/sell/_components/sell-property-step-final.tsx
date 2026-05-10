@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useRouter } from "next/navigation";
 import {
   MapPin,
   Image as ImageIcon,
@@ -28,9 +29,10 @@ type SellPostAllData = {
 };
 
 type Props = {
+  mode?: "normal" | "offer";
   allData: SellPostAllData;
   onBack: () => void;
-  onSubmit: (values: StepFourValues) => void | Promise<void>;
+  onSubmit: (values: StepFourValues) => Promise<boolean>;
 };
 
 function formatBDT(n: number) {
@@ -73,6 +75,17 @@ function InfoBanner({ children }: { children: React.ReactNode }) {
   );
 }
 
+function OfferFlowInfoCard({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="rounded-xl border border-primary/30 bg-primary/10 px-4 py-4 flex items-start gap-3">
+      <div className="mt-0.5 h-5 w-5 rounded-full bg-primary flex items-center justify-center shrink-0">
+        <Info className="h-3 w-3 text-white" />
+      </div>
+      <p className="text-sm leading-6 text-foreground">{children}</p>
+    </div>
+  );
+}
+
 function FileRow({ file }: { file: File }) {
   return (
     <div className="flex items-center justify-between rounded-xl border border-secondary bg-white px-4 py-3">
@@ -92,10 +105,13 @@ function FileRow({ file }: { file: File }) {
 }
 
 export default function SellPropertyStepFourReview({
+  mode = "normal",
   allData,
   onBack,
   onSubmit,
 }: Props) {
+  const isOfferFlow = mode === "offer";
+  const router = useRouter();
   const step1 = allData.step1;
   const step2 = allData.step2;
 
@@ -159,8 +175,10 @@ export default function SellPropertyStepFourReview({
   const khatianDocs = step2?.khatianDocuments ?? [];
 
   const handleSubmit = async () => {
-    await onSubmit({ data: "" });
-    setDialogOpen(true);
+    const success = await onSubmit({ data: "" });
+    if (success) {
+      setDialogOpen(true);
+    }
   };
 
   return (
@@ -335,73 +353,94 @@ export default function SellPropertyStepFourReview({
         )}
       </div>
 
-      {/* Property Video */}
-      <div className="mt-8">
-        <div className="flex items-center gap-2">
-          <VideoIcon className="h-4 w-4 text-primary" />
-          <p className="text-sm font-semibold text-foreground">
-            Property Video
-          </p>
+      {isOfferFlow ? (
+        <div className="mt-8 space-y-4">
+          <OfferFlowInfoCard>
+            You will need to upload property video, legal documents and confirm
+            your payment for the services later when buyer confirms your post.
+            You can also publish this post later if the buyer doesn’t respond to
+            your post within 3-5 business days. This post will be saved as
+            offered post.
+          </OfferFlowInfoCard>
+
+          <OfferFlowInfoCard>
+            Your full location will remain private to the buyer.
+          </OfferFlowInfoCard>
         </div>
+      ) : (
+        <>
+          {/* Property Video */}
+          <div className="mt-8">
+            <div className="flex items-center gap-2">
+              <VideoIcon className="h-4 w-4 text-primary" />
+              <p className="text-sm font-semibold text-foreground">
+                Property Video
+              </p>
+            </div>
 
-        <div className="mt-3 rounded-2xl border border-secondary bg-secondary p-8 flex items-center justify-center">
-          <div className="h-14 w-14 rounded-full bg-primary flex items-center justify-center">
-            <Play className="h-6 w-6 text-white" />
-          </div>
-        </div>
-
-        {!step2?.video && (
-          <p className="mt-2 text-xs text-gray">No video uploaded</p>
-        )}
-      </div>
-
-      {/* Legal documents */}
-      <div className="mt-8">
-        <p className="text-sm font-semibold text-foreground">Legal Documents</p>
-
-        <div className="mt-4 space-y-6">
-          <div className="space-y-3">
-            <p className="text-sm font-semibold text-foreground">
-              Deed section *
-            </p>
-            {deedDocs.length === 0 ? (
-              <div className="rounded-xl border border-secondary bg-secondary p-4 text-sm text-gray">
-                No deed documents uploaded
+            <div className="mt-3 rounded-2xl border border-secondary bg-secondary p-8 flex items-center justify-center">
+              <div className="h-14 w-14 rounded-full bg-primary flex items-center justify-center">
+                <Play className="h-6 w-6 text-white" />
               </div>
-            ) : (
-              <div className="space-y-3">
-                {deedDocs.map((f, idx) => (
-                  <FileRow key={f.name + idx} file={f} />
-                ))}
-              </div>
+            </div>
+
+            {!step2?.video && (
+              <p className="mt-2 text-xs text-gray">No video uploaded</p>
             )}
           </div>
 
-          <div className="space-y-3">
+          {/* Legal documents */}
+          <div className="mt-8">
             <p className="text-sm font-semibold text-foreground">
-              Khatian section *
+              Legal Documents
             </p>
-            {khatianDocs.length === 0 ? (
-              <div className="rounded-xl border border-secondary bg-secondary p-4 text-sm text-gray">
-                No khatian documents uploaded
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {khatianDocs.map((f, idx) => (
-                  <FileRow key={f.name + idx} file={f} />
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
 
-        <div className="mt-6">
-          <InfoBanner>
-            You will be prompted for accepting and negotiating with quotation of
-            the service fees later after we review your submission.
-          </InfoBanner>
-        </div>
-      </div>
+            <div className="mt-4 space-y-6">
+              <div className="space-y-3">
+                <p className="text-sm font-semibold text-foreground">
+                  Deed section *
+                </p>
+                {deedDocs.length === 0 ? (
+                  <div className="rounded-xl border border-secondary bg-secondary p-4 text-sm text-gray">
+                    No deed documents uploaded
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {deedDocs.map((f, idx) => (
+                      <FileRow key={f.name + idx} file={f} />
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-3">
+                <p className="text-sm font-semibold text-foreground">
+                  Khatian section *
+                </p>
+                {khatianDocs.length === 0 ? (
+                  <div className="rounded-xl border border-secondary bg-secondary p-4 text-sm text-gray">
+                    No khatian documents uploaded
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {khatianDocs.map((f, idx) => (
+                      <FileRow key={f.name + idx} file={f} />
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="mt-6">
+              <InfoBanner>
+                You will be prompted for accepting and negotiating with
+                quotation of the service fees later after we review your
+                submission.
+              </InfoBanner>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Submit */}
       <div className="mt-8">
@@ -480,9 +519,12 @@ export default function SellPropertyStepFourReview({
             </div>
           </div>
 
-          <div className="mt-5">
-            <Button className="w-full" onClick={() => setDialogOpen(false)}>
+          <div className="mt-5 flex items-center justify-end gap-3">
+            <Button variant="secondary" onClick={() => setDialogOpen(false)}>
               Close
+            </Button>
+            <Button onClick={() => router.push("/user/dashboard")}>
+              Go to Dashboard
             </Button>
           </div>
         </div>

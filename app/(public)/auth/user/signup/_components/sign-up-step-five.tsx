@@ -5,16 +5,20 @@ import Card from "@/components/cards/card";
 import Button from "@/components/buttons/button";
 import { ArrowRight, Camera, UploadCloud, IdCard } from "lucide-react";
 import AuthStepper from "@/components/steppers/auth-stepper";
+import CircleLoader from "@/components/loaders/circle-loader";
+
+export type SignUpStepFivePayload = {
+  nidFront: File | null;
+  nidBack: File | null;
+  tin: File | null;
+  skipped: boolean;
+};
 
 type Props = {
   onBack: () => void;
-  onComplete: (data: {
-    nidFront: File | null;
-    nidBack: File | null;
-    tin: File | null;
-    skipped: boolean;
-  }) => void;
-  onSkip: () => void;
+  onComplete: (data: SignUpStepFivePayload) => Promise<void> | void;
+  onSkip: () => Promise<void> | void;
+  isSubmitting?: boolean;
 };
 
 const MAX_TIN_MB = 3;
@@ -34,7 +38,7 @@ const isAllowedTinType = (file: File) => {
   );
 };
 
-const SignUpStepFive = ({ onBack, onComplete, onSkip }: Props) => {
+const SignUpStepFive = ({ onBack, onComplete, onSkip, isSubmitting = false }: Props) => {
   const [nidFront, setNidFront] = React.useState<File | null>(null);
   const [nidBack, setNidBack] = React.useState<File | null>(null);
   const [tin, setTin] = React.useState<File | null>(null);
@@ -101,6 +105,7 @@ const SignUpStepFive = ({ onBack, onComplete, onSkip }: Props) => {
           <button
             type="button"
             onClick={onSkip}
+            disabled={isSubmitting}
             className="absolute right-0 top-0 text-sm font-semibold text-primary hover:opacity-80"
           >
             Skip
@@ -175,8 +180,19 @@ const SignUpStepFive = ({ onBack, onComplete, onSkip }: Props) => {
           )}
 
           <div className="mt-8">
-            <Button type="button" className="w-full" onClick={submit}>
-              Complete Registration <ArrowRight size={20} />
+            <Button
+              type="button"
+              className="w-full"
+              onClick={submit}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <CircleLoader />
+              ) : (
+                <>
+                  Complete Registration <ArrowRight size={20} />
+                </>
+              )}
             </Button>
 
             <p className="mt-3 text-center text-xs text-black/45">

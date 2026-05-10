@@ -4,6 +4,9 @@ import { AssignAgentDialogPayload } from "@/app/(dashboard)/admin/types/assign-a
 
 export const demoAssignAgentDialog: AssignAgentDialogPayload = {
   postId: "POST-1060",
+  sellPostId: "POST-1060",
+  serviceKey: "pentagraph_map",
+  serviceName: "Pentagraph Map",
   zoneLabel: "Block-C, Banani",
   serviceTitle: "Pentagraph Map",
   serviceDesc: "Detailed overlay of mouza maps with physical plot boundaries.",
@@ -22,7 +25,6 @@ export const demoAssignAgentDialog: AssignAgentDialogPayload = {
       role: "Senior Surveyor",
       phone: "+880 1711-234567",
       avatarUrl: null,
-      online: true,
       matchesZone: true,
       activeJobsLabel: "Active Jobs: 1 (Low)",
       activeTone: "green",
@@ -33,7 +35,6 @@ export const demoAssignAgentDialog: AssignAgentDialogPayload = {
       role: "Surveyor",
       phone: "+880 1611-998877",
       avatarUrl: null,
-      online: true,
       matchesZone: false,
       activeJobsLabel: "Active Jobs: 0",
       activeTone: "primary",
@@ -44,7 +45,6 @@ export const demoAssignAgentDialog: AssignAgentDialogPayload = {
       role: "Surveyor",
       phone: "+880 1722-111222",
       avatarUrl: null,
-      online: true,
       matchesZone: false,
       activeJobsLabel: "Active Jobs: 2",
       activeTone: "orange",

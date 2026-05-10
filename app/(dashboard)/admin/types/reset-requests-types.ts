@@ -10,7 +10,6 @@ export interface ResetRequestRow {
     name: string;
     role: AgentRole;
     avatar: string; // image path
-    isOnline: boolean; // green dot
   };
 
   details: {

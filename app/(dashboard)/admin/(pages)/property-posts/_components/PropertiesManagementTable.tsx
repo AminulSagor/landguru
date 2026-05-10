@@ -5,7 +5,7 @@ import type { PropertyPostItem } from "@/types/admin/property-post/property.type
 import PropertyPostsPagination from "./property-posts-pagination";
 import PropertyPostsTableRow from "./property-posts-table-row";
 
-import { getTableRange } from "../_utils/properties-management-table.utils";
+import { getTableRange } from "../../../../../../utils/properties-management-table.utils";
 
 type PropertiesManagementTableProps = {
   rows: PropertyPostItem[];

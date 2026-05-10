@@ -9,6 +9,10 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
+        hostname: "s3.amazonaws.com",
+      },
+      {
+        protocol: "https",
         hostname: "landbuyself-mediafiles.s3.ap-south-1.amazonaws.com",
       },
       {

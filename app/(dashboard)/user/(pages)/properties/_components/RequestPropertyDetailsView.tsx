@@ -4,6 +4,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import toast from "react-hot-toast";
 import {
   ArrowLeft,
   BadgeCheck,
@@ -23,6 +24,9 @@ import {
 
 import Card from "@/components/cards/card";
 import Button from "@/components/buttons/button";
+import { formatDisplayId } from "@/utils/id.utils";
+import { makeOfferFromExisting } from "@/service/users/properties/properties.services";
+import type { ApiError } from "@/types/auth/signup.types";
 
 import { PropertyRequestDetails } from "@/app/(dashboard)/user/(pages)/properties/request/details/[id]/page";
 
@@ -40,14 +44,31 @@ export default function RequestPropertyDetailsView({
 
   const [openSelect, setOpenSelect] = React.useState(false);
   const [openSubmitted, setOpenSubmitted] = React.useState(false);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [selectedListing, setSelectedListing] = React.useState<Listing | null>(
     null,
   );
 
-  const handleConfirmOffer = (listing: Listing) => {
-    setSelectedListing(listing);
-    setOpenSelect(false);
-    setOpenSubmitted(true);
+  const handleConfirmOffer = async (listing: Listing) => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+
+    try {
+      await makeOfferFromExisting(request.id, {
+        sellPostId: listing.id,
+      });
+
+      setSelectedListing(listing);
+      setOpenSelect(false);
+      setOpenSubmitted(true);
+      toast.success("Offer submitted successfully.");
+    } catch (error) {
+      toast.error(
+        getApiErrorMessage(error, "Failed to submit offer from existing post."),
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -72,7 +93,9 @@ export default function RequestPropertyDetailsView({
                   </h1>
                   <StatusBadge status={request.status} />
                 </div>
-                <p className="mt-2 text-sm text-gray/70">ID: #{request.id}</p>
+                <p className="mt-2 text-sm text-gray/70">
+                  ID: {formatDisplayId("REQ", request.id)}
+                </p>
               </div>
 
               <div className="w-full md:w-[320px]">
@@ -153,11 +176,14 @@ export default function RequestPropertyDetailsView({
                 <Button
                   className="h-12 w-full rounded-xl"
                   onClick={() => setOpenSelect(true)}
+                  disabled={isSubmitting}
                 >
                   <FileText className="mr-2 h-5 w-5" />
                   Offer from your existing Posts
                 </Button>
-                <Link href={'/user/posts/sell/create'}>
+                <Link
+                  href={`/user/posts/sell/create?offerFor=${request.id}`}
+                >
                   <Button
                     className="mt-4 w-full border border-gray text-primary"
                     variant="secondary"
@@ -187,6 +213,7 @@ export default function RequestPropertyDetailsView({
         requestTitle={request.title}
         requestId={request.id}
         onConfirm={handleConfirmOffer}
+        isSubmitting={isSubmitting}
       />
 
       {/* Dialog 2 */}
@@ -198,6 +225,21 @@ export default function RequestPropertyDetailsView({
     </div>
   );
 }
+
+const getApiErrorMessage = (error: unknown, fallback: string) => {
+  const apiError = error as ApiError;
+  const message = apiError?.response?.data?.message || apiError?.message;
+
+  if (Array.isArray(message) && message.length > 0) {
+    return message[0] || fallback;
+  }
+
+  if (typeof message === "string" && message.trim()) {
+    return message;
+  }
+
+  return fallback;
+};
 
 /* ===== helpers (keep your existing ones if already) ===== */
 

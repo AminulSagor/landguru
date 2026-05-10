@@ -9,20 +9,18 @@ import AuthStepper from "@/components/steppers/auth-stepper";
 import { HookFormBDPhoneInput } from "@/components/inputs/HookFormBDPhoneInput";
 
 type Props = {
-  onNext: () => void;
+  onSubmit: (phone: string) => void | Promise<void>;
   onBack?: () => void;
-  setPhone: (phone: string) => void;
+  isLoading?: boolean;
 };
 
-const ForgotPasswordStepOne = ({ onNext, onBack, setPhone }: Props) => {
+const ForgotPasswordStepOne = ({ onSubmit, onBack, isLoading }: Props) => {
   const { control, handleSubmit } = useForm<SignUpStepOneForm>({
-    defaultValues: { phone: "" },
+    defaultValues: { phone: "", forgetPassword: true },
   });
 
-  const onSubmit = (data: SignUpStepOneForm) => {
-    setPhone(data.phone);
-    onNext();
-  };
+  const handleFormSubmit = (data: SignUpStepOneForm) =>
+    onSubmit(data.phone);
 
   return (
     <div className="py-10">
@@ -45,14 +43,17 @@ const ForgotPasswordStepOne = ({ onNext, onBack, setPhone }: Props) => {
             property listings.
           </p>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-6">
+          <form
+            onSubmit={handleSubmit(handleFormSubmit)}
+            className="mt-6 space-y-6"
+          >
             <HookFormBDPhoneInput<SignUpStepOneForm>
               name="phone"
               control={control}
               label="Phone Number"
             />
 
-            <Button type="submit" className="w-full">
+            <Button type="submit" className="w-full" disabled={isLoading}>
               Get OTP
             </Button>
 

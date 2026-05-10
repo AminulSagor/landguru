@@ -1,20 +1,24 @@
 export type ServiceRequestSortOrder = "ASC" | "DESC";
 
 export type ServiceRequestStatus =
+  | "PENDING_ASSIGNMENT"
   | "UNASSIGNED"
   | "IN_PROGRESS"
   | "SUBMITTED"
+  | "COMPLETED"
   | "EXPIRED"
   | (string & {});
 
 export interface ServiceRequestListServiceInfo {
   id: string;
   name: string;
+  serviceKey: string;
+  feeAmount: number | null;
 }
 
 export interface ServiceRequestListParentPost {
   id: string;
-  location: string;
+  location: string | null;
 }
 
 export interface ServiceRequestListAssignedAgent {
@@ -28,18 +32,13 @@ export interface ServiceRequestLatestWorkLogApi {
   createdAt: string;
 }
 
-export interface ServiceRequestLatestWorkLog {
-  title: string;
-  createdAt: string;
-  timeLabel: string;
-}
-
 export interface ServiceRequestListApiItem {
   service: ServiceRequestListServiceInfo;
   parentPost: ServiceRequestListParentPost;
   assignedAgent: ServiceRequestListAssignedAgent | null;
   status: ServiceRequestStatus;
   latestWorkLog: ServiceRequestLatestWorkLogApi | null;
+  responseDeadline?: string | null;
 }
 
 export interface ServiceRequestListItem {
@@ -47,7 +46,8 @@ export interface ServiceRequestListItem {
   parentPost: ServiceRequestListParentPost;
   assignedAgent: ServiceRequestListAssignedAgent | null;
   status: ServiceRequestStatus;
-  latestWorkLog: ServiceRequestLatestWorkLog | null;
+  latestWorkLog: ServiceRequestLatestWorkLogApi | null;
+  responseDeadline?: string | null;
 }
 
 export interface ServiceRequestListMeta {
@@ -73,5 +73,7 @@ export interface ServiceRequestListQueryParams {
   page?: number;
   limit?: number;
   status?: ServiceRequestStatus | "";
+  serviceType?: string;
+  search?: string;
   sort?: ServiceRequestSortOrder;
 }

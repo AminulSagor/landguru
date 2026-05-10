@@ -29,8 +29,7 @@ const BIGHA_TO_KATHA = 20;
 
 type Props = {
   defaultValues?: Partial<StepOneValues>;
-  onNext: (data: StepOneValues) => void;
-  goNext: () => void;
+  onNext: (data: StepOneValues) => void | Promise<void>;
 };
 
 function formatBDT(n: number) {
@@ -138,7 +137,6 @@ function RangeRow({
 export default function SellPropertyStepOneForm({
   defaultValues,
   onNext,
-  goNext,
 }: Props) {
   const { control, handleSubmit, watch, setValue } = useForm<StepOneValues>({
     defaultValues: {
@@ -165,8 +163,8 @@ export default function SellPropertyStepOneForm({
       division: null,
       district: null,
       upazila: null,
-      pouroshovaOrUnion: null,
-      wardNo: null,
+      pouroshovaOrUnion: "",
+      wardNo: "",
       postalCode: "",
       fullAddress: "",
 
@@ -204,6 +202,10 @@ export default function SellPropertyStepOneForm({
   // Location chaining
   const division = watch("division");
   const district = watch("district");
+  const upazila = watch("upazila");
+  const pouroshovaOrUnion = watch("pouroshovaOrUnion");
+  const wardNo = watch("wardNo");
+  const postalCode = watch("postalCode");
   const divisionKey = (division?.value as DivisionKey) ?? null;
 
   const districtOptions = React.useMemo(
@@ -216,11 +218,43 @@ export default function SellPropertyStepOneForm({
     [district],
   );
 
-  const submit = (data: StepOneValues) => {
-    console.log(data);
+  const composedFullAddress = React.useMemo(() => {
+    const parts = [
+      wardNo ? `Ward ${wardNo}` : "",
+      pouroshovaOrUnion || "",
+      upazila?.label || "",
+      district?.label || "",
+      division?.label || "",
+      postalCode || "",
+    ].filter((v) => v && String(v).trim().length > 0);
+
+    return parts.join(", ");
+  }, [
+    division?.label,
+    district?.label,
+    upazila?.label,
+    pouroshovaOrUnion,
+    wardNo,
+    postalCode,
+  ]);
+
+  React.useEffect(() => {
+    setValue("fullAddress", composedFullAddress, {
+      shouldDirty: true,
+      shouldTouch: false,
+      shouldValidate: false,
+    });
+  }, [composedFullAddress, setValue]);
+
+  const submit = async (data: StepOneValues) => {
     const min = Math.min(data.distanceMin, data.distanceMax);
     const max = Math.max(data.distanceMin, data.distanceMax);
-    onNext({ ...data, distanceMin: min, distanceMax: max });
+    await onNext({
+      ...data,
+      distanceMin: min,
+      distanceMax: max,
+      fullAddress: composedFullAddress,
+    });
   };
 
   return (
@@ -533,8 +567,8 @@ export default function SellPropertyStepOneForm({
               onChange={() => {
                 setValue("district", null);
                 setValue("upazila", null);
-                setValue("pouroshovaOrUnion", null);
-                setValue("wardNo", null);
+                setValue("pouroshovaOrUnion", "");
+                setValue("wardNo", "");
               }}
             />
 
@@ -548,8 +582,8 @@ export default function SellPropertyStepOneForm({
               rules={{ required: "District is required" }}
               onChange={() => {
                 setValue("upazila", null);
-                setValue("pouroshovaOrUnion", null);
-                setValue("wardNo", null);
+                setValue("pouroshovaOrUnion", "");
+                setValue("wardNo", "");
               }}
             />
 
@@ -562,31 +596,28 @@ export default function SellPropertyStepOneForm({
               disabled={!district}
               rules={{ required: "Upazila is required" }}
               onChange={() => {
-                setValue("pouroshovaOrUnion", null);
-                setValue("wardNo", null);
+                setValue("pouroshovaOrUnion", "");
+                setValue("wardNo", "");
               }}
             />
 
-            {/* Not available from current dataset */}
-            <HookFormSingleSelect<StepOneValues>
+            <HookFormTextInput<StepOneValues>
               name="pouroshovaOrUnion"
               control={control}
               label="Pouroshova/City Corp/Union *"
-              placeholder="Select your Pouroshova/City Corp"
-              options={[]}
-              disabled
+              placeholder="Enter Pouroshova/City Corp/Union"
               rules={{ required: "Required" }}
+              inputClassName="h-12 px-4"
             />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <HookFormSingleSelect<StepOneValues>
+              <HookFormTextInput<StepOneValues>
                 name="wardNo"
                 control={control}
                 label="Ward No"
-                placeholder="Select Ward No"
-                options={[]}
-                disabled
+                placeholder="Enter Ward No"
                 rules={{ required: "Required" }}
+                inputClassName="h-12 px-4"
               />
 
               <HookFormTextInput<StepOneValues>
@@ -609,7 +640,7 @@ export default function SellPropertyStepOneForm({
           </div>
         </Card>
 
-        <Button type="submit" className="w-full" onClick={goNext}>
+        <Button type="submit" className="w-full">
           Next <ArrowRight size={20} />
         </Button>
 

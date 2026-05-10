@@ -2,6 +2,8 @@
 
 import React from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { useMutation } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 import type {
   SellPostNegotiationItem,
   SellPostNegotiationTab,
@@ -11,6 +13,8 @@ import type { QuoteRequoteSortKey } from "@/app/(dashboard)/admin/(pages)/quote-
 import {
   buildQueryString,
   filterNegotiationItems,
+  formatPostId,
+  SEARCH_DEBOUNCE_MS,
   sortNegotiationItems,
 } from "@/app/(dashboard)/admin/(pages)/quote-requote/_utils/quote-requote.utils";
 import QuoteRequoteTabs from "@/app/(dashboard)/admin/(pages)/quote-requote/_components/quote-requote-tabs";
@@ -20,6 +24,10 @@ import QuoteRequoteItemCard from "@/app/(dashboard)/admin/(pages)/quote-requote/
 import QuotationSentSuccessDialog from "@/app/(dashboard)/admin/(pages)/quote-requote/_components/quotation-sent-success-dialog";
 import Card from "@/components/cards/card";
 import ReviewQutationDialog from "@/app/(dashboard)/admin/(pages)/quote-requote/_components/review-quotation-dialog";
+import {
+  counterAdminSellPostNegotiation,
+  getAdminSellPostNegotiationReviewDetails,
+} from "@/service/admin/sell-posts/sell-post-negotiations.service";
 
 type QuoteRequoteClientProps = {
   items: SellPostNegotiationItem[];
@@ -51,10 +59,10 @@ function EmptyState() {
 }
 
 const initialSuccessDialogData: SuccessDialogData = {
-  postId: "#POST-1044",
-  sellerName: "Mr. Rahman",
-  mandatoryFee: 3000,
-  optionalFee: 3000,
+  postId: "",
+  sellerName: "",
+  mandatoryFee: 0,
+  optionalFee: 0,
   currencySymbol: "৳",
 };
 
@@ -70,21 +78,35 @@ export default function QuoteRequoteClient({
   const pathname = usePathname();
 
   const [searchInput, setSearchInput] = React.useState(search);
+  const [debouncedSearch, setDebouncedSearch] = React.useState(search.trim());
   const [selectedItem, setSelectedItem] =
     React.useState<SellPostNegotiationItem | null>(null);
   const [isReviewDialogOpen, setIsReviewDialogOpen] = React.useState(false);
   const [isSuccessDialogOpen, setIsSuccessDialogOpen] = React.useState(false);
   const [successDialogData, setSuccessDialogData] =
     React.useState<SuccessDialogData>(initialSuccessDialogData);
+  const [quickAcceptingId, setQuickAcceptingId] =
+    React.useState<string | null>(null);
+
+  const currencySymbol = "৳";
 
   React.useEffect(() => {
     setSearchInput(search);
+    setDebouncedSearch(search.trim());
   }, [search]);
 
-  const filteredItems = React.useMemo(() => {
-    const searchedItems = filterNegotiationItems(items, search);
-    return sortNegotiationItems(searchedItems, sort);
-  }, [items, search, sort]);
+  React.useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setDebouncedSearch(searchInput.trim());
+    }, SEARCH_DEBOUNCE_MS);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [searchInput]);
+
+  const visibleItems = React.useMemo(
+    () => sortNegotiationItems(filterNegotiationItems(items, search), sort),
+    [items, search, sort],
+  );
 
   const updateRoute = React.useCallback(
     (params: {
@@ -114,6 +136,17 @@ export default function QuoteRequoteClient({
     [activeTab, limit, meta.page, pathname, router, search, sort],
   );
 
+  React.useEffect(() => {
+    if (debouncedSearch === search.trim()) {
+      return;
+    }
+
+    updateRoute({
+      search: debouncedSearch,
+      page: 1,
+    });
+  }, [debouncedSearch, search, updateRoute]);
+
   const handleTabChange = (tab: SellPostNegotiationTab) => {
     updateRoute({
       tab,
@@ -124,8 +157,14 @@ export default function QuoteRequoteClient({
   const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
+    const normalizedSearch = searchInput.trim();
+
+    if (normalizedSearch === search.trim()) {
+      return;
+    }
+
     updateRoute({
-      search: searchInput,
+      search: normalizedSearch,
       page: 1,
     });
   };
@@ -161,10 +200,67 @@ export default function QuoteRequoteClient({
     setIsSuccessDialogOpen(true);
   };
 
+  const quickAcceptMutation = useMutation({
+    mutationFn: async (item: SellPostNegotiationItem) => {
+      if (!item.negotiationId) {
+        throw new Error("Negotiation ID is missing.");
+      }
+
+      const details = await getAdminSellPostNegotiationReviewDetails(
+        item.negotiationId,
+      );
+      const mandatoryFee = Number(details.userCounter?.mandatory ?? 0);
+      const optionalFee = Number(details.userCounter?.optional ?? 0);
+
+      if (!Number.isFinite(mandatoryFee) || !Number.isFinite(optionalFee)) {
+        throw new Error("Invalid seller offer values.");
+      }
+
+      await counterAdminSellPostNegotiation(item.negotiationId, {
+        mandatoryFee,
+        optionalFee,
+      });
+
+      return { mandatoryFee, optionalFee };
+    },
+    onMutate: (item) => {
+      setQuickAcceptingId(item.negotiationId ?? null);
+    },
+    onSuccess: (data, item) => {
+      toast.success("Seller offer resent successfully.");
+      handleSuccessDialogOpen({
+        postId: formatPostId(item.post?.id ?? ""),
+        sellerName: item.seller?.name ?? "",
+        mandatoryFee: data.mandatoryFee,
+        optionalFee: data.optionalFee,
+        currencySymbol,
+      });
+      router.refresh();
+    },
+    onError: (error) => {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to resend seller offer.";
+      toast.error(message);
+    },
+    onSettled: () => {
+      setQuickAcceptingId(null);
+    },
+  });
+
+  const handleQuickAccept = (item: SellPostNegotiationItem) => {
+    if (quickAcceptMutation.isPending) {
+      return;
+    }
+
+    quickAcceptMutation.mutate(item);
+  };
+
   const startIndex =
-    filteredItems.length === 0 ? 0 : (meta.page - 1) * meta.limit + 1;
+    visibleItems.length === 0 ? 0 : (meta.page - 1) * meta.limit + 1;
   const endIndex =
-    filteredItems.length === 0 ? 0 : startIndex + filteredItems.length - 1;
+    visibleItems.length === 0 ? 0 : startIndex + visibleItems.length - 1;
 
   return (
     <>
@@ -190,7 +286,7 @@ export default function QuoteRequoteClient({
         </div>
 
         <div className="space-y-3">
-          {filteredItems.length === 0 ? (
+          {visibleItems.length === 0 ? (
             <EmptyState />
           ) : (
             <div className="overflow-x-auto rounded-2xl border border-gray/15 bg-white">
@@ -216,11 +312,19 @@ export default function QuoteRequoteClient({
                 </thead>
 
                 <tbody>
-                  {filteredItems.map((item) => (
+                  {visibleItems.map((item) => (
                     <QuoteRequoteItemCard
                       key={item.negotiationId}
                       item={item}
+                      isActionRequired={
+                        item.isActionRequired ??
+                        activeTab === "ADMIN_TO_RESPOND"
+                      }
                       onReviewRespond={handleReviewRespond}
+                      onQuickAccept={handleQuickAccept}
+                      isQuickAccepting={
+                        quickAcceptingId === item.negotiationId
+                      }
                     />
                   ))}
                 </tbody>
@@ -233,7 +337,7 @@ export default function QuoteRequoteClient({
           <p>
             Showing <span className="font-bold">{startIndex}</span>-
             <span className="font-bold">{endIndex}</span> of{" "}
-            <span className="font-bold">{filteredItems.length}</span> results
+            <span className="font-bold">{meta.total}</span> results
           </p>
 
           <QuoteRequotePagination

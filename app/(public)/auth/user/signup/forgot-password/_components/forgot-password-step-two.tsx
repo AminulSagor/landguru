@@ -9,14 +9,23 @@ import AuthStepper from "@/components/steppers/auth-stepper";
 
 type Props = {
   phone: string;
-  onNext: () => void;
+  onVerify: (otp: string) => void | Promise<void>;
   onBack: () => void;
   onResend?: () => void;
+  isVerifying?: boolean;
+  isResending?: boolean;
 };
 
 const pad2 = (n: number) => String(n).padStart(2, "0");
 
-const ForgotPasswordStepTwo = ({ phone, onNext, onBack, onResend }: Props) => {
+const ForgotPasswordStepTwo = ({
+  phone,
+  onVerify,
+  onBack,
+  onResend,
+  isVerifying,
+  isResending,
+}: Props) => {
   const [digits, setDigits] = React.useState<string[]>(["", "", "", ""]);
   const inputsRef = React.useRef<Array<HTMLInputElement | null>>([]);
   const [seconds, setSeconds] = React.useState(59);
@@ -75,7 +84,7 @@ const ForgotPasswordStepTwo = ({ phone, onNext, onBack, onResend }: Props) => {
   };
 
   const resend = () => {
-    if (seconds > 0) return;
+    if (seconds > 0 || isResending) return;
     setSeconds(59);
     onResend?.();
   };
@@ -151,8 +160,9 @@ const ForgotPasswordStepTwo = ({ phone, onNext, onBack, onResend }: Props) => {
                 type="button"
                 onClick={resend}
                 className="text-primary font-semibold hover:underline"
+                disabled={isResending}
               >
-                Resend code
+                {isResending ? "Resending..." : "Resend code"}
               </button>
             )}
           </div>
@@ -161,10 +171,10 @@ const ForgotPasswordStepTwo = ({ phone, onNext, onBack, onResend }: Props) => {
             <Button
               type="button"
               className="w-full"
-              disabled={!isComplete}
-              onClick={onNext}
+              disabled={!isComplete || isVerifying}
+              onClick={() => onVerify(code)}
             >
-              Verify &amp; Proceed <ArrowRight size={20} />
+              {isVerifying ? "Verifying..." : "Verify & Proceed"} <ArrowRight size={20} />
             </Button>
           </div>
         </div>

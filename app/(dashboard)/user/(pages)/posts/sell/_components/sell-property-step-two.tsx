@@ -19,9 +19,10 @@ import Card from "@/components/cards/card";
 import { FaVideo } from "react-icons/fa";
 
 type Props = {
+  mode?: "normal" | "offer";
   defaultValues?: Partial<StepTwoValues>;
   onBack: () => void;
-  onNext: (data: StepTwoValues) => void;
+  onNext: (data: StepTwoValues) => void | Promise<void>;
 };
 
 const MAX_PHOTOS = 5;
@@ -118,11 +119,24 @@ function Dropzone({
   );
 }
 
+function OfferFlowInfoCard({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="rounded-xl border border-primary/30 bg-primary/10 px-4 py-4 flex items-start gap-3">
+      <div className="mt-0.5 h-5 w-5 rounded-full bg-primary flex items-center justify-center shrink-0">
+        <Info className="h-3 w-3 text-white" />
+      </div>
+      <p className="text-sm leading-6 text-foreground">{children}</p>
+    </div>
+  );
+}
+
 export default function SellPropertyStepTwoForm({
+  mode = "normal",
   defaultValues,
   onBack,
   onNext,
 }: Props) {
+  const isOfferFlow = mode === "offer";
   const { handleSubmit, setValue, watch } = useForm<StepTwoValues>({
     defaultValues: {
       photos: [],
@@ -217,8 +231,8 @@ export default function SellPropertyStepTwoForm({
     setValue(key, next, { shouldValidate: true });
   };
 
-  const submit = (data: StepTwoValues) => {
-    onNext(data);
+  const submit = async (data: StepTwoValues) => {
+    await onNext(data);
   };
 
   return (
@@ -230,7 +244,9 @@ export default function SellPropertyStepTwoForm({
               Property Visuals
             </h2>
             <p className="mt-2 text-sm text-gray">
-              Upload photos & video tour to attract buyers
+              {isOfferFlow
+                ? "Upload photos to attract buyers"
+                : "Upload photos & video tour to attract buyers"}
             </p>
           </div>
           {/* Photos */}
@@ -287,48 +303,60 @@ export default function SellPropertyStepTwoForm({
               </div>
             )}
           </div>
+          {isOfferFlow ? (
+            <div className="space-y-4">
+              <OfferFlowInfoCard>
+                You will need to upload property video, legal documents and
+                confirm your payment for the services later when buyer confirms
+                your post. You can also publish this post later if the buyer
+                doesn’t respond to your post within 3-5 business days. This post
+                will be saved as offered post.
+              </OfferFlowInfoCard>
 
-          {/* Video */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <FaVideo className="h-6 w-6 text-primary" />
-              <p className="text-sm font-semibold text-foreground">
-                Property Video <span className="text-primary">*</span>
-              </p>
+              <OfferFlowInfoCard>
+                Your full location will remain private to the buyer.
+              </OfferFlowInfoCard>
             </div>
-
-            <Dropzone
-              icon={<Video className="h-5 w-5 text-primary" />}
-              title={video ? "Replace Video Tour" : "Add Video Tour"}
-              subtitle="Max 1 file, Max size: 500MB"
-              accept="video/*"
-              onPick={setVideoFile}
-            />
-
-            {video && (
-              <div className="rounded-xl border border-secondary bg-white px-4 py-3 flex items-center justify-between">
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold text-foreground truncate">
-                    {video.name}
-                  </p>
-                  <p className="text-xs text-gray">{bytesToMB(video.size)}</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() =>
-                    setValue("video", null, { shouldValidate: true })
-                  }
-                  className="h-8 w-8 rounded-lg flex items-center justify-center hover:bg-secondary"
-                  aria-label="Remove video"
-                >
-                  <X className="h-4 w-4 text-gray" />
-                </button>
+          ) : (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <FaVideo className="h-6 w-6 text-primary" />
+                <p className="text-sm font-semibold text-foreground">
+                  Property Video <span className="text-primary">*</span>
+                </p>
               </div>
-            )}
-          </div>
-        </Card>
 
-        <Card className="rounded-xl">
+              <Dropzone
+                icon={<Video className="h-5 w-5 text-primary" />}
+                title={video ? "Replace Video Tour" : "Add Video Tour"}
+                subtitle="Max 1 file, Max size: 500MB"
+                accept="video/*"
+                onPick={setVideoFile}
+              />
+
+              {video && (
+                <div className="rounded-xl border border-secondary bg-white px-4 py-3 flex items-center justify-between">
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-foreground truncate">
+                      {video.name}
+                    </p>
+                    <p className="text-xs text-gray">{bytesToMB(video.size)}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setValue("video", null, { shouldValidate: true })
+                    }
+                    className="h-8 w-8 rounded-lg flex items-center justify-center hover:bg-secondary"
+                    aria-label="Remove video"
+                  >
+                    <X className="h-4 w-4 text-gray" />
+                  </button>
+                </div>
+              )}
+            
+
+          <Card className="rounded-xl">
           {/* Legal Documents */}
           <div className="space-y-5">
             <h3 className="text-xl font-extrabold text-foreground">
@@ -430,7 +458,9 @@ export default function SellPropertyStepTwoForm({
             </div>
           </div>
         </Card>
-
+        </div>
+          )}
+        </Card>
         {/* Footer */}
         <div className="flex items-center justify-between">
           <p className="text-center text-xs text-gray">

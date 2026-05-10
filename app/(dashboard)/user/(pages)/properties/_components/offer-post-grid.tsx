@@ -2,17 +2,36 @@
 
 import React from "react";
 import { Search, ChevronLeft, ChevronRight } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 
 import type { OfferPostCard } from "@/app/(dashboard)/user/types/offer-post";
+import { formatDisplayId } from "@/utils/id.utils";
+import type { PaginationMetaDto } from "@/types/post/my/mypost.types";
 
 const PAGE_SIZE = 6;
 
-export default function OfferPostGrid({ items }: { items: OfferPostCard[] }) {
+type Props = {
+  items: OfferPostCard[];
+  meta?: PaginationMetaDto | null;
+  page?: number;
+  onPageChange?: (next: number) => void;
+  isLoading?: boolean;
+};
+
+export default function OfferPostGrid({
+  items,
+  meta,
+  page,
+  onPageChange,
+  isLoading,
+}: Props) {
   const [sort, setSort] = React.useState<"high" | "low">("high");
   const [query, setQuery] = React.useState("");
-  const [page, setPage] = React.useState(1);
+  const [localPage, setLocalPage] = React.useState(1);
+
+  const currentPage = page ?? localPage;
+  const handlePageChange = onPageChange ?? setLocalPage;
+  const limit = meta?.limit ?? PAGE_SIZE;
 
   const filtered = React.useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -32,21 +51,29 @@ export default function OfferPostGrid({ items }: { items: OfferPostCard[] }) {
     return data;
   }, [items, query, sort]);
 
-  const total = filtered.length;
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const hasSearch = query.trim().length > 0;
+  const apiTotal = meta?.total ?? filtered.length;
+  const displayTotal = hasSearch ? filtered.length : apiTotal;
+  const totalPages = Math.max(
+    1,
+    meta?.totalPages ?? Math.ceil(apiTotal / PAGE_SIZE),
+  );
 
   const pageItems = React.useMemo(() => {
-    const start = (page - 1) * PAGE_SIZE;
+    if (meta) return filtered;
+
+    const start = (currentPage - 1) * PAGE_SIZE;
     return filtered.slice(start, start + PAGE_SIZE);
-  }, [filtered, page]);
+  }, [filtered, currentPage, meta]);
 
   React.useEffect(() => {
-    if (page > totalPages) setPage(1);
-  }, [page, totalPages]);
+    if (!meta && currentPage > totalPages) {
+      handlePageChange(1);
+    }
+  }, [currentPage, totalPages, handlePageChange, meta]);
 
   return (
     <div>
-      {/* Title */}
       <div>
         <h2 className="text-xl font-semibold text-gray">Offer Posts</h2>
         <p className="mt-1 text-sm text-gray/60">
@@ -54,7 +81,6 @@ export default function OfferPostGrid({ items }: { items: OfferPostCard[] }) {
         </p>
       </div>
 
-      {/* Sort + Search */}
       <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <p className="text-sm text-gray/60">Sort by:</p>
@@ -63,7 +89,7 @@ export default function OfferPostGrid({ items }: { items: OfferPostCard[] }) {
             value={sort}
             onChange={(e) => {
               setSort(e.target.value as "high" | "low");
-              setPage(1);
+              handlePageChange(1);
             }}
             className="h-10 rounded-xl border border-gray/15 bg-white px-4 text-sm font-semibold text-gray outline-none focus:border-primary/40"
           >
@@ -81,7 +107,7 @@ export default function OfferPostGrid({ items }: { items: OfferPostCard[] }) {
             value={query}
             onChange={(e) => {
               setQuery(e.target.value);
-              setPage(1);
+              handlePageChange(1);
             }}
             placeholder="Search title or post id"
             className="h-11 w-full rounded-2xl border border-gray/15 bg-white pl-10 pr-4 text-sm font-semibold text-gray outline-none placeholder:text-gray/40 focus:border-primary/40"
@@ -89,29 +115,36 @@ export default function OfferPostGrid({ items }: { items: OfferPostCard[] }) {
         </div>
       </div>
 
-      {/* Grid */}
       <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-        {pageItems.map((item, idx) => (
-          <OfferPostCardUI key={`${item.id}-${idx}`} item={item} />
-        ))}
+        {isLoading && pageItems.length === 0 ? (
+          <p className="text-sm text-gray/60">Loading offer posts...</p>
+        ) : pageItems.length === 0 ? (
+          <p className="text-sm text-gray/60">No offer posts found.</p>
+        ) : (
+          pageItems.map((item, idx) => (
+            <OfferPostCardUI key={`${item.id}-${idx}`} item={item} />
+          ))
+        )}
       </div>
 
-      {/* Bottom */}
       <div className="mt-8 flex flex-col-reverse gap-4 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-gray/60">
-          Showing {(page - 1) * PAGE_SIZE + 1} to{" "}
-          {Math.min(page * PAGE_SIZE, total)} of {total} results
+          Showing {displayTotal === 0 ? 0 : (currentPage - 1) * limit + 1} to{" "}
+          {displayTotal === 0
+            ? 0
+            : Math.min(currentPage * limit, displayTotal)}{" "}
+          of {displayTotal} results
         </p>
 
-        <Pagination page={page} totalPages={totalPages} onChange={setPage} />
+        <Pagination
+          page={currentPage}
+          totalPages={totalPages}
+          onChange={handlePageChange}
+        />
       </div>
     </div>
   );
 }
-
-/* =======================
-   Card 
-======================= */
 
 function OfferPostCardUI({ item }: { item: OfferPostCard }) {
   return (
@@ -122,29 +155,30 @@ function OfferPostCardUI({ item }: { item: OfferPostCard }) {
           "border-gray/15 hover:shadow-sm",
         ].join(" ")}
       >
-        {/* left red accent line like screenshot */}
         {item.highlight ? (
           <div className="absolute left-0 top-0 h-full w-0.75 bg-[#ff4d4f]" />
         ) : null}
 
-        {/* Image */}
         <div className="relative h-44 w-full bg-secondary">
-          <Image
-            src={item.image}
-            alt={item.title}
-            fill
-            className="object-cover"
-            sizes="(max-width: 768px) 100vw, 50vw"
-            priority={false}
-          />
+          {item.image?.trim() ? (
+            <img
+              src={item.image}
+              alt={item.title || "Offer post image"}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center bg-secondary text-sm font-semibold text-gray/60">
+              No Image
+            </div>
+          )}
         </div>
 
-        {/* Body */}
         <div className="p-5">
           <h3 className="text-base font-extrabold text-gray">{item.title}</h3>
-          <p className="mt-1 text-xs font-semibold text-gray/40">#{item.id}</p>
+          <p className="mt-1 text-xs font-semibold text-gray/40">
+            {formatDisplayId("OFF", item.id)}
+          </p>
 
-          {/* Pills */}
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <Pill tone="category">{item.category}</Pill>
             <StatusPill status={item.status}>{item.statusLabel}</StatusPill>
@@ -152,7 +186,6 @@ function OfferPostCardUI({ item }: { item: OfferPostCard }) {
 
           <div className="my-4 h-px w-full bg-gray/10" />
 
-          {/* Asking price row */}
           <div className="flex items-end justify-between">
             <div>
               <p className="text-xs font-semibold text-gray/50">Asking Price</p>
@@ -198,9 +231,6 @@ function StatusPill({
   status: OfferPostCard["status"];
   children: React.ReactNode;
 }) {
-  // Screenshot has:
-  // - Buyer accepted... => red filled pill with white text
-  // - Draft/Pending => gray pill
   if (status === "BUYER_ACCEPTED_OFFER") {
     return (
       <span className="rounded-full bg-[#ff4d4f] px-2.5 py-1 text-[10px] font-extrabold text-white">
@@ -209,22 +239,16 @@ function StatusPill({
     );
   }
 
-  // neutral
   return <Pill tone="neutral">{children}</Pill>;
 }
 
 function formatBDT(n: number) {
-  // "40,00,000" BD style
   try {
     return n.toLocaleString("en-IN");
   } catch {
     return String(n);
   }
 }
-
-/* =======================
-   Pagination
-======================= */
 
 function Pagination({
   page,

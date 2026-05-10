@@ -104,7 +104,6 @@ export const demoServiceDetails: ServiceDetails = {
     role: "Surveyor",
     phone: "+880 1912-334455",
     avatarUrl: null,
-    isOnline: true,
     startedAtLabel: "Started: Oct 12, 10:00 AM",
     lastActiveLabel: "Last Active: 2 hours ago",
   },
@@ -143,5 +142,6 @@ export const demoServiceDetails: ServiceDetails = {
   finalDeliverable: {
     fileName: "Final_Ownership_Report_Verified.pdf",
     meta: "2.4 MB • PDF Document",
+    fileUrl: "https://example.com/Final_Ownership_Report_Verified.pdf",
   },
 };

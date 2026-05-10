@@ -2,66 +2,125 @@
 
 import React from "react";
 import { Search, ChevronLeft, ChevronRight } from "lucide-react";
-import { Property } from "@/app/(dashboard)/user/types/property";
 import PropertyCard from "@/components/cards/property-card";
+import type {
+  PropertyListing,
+  SellPostListingMeta,
+} from "@/types/property/property.listing";
+import { usePropertyFilters } from "@/app/(dashboard)/user/(pages)/properties/_components/property-filters.context";
+import { applyPropertyFiltersToListings } from "@/utils/property-filters.utils";
 
 const PAGE_SIZE = 6;
 
-export default function PropertyGrid({ items }: { items: Property[] }) {
+type Props = {
+  items: PropertyListing[];
+  meta?: SellPostListingMeta | null;
+  page?: number;
+  onPageChange?: (next: number) => void;
+  isLoading?: boolean;
+};
+
+export default function PropertyGrid({
+  items,
+  meta,
+  page,
+  onPageChange,
+  isLoading,
+}: Props) {
   const [sort, setSort] = React.useState<"high" | "low">("high");
   const [query, setQuery] = React.useState("");
-  const [page, setPage] = React.useState(1);
+  const [localPage, setLocalPage] = React.useState(1);
+  const { filters, filtersApplied } = usePropertyFilters();
+
+  const currentPage = page ?? localPage;
+  const handlePageChange = onPageChange ?? setLocalPage;
+  const limit = meta?.limit ?? PAGE_SIZE;
+
+  const locationText = React.useMemo(() => {
+    const parts = [
+      filters.wardNo ? `Ward ${filters.wardNo}` : "",
+      filters.pouroshovaOrUnion,
+      filters.upazila?.label,
+      filters.district?.label,
+      filters.division?.label,
+    ].filter((value) => value && String(value).trim().length > 0);
+
+    if (!filtersApplied || parts.length === 0) return "All locations";
+
+    return parts.join(", ");
+  }, [filters, filtersApplied]);
+
+  const getItemLocation = React.useCallback((item: PropertyListing) => {
+    if ("location" in item) return item.location ?? "";
+    if ("locationText" in item) return item.locationText ?? "";
+    return "";
+  }, []);
+
+  const getItemAreaText = React.useCallback((item: PropertyListing) => {
+    if ("areaText" in item) return item.areaText ?? "";
+    return "";
+  }, []);
+
+  React.useEffect(() => {
+    handlePageChange(1);
+  }, [filtersApplied, filters, handlePageChange]);
 
   const filtered = React.useMemo(() => {
     const q = query.trim().toLowerCase();
+    const baseItems = filtersApplied
+      ? applyPropertyFiltersToListings(items ?? [], filters)
+      : items ?? [];
 
-    let data = (items ?? []).filter((p) => {
+    let data = baseItems.filter((p) => {
       if (!q) return true;
-      const hay =
-        `${p.title ?? ""} ${p.locationText ?? ""} ${p.areaText ?? ""}`.toLowerCase();
+
+      const itemLocation = getItemLocation(p);
+      const areaText = getItemAreaText(p);
+
+      const hay = `${p.title ?? ""} ${itemLocation ?? ""} ${areaText ?? ""}`
+        .toLowerCase()
+        .trim();
       return hay.includes(q);
     });
 
-    const toNumberPrice = (v: number | string) => {
-      if (typeof v === "number") return v;
-      if (typeof v === "string") {
-        const digits = v.replace(/[^\d]/g, "");
-        return digits ? Number(digits) : 0;
-      }
-      return 0;
-    };
-
     data = data.sort((a, b) => {
-      const pa = toNumberPrice(a.price);
-      const pb = toNumberPrice(b.price);
+      const pa = "price" in a ? a.price : 0;
+      const pb = "price" in b ? b.price : 0;
       return sort === "high" ? pb - pa : pa - pb;
     });
 
     return data;
-  }, [items, query, sort]);
+  }, [items, query, sort, filtersApplied, filters, getItemLocation, getItemAreaText]);
 
-  const total = filtered.length;
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const hasSearch = query.trim().length > 0;
+  const total = meta?.total ?? filtered.length;
+  const displayTotal = filtersApplied || hasSearch ? filtered.length : total;
+  const totalPages = Math.max(
+    1,
+    meta?.totalPages ?? Math.ceil(total / PAGE_SIZE),
+  );
 
   const pageItems = React.useMemo(() => {
-    const start = (page - 1) * PAGE_SIZE;
+    if (meta) return filtered;
+
+    const start = (currentPage - 1) * PAGE_SIZE;
     return filtered.slice(start, start + PAGE_SIZE);
-  }, [filtered, page]);
+  }, [filtered, currentPage, meta]);
 
   React.useEffect(() => {
-    if (page > totalPages) setPage(1);
-  }, [page, totalPages]);
+    if (!meta && currentPage > totalPages) {
+      handlePageChange(1);
+    }
+  }, [currentPage, totalPages, handlePageChange, meta]);
 
   return (
     <div>
       {/* Title */}
       <div>
         <h2 className="text-xl font-semibold text-black">
-          Showing 40 Properties
+          Showing {displayTotal} Properties
         </h2>
-        <p className="mt-1 text-sm text-black/55">
-          Banasree, Ward No. 25, Dhaka South City Corporation
-        </p>
+        <p className="mt-1 text-sm text-black/55">{locationText}</p>
       </div>
 
       {/* Sort + Search */}
@@ -73,7 +132,7 @@ export default function PropertyGrid({ items }: { items: Property[] }) {
             value={sort}
             onChange={(e) => {
               setSort(e.target.value as "high" | "low");
-              setPage(1);
+              handlePageChange(1);
             }}
             className="h-10 rounded-md border border-black/10 bg-white px-5 text-sm text-black outline-none focus:border-gray/40"
           >
@@ -91,7 +150,7 @@ export default function PropertyGrid({ items }: { items: Property[] }) {
             value={query}
             onChange={(e) => {
               setQuery(e.target.value);
-              setPage(1);
+              handlePageChange(1);
             }}
             placeholder="Search location, area"
             className="h-11 w-full rounded-xl border border-black/10 bg-white pl-10 pr-4 text-sm font-semibold text-black outline-none placeholder:text-black/30 focus:border-gray/40"
@@ -101,18 +160,32 @@ export default function PropertyGrid({ items }: { items: Property[] }) {
 
       {/* Cards */}
       <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-        {pageItems.map((item, idx) => (
-          <div key={`${item.id ?? idx}`}>
-            <PropertyCard property={item} />
-          </div>
-        ))}
+        {isLoading && pageItems.length === 0 ? (
+          <p className="text-sm text-black/50">Loading properties...</p>
+        ) : (
+          pageItems.map((item, idx) => (
+            <div key={`${item.id ?? idx}`}>
+              <PropertyCard property={item} />
+            </div>
+          ))
+        )}
       </div>
 
       {/* Bottom */}
       <div className="mt-8 flex flex-col-reverse gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm text-black/50">Showing 1 to 6 of 120 results</p>
+        <p className="text-sm text-black/50">
+          Showing {displayTotal === 0 ? 0 : (currentPage - 1) * limit + 1} to{" "}
+          {displayTotal === 0
+            ? 0
+            : Math.min(currentPage * limit, displayTotal)}{" "}
+          of {displayTotal} results
+        </p>
 
-        <Pagination page={page} totalPages={totalPages} onChange={setPage} />
+        <Pagination
+          page={currentPage}
+          totalPages={totalPages}
+          onChange={handlePageChange}
+        />
       </div>
     </div>
   );

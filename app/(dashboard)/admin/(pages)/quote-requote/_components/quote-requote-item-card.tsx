@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import type { SellPostNegotiationItem } from "@/types/admin/quote-requote/sell-post-negotiations.types";
 import {
   formatCurrency,
+  formatPostId,
   getInitials,
 } from "@/app/(dashboard)/admin/(pages)/quote-requote/_utils/quote-requote.utils";
 import { CircleCheck, Clock3 } from "lucide-react";
@@ -85,10 +86,14 @@ function getRequoteBadgeClasses(requoteCount: number) {
 }
 
 function PostCell({ item }: { item: SellPostNegotiationItem }) {
+  const postTitle = item.post?.title ?? "Untitled post";
+  const postImage = item.post?.image ?? null;
+  const postId = item.post?.id ?? "";
+
   return (
     <div className="flex min-w-[280px] items-center gap-3">
       <div className="relative h-[54px] w-[54px] shrink-0 overflow-hidden rounded-lg border border-gray/10 bg-secondary">
-        <RemoteImage src={item.post.image} alt={item.post.title} />
+        <RemoteImage src={postImage} alt={postTitle} />
       </div>
 
       <div className="min-w-0">
@@ -97,11 +102,11 @@ function PostCell({ item }: { item: SellPostNegotiationItem }) {
         </span>
 
         <p className="mt-2 line-clamp-1 text-[15px] font-bold leading-5 text-gray">
-          {item.post.title}
+          {postTitle}
         </p>
 
         <p className="mt-1 line-clamp-1 text-xs font-medium text-primary">
-          #{item.post.id}
+          {formatPostId(postId)}
         </p>
       </div>
     </div>
@@ -109,25 +114,29 @@ function PostCell({ item }: { item: SellPostNegotiationItem }) {
 }
 
 function SellerCell({ item }: { item: SellPostNegotiationItem }) {
+  const sellerName = item.seller?.name ?? "Unknown seller";
+  const sellerPhone = item.seller?.phone ?? "";
+  const sellerImage = item.seller?.image ?? null;
+
   return (
     <div className="flex min-w-[220px] items-center gap-3">
       <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full border border-gray/10 bg-secondary">
-        {item.seller.image ? (
-          <RemoteImage src={item.seller.image} alt={item.seller.name} />
+        {sellerImage ? (
+          <RemoteImage src={sellerImage} alt={sellerName} />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-xs font-bold text-gray">
-            {getInitials(item.seller.name)}
+            {getInitials(sellerName)}
           </div>
         )}
       </div>
 
       <div className="min-w-0">
         <p className="line-clamp-1 text-sm font-bold leading-5 text-gray">
-          {item.seller.name}
+          {sellerName}
         </p>
         <p className="text-xs font-semibold text-primary">Seller</p>
         <p className="line-clamp-1 text-[11px] font-medium text-primary/80">
-          {item.seller.phone}
+          {sellerPhone}
         </p>
       </div>
     </div>
@@ -142,7 +151,7 @@ function QuoteCell({ item }: { item: SellPostNegotiationItem }) {
           Admin Last Quote
         </p>
         <p className="mt-0.5 text-lg font-semibold leading-none text-primary">
-          {formatCurrency(item.pricing.adminLastQuote)}
+          {formatCurrency(item.pricing?.adminLastQuote ?? null)}
         </p>
       </div>
 
@@ -151,7 +160,7 @@ function QuoteCell({ item }: { item: SellPostNegotiationItem }) {
           User New Counter
         </p>
         <p className="mt-1 text-[18px] font-extrabold leading-none text-gray">
-          {formatCurrency(item.pricing.userNewCounter)}
+          {formatCurrency(item.pricing?.userNewCounter ?? null)}
         </p>
       </div>
     </div>
@@ -159,7 +168,8 @@ function QuoteCell({ item }: { item: SellPostNegotiationItem }) {
 }
 
 function RequoteCell({ item }: { item: SellPostNegotiationItem }) {
-  const badgeStyles = getRequoteBadgeClasses(item.requoteCount);
+  const requoteCount = item.requoteCount ?? 0;
+  const badgeStyles = getRequoteBadgeClasses(requoteCount);
 
   return (
     <div className="flex min-w-[120px] flex-col items-center justify-center">
@@ -183,13 +193,13 @@ function RequoteCell({ item }: { item: SellPostNegotiationItem }) {
             badgeStyles.countClass,
           )}
         >
-          {item.requoteCount}
+          {requoteCount}
         </p>
       </div>
 
       <div className="mt-2 flex items-center gap-1 text-[11px] font-medium text-primary/80">
         <Clock3 size={12} />
-        <span>{formatTimeAgo(item.lastActionAt)}</span>
+        <span>{formatTimeAgo(item.lastActionAt ?? "")}</span>
       </div>
     </div>
   );
@@ -197,11 +207,21 @@ function RequoteCell({ item }: { item: SellPostNegotiationItem }) {
 
 type ActionCellProps = {
   item: SellPostNegotiationItem;
+  isActionRequired: boolean;
   onReviewRespond: (item: SellPostNegotiationItem) => void;
+  onQuickAccept: (item: SellPostNegotiationItem) => void;
+  isQuickAccepting: boolean;
 };
 
-function ActionCell({ item, onReviewRespond }: ActionCellProps) {
-  const isDisabled = !item.isActionRequired;
+function ActionCell({
+  item,
+  isActionRequired,
+  onReviewRespond,
+  onQuickAccept,
+  isQuickAccepting,
+}: ActionCellProps) {
+  const isDisabled = !isActionRequired || isQuickAccepting;
+  const quickAcceptLabel = isQuickAccepting ? "Sending..." : "Quick Accept";
 
   return (
     <div className="flex min-w-[170px] flex-col gap-2">
@@ -217,10 +237,11 @@ function ActionCell({ item, onReviewRespond }: ActionCellProps) {
       <button
         type="button"
         disabled={isDisabled}
+        onClick={() => onQuickAccept(item)}
         className="flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-[#B7E4C7] bg-[#EAF9EF] px-4 text-sm font-semibold text-[#157F3D] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
       >
         <CircleCheck size={16} />
-        <span>Quick Accept</span>
+        <span>{quickAcceptLabel}</span>
       </button>
     </div>
   );
@@ -228,12 +249,18 @@ function ActionCell({ item, onReviewRespond }: ActionCellProps) {
 
 type QuoteRequoteItemCardProps = {
   item: SellPostNegotiationItem;
+  isActionRequired: boolean;
   onReviewRespond: (item: SellPostNegotiationItem) => void;
+  onQuickAccept: (item: SellPostNegotiationItem) => void;
+  isQuickAccepting: boolean;
 };
 
 export default function QuoteRequoteItemCard({
   item,
+  isActionRequired,
   onReviewRespond,
+  onQuickAccept,
+  isQuickAccepting,
 }: QuoteRequoteItemCardProps) {
   return (
     <tr className="border-b border-gray/15 last:border-b-0">
@@ -254,7 +281,13 @@ export default function QuoteRequoteItemCard({
       </td>
 
       <td className="px-4 py-4 align-middle">
-        <ActionCell item={item} onReviewRespond={onReviewRespond} />
+        <ActionCell
+          item={item}
+          isActionRequired={isActionRequired}
+          onReviewRespond={onReviewRespond}
+          onQuickAccept={onQuickAccept}
+          isQuickAccepting={isQuickAccepting}
+        />
       </td>
     </tr>
   );

@@ -31,7 +31,7 @@ const FinalStep = () => {
           </p>
 
           <div className="mt-8 w-full">
-            <Link href={"/auth/login"}>
+            <Link href={"/auth/user/login"}>
               <Button className=" w-full" onClick={() => {}}>
                 <span className="">Back to Login</span>
                 <ArrowRight className="ml-2 h-5 w-5" />

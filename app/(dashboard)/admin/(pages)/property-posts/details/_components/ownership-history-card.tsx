@@ -3,19 +3,27 @@
 import React from "react";
 import Card from "@/components/cards/card";
 import Button from "@/components/buttons/button";
-import { PropertyDetails } from "@/app/(dashboard)/admin/types/property.types";
+import type { PropertyPostItem } from "@/types/admin/property-post/property.types";
 
 export default function OwnershipHistoryCard({
-  data,
+  property,
 }: {
-  data: NonNullable<PropertyDetails["ownershipHistory"]>;
+  property: PropertyPostItem;
 }) {
+  const owners =
+    property.ownershipHistory?.map((owner) => ({
+      name: owner.ownerName ?? owner.name ?? "N/A",
+      dateRange: owner.duration ?? owner.dateRange ?? "N/A",
+      isCurrent: owner.isCurrent,
+    })) ?? [];
+  const canEdit = true;
+
   return (
     <Card>
       <div className="flex items-center justify-between gap-4">
         <p className="text-sm font-semibold text-gray">Ownership History</p>
 
-        {data.canEdit && (
+        {canEdit && (
           <Button size="sm" variant="primary">
             Edit Status
           </Button>
@@ -24,11 +32,11 @@ export default function OwnershipHistoryCard({
 
       <div className="border border-gray/15 rounded-lg p-4 bg-white mt-4">
         <div className="flex items-center gap-2 mb-4">
-          <p className="text-xs font-extrabold text-gray">{data.title}</p>
+          <p className="text-xs font-extrabold text-gray">Ownership History</p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {data.owners.map((o, idx) => (
+          {owners.map((o, idx) => (
             <div
               key={`${o.name}-${o.dateRange}-${idx}`}
               className="border border-gray/15 rounded-lg p-4 bg-white"

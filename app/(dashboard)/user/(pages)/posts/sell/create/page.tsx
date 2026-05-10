@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import toast from "react-hot-toast";
 import {
   ProcessStepper,
   Step as StepperStep,
@@ -18,6 +19,31 @@ import {
 import SellPropertyStepThreeForm from "@/app/(dashboard)/user/(pages)/posts/sell/_components/sell-property-step-three";
 import SellPropertyStepFourReview from "@/app/(dashboard)/user/(pages)/posts/sell/_components/sell-property-step-final";
 import { ArrowLeft } from "lucide-react";
+import {
+  createSellPostStepOne,
+  updateSellPostStepOne,
+  updateSellPostStepThree,
+  updateSellPostStepTwo,
+  submitForReview,
+} from "@/service/users/posts/create.sellpost.service";
+
+import {
+  createOfferDraftStep1,
+  updateOfferDraftStep2,
+  submitOfferDraft,
+} from "@/service/users/posts/createOffer.sellpost.service";
+
+import { uploadService } from "@/service/base/upload.service";
+import type {
+  PresignedUploadUrlResponse,
+  UploadType,
+} from "@/types/base/upload.types";
+import type { ApiError } from "@/types/auth/signup.types";
+import type {
+  CreateOfferDraftStep1Request,
+  DraftEntityResponse,
+} from "@/types/post/buy/wanted-needs.types";
+import type { createSellPostStepOnePayload } from "@/types/post/sell/sellpost.payload.types";
 
 type SellPostData = {
   step1?: StepOneValues;
@@ -25,26 +51,380 @@ type SellPostData = {
   step3?: StepThreeValues;
 };
 
+const KATHA_TO_SQFT = 720;
+const DECIMAL_TO_SQFT = 435.6;
+
+const getApiErrorMessage = (error: unknown, fallback: string) => {
+  const apiError = error as ApiError;
+  const message = apiError?.response?.data?.message || apiError?.message;
+
+  if (Array.isArray(message) && message.length > 0) {
+    return message[0] || fallback;
+  }
+
+  if (typeof message === "string" && message.trim()) {
+    return message;
+  }
+
+  return fallback;
+};
+
+const resolvePresignedUrls = (response: PresignedUploadUrlResponse) => {
+  const uploadUrl =
+    response.uploadUrl ||
+    response.presignedUrl ||
+    response.putUrl ||
+    response.url;
+
+  if (!uploadUrl) {
+    throw new Error("Upload URL not received");
+  }
+
+  const cleanedUploadUrl = uploadUrl.trim();
+  const withoutQuery = cleanedUploadUrl.split("?")[0] || cleanedUploadUrl;
+
+  const fileUrl =
+    response.fileUrl ||
+    response.publicUrl ||
+    response.objectUrl ||
+    withoutQuery;
+
+  return {
+    uploadUrl: cleanedUploadUrl,
+    fileUrl,
+    fileKey: response.key,
+  };
+};
+
+const calculateAskingPrice = (step1: StepOneValues) => {
+  const sellableAmount = Number(step1.sellableAmount || 0);
+  const pricePerKatha = Number(step1.pricePerKatha || 0);
+
+  const sellableInKatha =
+    step1.sellableUnit === "Katha"
+      ? sellableAmount
+      : (sellableAmount * DECIMAL_TO_SQFT) / KATHA_TO_SQFT;
+
+  return sellableInKatha * pricePerKatha;
+};
+
+const toOptionalNumber = (value?: number) =>
+  Number.isFinite(value) ? Number(value) : undefined;
+
+const resolveDraftId = (response: DraftEntityResponse) =>
+  response.id ||
+  response.offerId ||
+  response.draftOfferId ||
+  response.postId ||
+  response.data?.id ||
+  response.data?.offerId ||
+  response.data?.draftOfferId ||
+  response.data?.postId ||
+  null;
+
 export default function CreateSellPostPage() {
   const [currentStep, setCurrentStep] = React.useState<number>(1);
   const [data, setData] = React.useState<SellPostData>({});
+  const [draftId, setDraftId] = React.useState<string | null>(null);
+  const [isSaving, setIsSaving] = React.useState(false);
 
-  const steps: StepperStep[] = [
-    { id: 1, title: "Property Details" },
-    { id: 2, title: "Visuals" },
-    { id: 3, title: "Services" },
-    { id: 4, title: "Review" },
-  ];
+  const [buyPostId, setBuyPostId] = React.useState<string | null>(null);
+  const [isPageReady, setIsPageReady] = React.useState(false);
 
-  const goNext = () => setCurrentStep((s) => Math.min(4, s + 1));
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setBuyPostId(params.get("offerFor"));
+    setDraftId(params.get("draftId"));
+
+    const stepParam = Number(params.get("step"));
+    if (Number.isFinite(stepParam)) {
+      const resolvedStep = Math.min(4, Math.max(1, Math.floor(stepParam)));
+      setCurrentStep(resolvedStep);
+    }
+
+    setIsPageReady(true);
+  }, []);
+
+  const isOfferFlow = Boolean(buyPostId);
+
+  const steps: StepperStep[] = isOfferFlow
+    ? [
+        { id: 1, title: "Property Details" },
+        { id: 2, title: "Visuals" },
+        { id: 3, title: "Review" },
+      ]
+    : [
+        { id: 1, title: "Property Details" },
+        { id: 2, title: "Visuals" },
+        { id: 3, title: "Services" },
+        { id: 4, title: "Review" },
+      ];
+
   const goBack = () => setCurrentStep((s) => Math.max(1, s - 1));
+
+  const uploadFile = React.useCallback(
+    async (
+      file: File,
+      type: UploadType,
+      options?: { preferKey?: boolean; returnSignedUrl?: boolean },
+    ) => {
+      const presignedResponse = await uploadService.getPresignedUploadUrl({
+        filename: file.name,
+        contentType: file.type || "application/octet-stream",
+        type,
+      });
+
+      const { uploadUrl, fileUrl, fileKey } =
+        resolvePresignedUrls(presignedResponse);
+      await uploadService.uploadToPresignedUrl(uploadUrl, file);
+
+      if (options?.returnSignedUrl) {
+        return uploadUrl;
+      }
+
+      if (type === "AVATAR" && !options?.preferKey) {
+        return fileUrl;
+      }
+
+      return fileKey || fileUrl;
+    },
+    [],
+  );
+
+  const uploadFiles = React.useCallback(
+    async (
+      files: File[],
+      type: UploadType,
+      options?: { preferKey?: boolean; returnSignedUrl?: boolean },
+    ) => {
+      if (!files.length) return [] as string[];
+      return Promise.all(files.map((file) => uploadFile(file, type, options)));
+    },
+    [uploadFile],
+  );
+
+  if (!isPageReady) {
+    return null;
+  }
+
+  const handleStepOne = async (step1: StepOneValues) => {
+    if (isSaving) return;
+    setIsSaving(true);
+
+    try {
+      const askingPrice = calculateAskingPrice(step1);
+
+      const offerStepOnePayload: CreateOfferDraftStep1Request = {
+        title: step1.adTitle.trim(),
+        description: step1.description.trim(),
+        propertyType: step1.propertyType,
+        sellableAmount: Number(step1.sellableAmount || 0),
+        sellableUnit: step1.sellableUnit,
+        pricePerUnit: Number(step1.pricePerKatha || 0),
+        askingPrice: askingPrice,
+        isShareable: step1.shareUnitEnabled ?? false,
+        distanceFromRoad: `${toOptionalNumber(step1.distanceMin)} - ${toOptionalNumber(step1.distanceMax)}`,
+        plotSize: toOptionalNumber(step1.plotSize),
+        plotUnit: Number.isFinite(step1.plotSize)
+          ? step1.plotSizeUnit
+          : undefined,
+        shareAmount: step1.shareUnitEnabled
+          ? toOptionalNumber(step1.shareUnitAmount)
+          : undefined,
+        shareUnit: step1.shareUnitEnabled ? step1.shareUnitUnit : undefined,
+        division: step1.division?.value || undefined,
+        district: step1.district?.value || undefined,
+        upazila: step1.upazila?.value || undefined,
+        unionOrCityCorp: step1.pouroshovaOrUnion?.trim() || undefined,
+        wardNo: step1.wardNo?.trim() || undefined,
+        postalCode: step1.postalCode?.trim(),
+        fullAddress: step1.fullAddress?.trim() || undefined,
+      };
+
+      const sellPostStepOnePayload: createSellPostStepOnePayload = {
+        title: step1.adTitle.trim(),
+        description: step1.description.trim(),
+        propertyType: step1.propertyType,
+        roadDistanceMin: toOptionalNumber(step1.distanceMin),
+        roadDistanceMax: toOptionalNumber(step1.distanceMax),
+        sellableAmount: Number(step1.sellableAmount || 0),
+        sellableUnit: step1.sellableUnit,
+        plotSize: toOptionalNumber(step1.plotSize),
+        plotUnit: Number.isFinite(step1.plotSize)
+          ? step1.plotSizeUnit
+          : undefined,
+        isPropertyShareable: step1.shareUnitEnabled ?? false,
+        shareAmount: step1.shareUnitEnabled
+          ? toOptionalNumber(step1.shareUnitAmount)
+          : undefined,
+        shareUnit: step1.shareUnitEnabled ? step1.shareUnitUnit : undefined,
+        askingPricePerUnit: Number(step1.pricePerKatha || 0),
+        askingPrice,
+        division: step1.division?.value || undefined,
+        district: step1.district?.value || undefined,
+        upazila: step1.upazila?.value || undefined,
+        unionOrCityCorp: step1.pouroshovaOrUnion?.trim() || undefined,
+        wardNo: step1.wardNo?.trim() || undefined,
+        postalCode: step1.postalCode?.trim(),
+        fullAddress: step1.fullAddress?.trim() || undefined,
+      };
+
+      const response = isOfferFlow
+        ? await createOfferDraftStep1(buyPostId as string, offerStepOnePayload)
+        : draftId
+          ? await updateSellPostStepOne({
+              postId: draftId,
+              payload: sellPostStepOnePayload,
+            })
+          : await createSellPostStepOne(sellPostStepOnePayload);
+
+      setDraftId(resolveDraftId(response as DraftEntityResponse));
+      setData((prev) => ({ ...prev, step1 }));
+      setCurrentStep(2);
+      toast.success("Property details saved.");
+    } catch (error) {
+      toast.error(
+        getApiErrorMessage(error, "Failed to save property details."),
+      );
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleStepTwo = async (step2: StepTwoValues) => {
+    if (isSaving) return;
+    if (!draftId) {
+      toast.error("Draft is missing. Please save Step 1 first.");
+      return;
+    }
+    setIsSaving(true);
+
+    try {
+      const photos = await uploadFiles(step2.photos ?? [], "AVATAR");
+
+      if (isOfferFlow) {
+        const response = await updateOfferDraftStep2(draftId, {
+          photos,
+        });
+
+        setDraftId(resolveDraftId(response));
+        setData((prev) => ({ ...prev, step2 }));
+        setCurrentStep(3);
+        toast.success("Visuals saved.");
+        return;
+      }
+
+      const videoUrl = step2.video
+        ? await uploadFile(step2.video, "VIDEO")
+        : undefined;
+
+      const deedFiles = await uploadFiles(step2.deedDocuments ?? [], "DEED", {
+        preferKey: true,
+      });
+
+      const khatianFiles = await uploadFiles(
+        step2.khatianDocuments ?? [],
+        "KHATIAN",
+        {
+          preferKey: true,
+        },
+      );
+
+      const otherFiles = await uploadFiles(step2.otherDocuments ?? [], "OTHER", {
+        preferKey: true,
+      });
+
+      const response = await updateSellPostStepTwo({
+        postId: draftId,
+        payload: {
+          photos: photos.length ? photos : undefined,
+          videoUrl,
+          deedFiles: deedFiles.length ? deedFiles : undefined,
+          khatianFiles: khatianFiles.length ? khatianFiles : undefined,
+          otherFiles: otherFiles.length ? otherFiles : undefined,
+        },
+      });
+
+      setDraftId(response.id);
+      setData((prev) => ({ ...prev, step2 }));
+      setCurrentStep(3);
+      toast.success("Visuals saved.");
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, "Failed to save visuals."));
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleStepThree = async (step3: StepThreeValues) => {
+    if (isSaving) return;
+    if (!draftId) {
+      toast.error("Draft is missing. Please save Step 1 first.");
+      return;
+    }
+    setIsSaving(true);
+
+    try {
+      const selectedServices = Array.from(
+        new Set([
+          ...(step3.mandatoryServiceIds ?? []),
+          ...(step3.optionalServiceIds ?? []),
+        ]),
+      );
+// 47ad5765-36a7-4b32-8dcc-4ead5df94bec
+// 47ad5765-36a7-4b32-8dcc-4ead5df94bec
+      const response = await updateSellPostStepThree({
+        postId: draftId,
+        payload: { selectedServices },
+      });
+
+      setDraftId(response.id);
+      setData((prev) => ({ ...prev, step3 }));
+      setCurrentStep(4);
+      toast.success("Services saved.");
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, "Failed to save services."));
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleSubmitForReview = async (step4: StepFourValues) => {
+    if (isSaving) return false;
+    if (!draftId) {
+      toast.error("Draft is missing. Please save your post first.");
+      return false;
+    }
+
+    setIsSaving(true);
+
+    try {
+      if (isOfferFlow) {
+        await submitOfferDraft(draftId);
+      } else {
+        await submitForReview(draftId);
+      }
+      setData((prev) => ({ ...prev, step4 }));
+      toast.success("Post submitted for review.");
+      return true;
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, "Failed to submit post."));
+      return false;
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <div className="w-full py-24 space-y-10">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <ArrowLeft size={28} />
-          <h1 className="text-xl font-semibold text-black">Create Sell Post</h1>
+          <h1 className="text-xl font-semibold text-black">
+            {isOfferFlow
+              ? "Create new Sell Post and Offer"
+              : "Create Sell Post"}
+          </h1>
         </div>
 
         <button className="text-primary text-base font-semibold">
@@ -78,48 +458,50 @@ export default function CreateSellPostPage() {
           {currentStep === 1 && (
             <SellPropertyStepOneForm
               defaultValues={data.step1}
-              goNext={goNext}
-              onNext={(step1) => {
-                setData((prev) => ({ ...prev, step1 }));
-                setCurrentStep(2);
-              }}
+              onNext={handleStepOne}
             />
           )}
 
           {/* STEP 2 */}
           {currentStep === 2 && (
             <SellPropertyStepTwoForm
+              mode={isOfferFlow ? "offer" : "normal"}
               defaultValues={data.step2}
               onBack={goBack}
-              onNext={(step2) => {
-                setData((prev) => ({ ...prev, step2 }));
-                setCurrentStep(3);
-              }}
-            />
-          )}
-          {/* STEP 3 */}
-          {currentStep === 3 && (
-            <SellPropertyStepThreeForm
-              defaultValues={data.step3}
-              onBack={goBack}
-              onNext={(step3) => {
-                setData((prev) => ({ ...prev, step3 }));
-                setCurrentStep(4); // go to review
-              }}
+              onNext={handleStepTwo}
             />
           )}
 
-          {currentStep === 4 && (
+          {!isOfferFlow && currentStep === 3 && (
+            <SellPropertyStepThreeForm
+              defaultValues={data.step3}
+              onBack={goBack}
+              onNext={handleStepThree}
+            />
+          )}
+
+          {isOfferFlow && currentStep === 3 && (
             <SellPropertyStepFourReview
+              mode="offer"
+              allData={{
+                step1: data.step1,
+                step2: data.step2,
+              }}
+              onBack={goBack}
+              onSubmit={handleSubmitForReview}
+            />
+          )}
+
+          {!isOfferFlow && currentStep === 4 && (
+            <SellPropertyStepFourReview
+              mode="normal"
               allData={{
                 step1: data.step1,
                 step2: data.step2,
                 step3: data.step3,
               }}
               onBack={goBack}
-              onSubmit={async (step4: StepFourValues) => {
-                setData((prev) => ({ ...prev, step4 }));
-              }}
+              onSubmit={handleSubmitForReview}
             />
           )}
         </section>

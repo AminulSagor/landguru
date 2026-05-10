@@ -1,7 +1,8 @@
 export type AdminActivityStatus = "online" | "offline" | "suspended";
 
 export type AdminRow = {
-  id: string; // #ADM-005
+  id: string; // raw id from backend
+  displayId?: string; // formatted display id (ex: #ADM-005)
   name: string;
   avatar?: string; // optional (can show initials if empty)
   assignedLocation: string; // Dhaka - Uttara

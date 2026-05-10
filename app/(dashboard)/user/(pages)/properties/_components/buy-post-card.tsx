@@ -1,6 +1,6 @@
 // components/buy-posts/BuyPostList.tsx
 "use client";
-
+import { formatDisplayId } from "@/utils/id.utils";
 import React from "react";
 import Card from "@/components/cards/card";
 import Button from "@/components/buttons/button";
@@ -93,6 +93,10 @@ export default function BuyPostCard({
   item: BuyPost;
   onOpen?: (item: BuyPost) => void;
 }) {
+  const formattedId = formatDisplayId("REQ", item.id) || item.id;
+  const displayId = formattedId.startsWith("#")
+    ? formattedId.slice(1)
+    : formattedId;
   return (
     <Card className={`relative overflow-hidden !p-0`}>
       {/* left accent border */}
@@ -113,7 +117,7 @@ export default function BuyPostCard({
             <h3 className="text-xl font-extrabold text-gray">{item.title}</h3>
             <p className="mt-1 text-sm font-semibold text-gray/70">
               Posted: {item.postedText} <span className="mx-2">•</span> #
-              {item.id}
+              {displayId}
             </p>
           </div>
 

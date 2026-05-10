@@ -68,3 +68,15 @@ export const Agents: Agent[] = [
     status: "off",
   },
 ];
+
+// DEPRECATION NOTICE
+// This file contains demo data only. Replace usages with live API calls.
+export const __IS_DEMO = true;
+
+export async function getLiveOrDemo(..._args: any[]): Promise<{ agents: Agent[] }> {
+  if (typeof window !== "undefined") {
+    // eslint-disable-next-line no-console
+    console.warn("[DEMO] Using Agents demo data — replace with live API.");
+  }
+  return { agents: Agents };
+}

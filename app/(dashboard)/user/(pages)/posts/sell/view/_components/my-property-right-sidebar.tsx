@@ -6,10 +6,12 @@ import { ArrowRight, MapPin } from "lucide-react";
 import { ListingCard } from "@/app/(dashboard)/user/types/my-property-list";
 import Button from "@/components/buttons/button";
 import MyPropertyBillBreakdown from "@/app/(dashboard)/user/(pages)/posts/sell/view/_components/my-property-bill-breakdown";
+import { useRouter } from "next/navigation";
 
 type Props = {
   isQuated: boolean;
   isDraft?: boolean;
+  editHref?: string;
   property: ListingCard;
   setOpenRequote: (d: boolean) => void;
   setOpenPay: (d: boolean) => void;
@@ -21,7 +23,10 @@ const MyPropertyRightSidebar: FC<Props> = ({
   setOpenRequote,
   setOpenPay,
   isDraft = false,
+  editHref,
 }) => {
+  const router = useRouter();
+
   return (
     <div className="space-y-5 w-full">
       <Card>
@@ -43,19 +48,14 @@ const MyPropertyRightSidebar: FC<Props> = ({
           <MapPin size={18} className="text-primary" />
           <p className="font-extrabold text-black">Location</p>
         </div>
-        <p className="text-sm text-black/60">{property.type}</p>
+        <p className="text-sm text-black/60">{property.location || "N/A"}</p>
       </Card>
 
       <Card>
         <p className="font-extrabold text-black mb-2">Description</p>
         <p className="text-sm text-black/60 leading-relaxed">
-          A stunning newly renovated villa featuring an open-concept living
-          area, chef kitchen with top-tier appliances, and a private backyard
-          oasis...
+          {property.description || "No description provided."}
         </p>
-        <button className="mt-2 text-sm font-bold text-primary">
-          Read more
-        </button>
       </Card>
 
       <Card>
@@ -63,13 +63,18 @@ const MyPropertyRightSidebar: FC<Props> = ({
         <div className="flex items-center gap-3">
           <div className="h-12 w-12 rounded-full bg-black/10" />
           <div>
-            <p className="font-extrabold text-black">Farhan</p>
-            <p className="text-xs text-black/50">Posted: 2h ago</p>
+            <p className="font-extrabold text-black">
+              {property.postedByName || "N/A"}
+            </p>
+            <p className="text-xs text-black/50">Posted: {property.time}</p>
           </div>
         </div>
 
         {isDraft && (
-          <Button className="w-full mt-5">
+          <Button
+            className="w-full mt-5"
+            onClick={() => router.push(editHref || "/user/posts/sell/create")}
+          >
             Continue Editing <ArrowRight size={18} />
           </Button>
         )}

@@ -5,6 +5,8 @@ import type {
 
 export type QuoteRequoteSortKey = "newest_first" | "oldest_first";
 
+export const SEARCH_DEBOUNCE_MS = 350;
+
 export const NEGOTIATION_TABS: Array<{
   key: SellPostNegotiationTab;
   label: string;
@@ -64,12 +66,36 @@ export const buildQueryString = (params: {
   return query.toString();
 };
 
-export const formatCurrency = (amount: number | null, symbol = "৳"): string => {
-  if (amount === null) {
+export const formatCurrency = (
+  amount?: number | null,
+  symbol = "৳",
+): string => {
+  if (amount == null || !Number.isFinite(Number(amount))) {
     return `${symbol} 0`;
   }
 
-  return `${symbol} ${amount.toLocaleString()}`;
+  return `${symbol} ${Number(amount).toLocaleString()}`;
+};
+
+export const formatPostId = (id?: string | null): string => {
+  if (!id) {
+    return "";
+  }
+
+  const normalized = id.trim();
+
+  if (!normalized) {
+    return "";
+  }
+
+  if (normalized.startsWith("#")) {
+    return normalized;
+  }
+
+  const shortId =
+    normalized.length > 8 ? normalized.slice(0, 8) : normalized;
+
+  return `#${shortId.toUpperCase()}`;
 };
 
 export const getInitials = (name: string): string => {
@@ -107,28 +133,38 @@ export const filterNegotiationItems = (
     return items;
   }
 
-  return items.filter((item) =>
-    [
-      item.negotiationId,
-      item.status,
-      item.post.title,
-      item.post.location,
-      item.seller.name,
-      item.seller.phone,
-    ]
-      .join(" ")
-      .toLowerCase()
-      .includes(normalizedSearch),
-  );
+  return items.filter((item) => {
+    const values = [
+      item.negotiationId ?? "",
+      item.status ?? "",
+      item.post?.title ?? "",
+      item.post?.location ?? "",
+      item.post?.id ?? "",
+      item.seller?.name ?? "",
+      item.seller?.phone ?? "",
+    ];
+
+    return values.join(" ").toLowerCase().includes(normalizedSearch);
+  });
 };
 
 export const sortNegotiationItems = (
   items: SellPostNegotiationItem[],
   sort: QuoteRequoteSortKey,
 ): SellPostNegotiationItem[] => {
+  const getSafeTime = (value?: string): number => {
+    if (!value) {
+      return 0;
+    }
+
+    const time = new Date(value).getTime();
+
+    return Number.isFinite(time) ? time : 0;
+  };
+
   return [...items].sort((firstItem, secondItem) => {
-    const firstTime = new Date(firstItem.lastActionAt).getTime();
-    const secondTime = new Date(secondItem.lastActionAt).getTime();
+    const firstTime = getSafeTime(firstItem.lastActionAt);
+    const secondTime = getSafeTime(secondItem.lastActionAt);
 
     return sort === "newest_first"
       ? secondTime - firstTime

@@ -32,8 +32,10 @@ export default function OffersPanel({ data }: { data: BuyPostDetails }) {
         return (b.askingPrice || 0) - (a.askingPrice || 0);
       if (sort === "price_low")
         return (a.askingPrice || 0) - (b.askingPrice || 0);
-      if (sort === "oldest") return 1; // no real date -> stable
-      return -1;
+      const aTime = parseOfferTime(a.offeredAt);
+      const bTime = parseOfferTime(b.offeredAt);
+      if (sort === "oldest") return aTime - bTime;
+      return bTime - aTime;
     });
 
     return rows;
@@ -85,8 +87,12 @@ export default function OffersPanel({ data }: { data: BuyPostDetails }) {
 }
 
 function OfferRow({ offer }: { offer: BuyPostOffer }) {
+  const href = offer.targetPostId
+    ? `/user/posts/sell/view/${offer.targetPostId}`
+    : "#";
+
   return (
-    <Link href={`#`} className="block">
+    <Link href={href} className="block">
       <Card className="rounded-2xl border border-gray/15 bg-white p-4 hover:bg-secondary/40">
         <div className="flex items-start gap-4">
           <div className="relative h-[86px] w-[120px] overflow-hidden rounded-xl bg-secondary">
@@ -139,4 +145,10 @@ function formatBDT(n: number) {
   } catch {
     return String(n);
   }
+}
+
+function parseOfferTime(value?: string) {
+  if (!value) return 0;
+  const ts = new Date(value).getTime();
+  return Number.isFinite(ts) ? ts : 0;
 }

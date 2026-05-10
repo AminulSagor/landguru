@@ -507,22 +507,20 @@ export default function BuyPostStepOneForm({ defaultValues, onNext }: Props) {
               disabled={!district}
             />
 
-            <HookFormSingleSelect<BuyStepOneValues>
+            <HookFormTextInput<BuyStepOneValues>
               name="pouroshovaOrUnion"
               control={control}
               label="Pouroshova/City Corp/Union"
-              placeholder="Select"
-              options={[]}
-              disabled
+              placeholder="Type here"
+              inputClassName="h-12 px-4"
             />
 
-            <HookFormSingleSelect<BuyStepOneValues>
+            <HookFormTextInput<BuyStepOneValues>
               name="wardNo"
               control={control}
               label="Ward No"
-              placeholder="Select"
-              options={[]}
-              disabled
+              placeholder="Type here"
+              inputClassName="h-12 px-4"
             />
 
             <HookFormTextInput<BuyStepOneValues>

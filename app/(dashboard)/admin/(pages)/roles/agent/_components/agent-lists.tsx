@@ -9,6 +9,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { ImageOff } from "lucide-react";
+import toast from "react-hot-toast";
 import { agentListService } from "@/service/admin/agent/agent-list.service";
 import { agentStatusService } from "@/service/admin/agent/agent-status.service";
 import type {
@@ -120,7 +121,8 @@ const AgentLists = ({ agentType, sort }: AgentListsProps) => {
     onMutate: ({ agentId }) => {
       setPendingAgentId(agentId);
     },
-    onSuccess: async () => {
+    onSuccess: async (response) => {
+      toast.success(response?.message ?? "Agent status updated.");
       await Promise.all([
         queryClient.invalidateQueries({
           queryKey: ["admin-agent-list"],
@@ -129,6 +131,11 @@ const AgentLists = ({ agentType, sort }: AgentListsProps) => {
           queryKey: ["admin-agent-summary"],
         }),
       ]);
+    },
+    onError: (error) => {
+      toast.error(
+        (error as any)?.response?.data?.message ?? "Failed to update agent status.",
+      );
     },
     onSettled: () => {
       setPendingAgentId(null);

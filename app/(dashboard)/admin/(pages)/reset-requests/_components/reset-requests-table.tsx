@@ -74,20 +74,17 @@ export default function ResetRequestsTable({
 
                 <td className="p-4">
                   <div className="flex items-center gap-3">
-                    <div className="relative">
-                      <div className="h-10 w-10 rounded-full overflow-hidden border border-gray/10 bg-secondary">
-                        <Image
-                          src={r.agent.avatar}
-                          alt={r.agent.name}
-                          width={40}
-                          height={40}
-                          className="h-full w-full object-cover"
-                        />
+                      <div className="relative">
+                        <div className="h-10 w-10 rounded-full overflow-hidden border border-gray/10 bg-secondary">
+                          <Image
+                            src={r.agent.avatar}
+                            alt={r.agent.name}
+                            width={40}
+                            height={40}
+                            className="h-full w-full object-cover"
+                          />
+                        </div>
                       </div>
-                      {r.agent.isOnline ? (
-                        <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-green border-2 border-white" />
-                      ) : null}
-                    </div>
 
                     <div>
                       <p className="text-sm font-semibold text-black">

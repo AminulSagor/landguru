@@ -10,16 +10,53 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { authService } from "@/service/auth/auth.login";
+import { getDashboardPathByRole, setToken, setUserRole } from "@/utils/cookies.utils";
+import { ApiError, LoginResponse } from "@/types/auth/login.types";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 export default function LoginPage() {
+
   const [loading, setLoading] = useState<boolean>(false);
   const { control, handleSubmit } = useForm<LoginFormValues>({
     defaultValues: { phone: "", password: "" },
   });
-
-  const onSubmit = (data: LoginFormValues) => {
+  const router = useRouter();
+  const onSubmit = async (data: LoginFormValues) => {
     //login api
     console.log(data);
+    setLoading(true);
+
+    try {
+      const response: LoginResponse = await authService.login({
+        phone: data.phone,
+        password: data.password,
+      });
+
+      if (!response?.success) {
+        toast.error(response?.message || "Login failed");
+        return;
+      }
+
+      if(response.user.role !== "user") {
+        toast.error(`${response.user.role} accounts cannot login here`);
+        return;
+      }
+
+      setToken(response.accessToken);
+      setUserRole(response.user.role);
+      toast.success(response.message || "Login successful");
+      router.replace(getDashboardPathByRole(response.user.role));
+    } catch (error) {
+      const apiError = error as ApiError;
+      const message =
+        apiError?.response?.data?.message || apiError?.message || "Login failed";
+
+      toast.error(Array.isArray(message) ? message.join("\n") : message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

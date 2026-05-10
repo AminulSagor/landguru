@@ -1,11 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Property,
-  MetricUnit,
-} from "@/app/(dashboard)/admin/types/property.types";
+import { MetricUnit } from "@/app/(dashboard)/admin/types/property.types";
 import PropertyDetailsHeader from "@/app/(dashboard)/admin/(pages)/property-posts/details/_components/property-details-header";
 import BuyerBars from "@/app/(dashboard)/admin/(pages)/property-posts/details/_components/buyer-bars";
 import RejectedBanner from "@/app/(dashboard)/admin/(pages)/property-posts/details/_components/rejected-banner";
@@ -21,36 +18,96 @@ import ServiceFeesCard from "@/app/(dashboard)/admin/(pages)/property-posts/deta
 import AuthenticityCard from "@/app/(dashboard)/admin/(pages)/property-posts/details/_components/authenticity-card";
 import PendingReviewFooter from "@/app/(dashboard)/admin/(pages)/property-posts/details/_components/pending-review-footer";
 import UpdateStatusSection from "@/app/(dashboard)/admin/(pages)/property-posts/details/_components/update-status-section";
+import type { PropertyPostItem } from "@/types/admin/property-post/property.types";
+import { formatBdt } from "@/utils/properties-management-table.utils";
+import { formatDisplayId } from "@/utils/id.utils";
 
-type Props = { property: Property };
+type Props = { property: PropertyPostItem };
+
+function humanizeStatus(status: string) {
+  return status
+    .toLowerCase()
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+function toMetricUnit(value?: string | null): MetricUnit {
+  const normalized = (value ?? "").toLowerCase();
+
+  if (normalized === "sqft") return "Sqft";
+  if (normalized === "decimal") return "Decimal";
+  if (normalized === "bigha") return "Bigha";
+
+  return "Katha";
+}
+
+function toStatusLabel(status: string) {
+  if (status.toUpperCase() === "PAYMENT_PENDING_REVIEW") {
+    return "Service Fee Paid";
+  }
+
+  return humanizeStatus(status);
+}
+
+function formatDate(dateValue?: string | null) {
+  if (!dateValue) return "N/A";
+
+  const parsedDate = new Date(dateValue);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return "N/A";
+  }
+
+  return parsedDate.toLocaleDateString("en-BD", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
 
 export default function PropertyDetailsView({ property }: Props) {
   const router = useRouter();
-  const statusKey = property.status.key;
 
-  const id = property.id;
-
-  const details = useMemo(() => property.details, [property.details]);
+  const statusLabel = toStatusLabel(property.status);
+  const postRef = formatDisplayId("POST", property.id);
+  const normalizedStatus = property.status.toUpperCase();
   const [unit, setUnit] = useState<MetricUnit>(
-    property.details?.metricsUnit ?? "Katha",
+    toMetricUnit(property.plotUnit || property.sellableUnit),
   );
 
-  if (!details) {
-    return (
-      <div className="px-6 py-6">
-        <p className="text-sm font-semibold text-gray">No details found.</p>
-      </div>
-    );
-  }
+  const isSold = normalizedStatus === "SOLD";
+  const isRejected = normalizedStatus === "REJECTED";
+  const isPendingReview = ![
+    "REJECTED",
+    "SOLD",
+    "PARTIAL_SOLD",
+    "PAYMENT_PENDING_REVIEW",
+    "ACTIVE",
+  ].includes(normalizedStatus);
 
-  const serviceProgress = details.serviceProgress;
+  const finalDeal = isSold
+    ? {
+        label: "Final Deal Closed",
+        soldOn: formatDate(property.updatedAt),
+        amount: formatBdt(property.validatedPrice ?? property.askingPrice),
+      }
+    : undefined;
+
+  const rejection =
+    isRejected && property.rejectionReason
+      ? {
+          title: "This property was rejected",
+          message: property.rejectionReason,
+        }
+      : undefined;
 
   return (
     <div>
       <PropertyDetailsHeader
-        postRef={details.header.postRef}
-        statusKey={statusKey}
-        statusLabel={details.header.statusBadgeLabel}
+        postRef={postRef}
+        status={property.status}
+        statusLabel={statusLabel}
         onBack={() => router.back()}
       />
 
@@ -58,16 +115,16 @@ export default function PropertyDetailsView({ property }: Props) {
         {/* LEFT */}
         <div className="space-y-6 col-span-7">
           {/* SOLD blocks */}
-          {statusKey === "sold" && (details.buyer || details.finalDeal) && (
+          {isSold && finalDeal && (
             <div className="mb-6 space-y-4">
-              <BuyerBars buyer={details.buyer} finalDeal={details.finalDeal} />
+              <BuyerBars finalDeal={finalDeal} />
             </div>
           )}
 
           {/* REJECTED banner */}
-          {statusKey === "rejected" && details.rejection && (
+          {isRejected && rejection && (
             <div className="mb-6">
-              <RejectedBanner rejection={details.rejection} />
+              <RejectedBanner rejection={rejection} />
             </div>
           )}
 
@@ -77,43 +134,47 @@ export default function PropertyDetailsView({ property }: Props) {
           </div>
 
           {/*title comes from property.title */}
-          <PostInformationCard
-            title={property.title}
-            data={details.postInformation}
-          />
+          <PostInformationCard property={property} selectedUnit={unit} />
 
-          <DocumentsCard data={details.documents} />
+          <DocumentsCard property={property} />
 
-          {details.ownershipHistory && (
-            <OwnershipHistoryCard data={details.ownershipHistory} />
+          {property.ownershipHistory && property.ownershipHistory.length > 0 && (
+            <OwnershipHistoryCard property={property} />
           )}
         </div>
 
         {/* RIGHT */}
         <div className="space-y-6 col-span-5">
-          <PriceCompareCard unit={unit} data={details.askingVsValidated} />
-          <ChosenServicesCard data={details.chosenServices} />
+          <PriceCompareCard unit={unit} property={property} />
+          <ChosenServicesCard property={property} />
+          <ServiceProgressCard property={property} />
+          <ServiceFeesCard property={property} />
 
-          {/*safe + typed */}
-          {serviceProgress ? (
-            <ServiceProgressCard data={serviceProgress} />
-          ) : null}
-
-          <ServiceFeesCard data={details.serviceFees} />
-
-          {details.authenticityChecklist && (
-            <AuthenticityCard data={details.authenticityChecklist} />
+          {property.riskChecklist && property.riskChecklist.length > 0 && (
+            <AuthenticityCard property={property} />
           )}
         </div>
       </div>
 
       {/*Pending Review footer actions (Reject + Submit Quote) */}
-      {statusKey === "pending_review" ? (
+      {isPendingReview ? (
         <div className="mt-6">
-          <PendingReviewFooter propertyId={id} />
+          <PendingReviewFooter
+            propertyId={property.id}
+            defaultValidatedPricePerUnit={
+              property.validatedPricePerUnit ?? property.askingPricePerUnit
+            }
+            defaultValidatedPrice={property.validatedPrice ?? property.askingPrice}
+            defaultMandatoryFee={property.mandatoryServiceFee}
+            defaultOptionalFee={property.optionalServiceFee}
+          />
         </div>
       ) : (
-        <UpdateStatusSection />
+        <UpdateStatusSection
+          postId={property.id}
+          propertyTitle={property.title}
+          currentStatus={property.status}
+        />
       )}
     </div>
   );

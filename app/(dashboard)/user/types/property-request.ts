@@ -1,3 +1,11 @@
+import type { PropertyTypeLabel } from "@/types/post/buy/buypost.payload.types";
+
+export type PropertyRequestPropertyType =
+  | PropertyTypeLabel
+  | "Plot"
+  | "House"
+  | "Villa";
+
 export type PropertyRequest = {
   id: string;
   title: string;
@@ -6,7 +14,7 @@ export type PropertyRequest = {
   code: string;
 
   location: string;
-  propertyType: "Flat" | "Plot" | "House";
+  propertyType: PropertyRequestPropertyType;
 
   requiredLandSize: string;
   requiredPlotSize: string;

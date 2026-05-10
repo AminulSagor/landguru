@@ -57,3 +57,15 @@ export const demoAdmins: AdminRow[] = [
     accountEnabled: false,
   },
 ];
+
+// DEPRECATION NOTICE
+// This file contains demo data only. Replace usages with live API calls.
+export const __IS_DEMO = true;
+
+export async function getLiveOrDemo(..._args: any[]): Promise<any> {
+  if (typeof window !== "undefined") {
+    // eslint-disable-next-line no-console
+    console.warn("[DEMO] Using admin-list demo data — replace with live API.");
+  }
+  return { demoAdminStats, demoAdmins };
+}

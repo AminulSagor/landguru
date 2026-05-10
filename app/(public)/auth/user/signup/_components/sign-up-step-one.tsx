@@ -7,21 +7,21 @@ import Button from "@/components/buttons/button";
 import { HookFormBDPhoneInput } from "@/components/inputs/HookFormBDPhoneInput";
 import AuthStepper from "@/components/steppers/auth-stepper";
 import { SignUpStepOneForm } from "@/interfaces/auth";
+import CircleLoader from "@/components/loaders/circle-loader";
 
 type Props = {
-  onNext: () => void;
+  onNext: (phone: string) => Promise<void> | void;
   onBack?: () => void;
-  setPhone: (phone: string) => void;
+  isLoading?: boolean;
 };
 
-const SignUpStepOne = ({ onNext, onBack, setPhone }: Props) => {
+const SignUpStepOne = ({ onNext, onBack, isLoading = false }: Props) => {
   const { control, handleSubmit } = useForm<SignUpStepOneForm>({
     defaultValues: { phone: "" },
   });
 
-  const onSubmit = (data: SignUpStepOneForm) => {
-    setPhone(data.phone);
-    onNext();
+  const onSubmit = async (data: SignUpStepOneForm) => {
+    await onNext(data.phone);
   };
 
   return (
@@ -52,8 +52,8 @@ const SignUpStepOne = ({ onNext, onBack, setPhone }: Props) => {
               label="Phone Number"
             />
 
-            <Button type="submit" className="w-full">
-              Get OTP
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? <CircleLoader /> : "Get OTP"}
             </Button>
 
             <p className="text-center text-xs text-black/50">

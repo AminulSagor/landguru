@@ -2,12 +2,13 @@
 
 import React from "react";
 import { ArrowLeft, CheckCircle2, Lock } from "lucide-react";
-import { Property } from "@/app/(dashboard)/user/types/property";
+import type { PropertyDetails } from "@/types/property/property.details";
 import Button from "@/components/buttons/button";
 import { useRouter } from "next/navigation";
+import { formatDisplayId } from "@/utils/id.utils";
 
 type Props = {
-  property: Property;
+  property: PropertyDetails;
   onRequest: () => void;
 };
 
@@ -27,13 +28,15 @@ const PropertyHero = ({ property, onRequest }: Props) => {
           <h1 className="text-2xl font-extrabold text-black">
             {property.title}
           </h1>
-          <p className="text-sm text-black/40 mt-4">#POST-{property.id}</p>
+          <p className="text-sm text-black/40 mt-4">
+            {formatDisplayId("POST", property.id)}
+          </p>
         </div>
         <div className="flex flex-col xl:flex-row gap-4">
           <div className="flex flex-wrap items-center gap-4">
-            <Tag>{property.tag}</Tag>
-            <Tag light>{property.mode}</Tag>
-            {property.verified && (
+            <Tag>{property.propertyType}</Tag>
+            <Tag light>Sell Post</Tag>
+            {property.seller?.isVerified && (
               <Tag verified>
                 <CheckCircle2 size={14} /> Verified
               </Tag>

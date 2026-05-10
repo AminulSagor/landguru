@@ -5,18 +5,23 @@ import { ArrowLeft, Trash } from "lucide-react";
 import { ListingCard } from "@/app/(dashboard)/user/types/my-property-list";
 import Button from "@/components/buttons/button";
 import Link from "next/link";
+import { formatDisplayId } from "@/utils/id.utils";
+import { useRouter } from "next/navigation";
 
 type Props = {
   property: ListingCard;
   isDraft: boolean;
+  editHref?: string;
 };
 
-const MyPropertyHero = ({ property, isDraft }: Props) => {
+const MyPropertyHero = ({ property, isDraft, editHref }: Props) => {
+  const router = useRouter();
+
   return (
     <div className="space-y-3">
       {/* Back */}
       <Link
-        href={"/dashboard/properties"}
+        href={"/user/properties"}
         className="flex items-center gap-2 text-sm font-semibold text-gray/60 hover:text-gray"
       >
         <ArrowLeft size={16} />
@@ -30,7 +35,9 @@ const MyPropertyHero = ({ property, isDraft }: Props) => {
           <h1 className="text-2xl font-extrabold text-gray">
             {property.title}
           </h1>
-          <p className="mt-1 text-sm text-gray/50">#{property.id}</p>
+          <p className="mt-1 text-sm text-gray/50">
+            {formatDisplayId("POST", property.id)}
+          </p>
         </div>
 
         {/* Right Status Pills */}
@@ -49,7 +56,11 @@ const MyPropertyHero = ({ property, isDraft }: Props) => {
 
           {isDraft && (
             <div className="flex items-center gap-3">
-              <Button>Edit</Button>
+              <Button
+                onClick={() => router.push(editHref || "/user/posts/sell/create")}
+              >
+                Edit
+              </Button>
 
               <span className="text-red-500">
                 <Trash size={20} />

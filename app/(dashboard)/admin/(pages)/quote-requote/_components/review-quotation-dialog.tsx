@@ -3,17 +3,20 @@
 import React, { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { formatApiError } from "@/lib/format-api-error";
 import { Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Dialog from "@/components/dialogs/dialog";
 import Button from "@/components/buttons/button";
+import { formatPostId } from "@/app/(dashboard)/admin/(pages)/quote-requote/_utils/quote-requote.utils";
 import {
   counterAdminSellPostNegotiation,
+  getAdminSellPostNegotiationReviewDetails,
   rejectAdminSellPostNegotiation,
 } from "@/service/admin/sell-posts/sell-post-negotiations.service";
+import { serviceTypesActiveService } from "@/service/admin/manage/services/active-service-types.service";
 import type {
   SellPostNegotiationCounterPayload,
   SellPostNegotiationItem,
@@ -62,6 +65,46 @@ function parseAmount(value: string): number {
   return Number.isFinite(parsedValue) ? parsedValue : 0;
 }
 
+function humanizeServiceKey(serviceKey: string) {
+  return serviceKey
+    .split("_")
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+function formatTimeAgo(dateString: string) {
+  const targetTime = new Date(dateString).getTime();
+
+  if (!Number.isFinite(targetTime)) {
+    return "";
+  }
+
+  const now = Date.now();
+  const diffInMs = Math.max(now - targetTime, 0);
+  const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+
+  if (diffInMinutes < 60) {
+    return `${Math.max(diffInMinutes, 1)} mins ago`;
+  }
+
+  const diffInHours = Math.floor(diffInMinutes / 60);
+
+  if (diffInHours < 24) {
+    return `${diffInHours} hrs ago`;
+  }
+
+  const diffInDays = Math.floor(diffInHours / 24);
+  return `${diffInDays} days ago`;
+}
+
+const MANDATORY_SERVICE_KEYS = new Set([
+  "ownership_history_validation",
+  "physical_estimate",
+  "pentagraph_map",
+  "document_organization",
+]);
+
 export default function ReviewQutationDialog({
   open,
   onControl,
@@ -69,32 +112,68 @@ export default function ReviewQutationDialog({
   onSuccessDialogOpen,
 }: Props) {
   const router = useRouter();
+  const [optional, setOptional] = React.useState<OptionalService[]>([]);
+  const lastReviewErrorMessageRef = React.useRef<string | null>(null);
 
-  const [optional, setOptional] = React.useState<OptionalService[]>([
-    {
-      id: "opt-1",
-      label: "Property Registration/ Deed Writing Service",
-      checked: true,
-    },
-    {
-      id: "opt-2",
-      label: "Namjari/ DCR/ Pouro City Corp Record Update",
-      checked: true,
-    },
-    { id: "opt-3", label: "Inheritance Dispute Analysis", checked: true },
-    { id: "opt-4", label: "Government Acquisition Risk", checked: false },
-    { id: "opt-5", label: "Court case verification", checked: false },
-  ]);
+  const reviewDetailsQuery = useQuery({
+    queryKey: ["admin-negotiation-review-details", item?.negotiationId],
+    queryFn: async () => {
+      if (!item?.negotiationId) {
+        throw new Error("Negotiation ID is missing.");
+      }
 
-  const mandatory = useMemo(
-    () => [
-      "Ownership History Validation",
-      "Physical estimate & Border Demarcation",
-      "Pentagraph Map",
-      "Document Organization",
-    ],
-    [],
-  );
+      return getAdminSellPostNegotiationReviewDetails(item.negotiationId);
+    },
+    enabled: open && Boolean(item?.negotiationId),
+  });
+
+  React.useEffect(() => {
+    if (!reviewDetailsQuery.error) {
+      lastReviewErrorMessageRef.current = null;
+      return;
+    }
+
+    const errorMessage =
+      reviewDetailsQuery.error instanceof Error
+        ? reviewDetailsQuery.error.message
+        : "Failed to load review details.";
+
+    if (lastReviewErrorMessageRef.current !== errorMessage) {
+      toast.error(errorMessage);
+      lastReviewErrorMessageRef.current = errorMessage;
+    }
+  }, [reviewDetailsQuery.error]);
+
+  const mandatory = useMemo(() => {
+    const chosenServices = reviewDetailsQuery.data?.userChosenServices ?? [];
+
+    return chosenServices
+      .filter((serviceKey) => MANDATORY_SERVICE_KEYS.has(serviceKey))
+      .map(humanizeServiceKey);
+  }, [reviewDetailsQuery.data?.userChosenServices]);
+
+  const allServicesQuery = useQuery({
+    queryKey: ["service-types-active"],
+    queryFn: async () => serviceTypesActiveService.getActiveServiceTypes(),
+    enabled: open,
+  });
+
+  const optionalFromApi = useMemo(() => {
+    const chosenServicesSet = new Set(
+      reviewDetailsQuery.data?.userChosenServices ?? [],
+    );
+
+    const services = allServicesQuery.data ?? [];
+
+    return services
+      .filter((s) => !s.isMandatory)
+      .map((s) => ({
+        id: s.id,
+        label: s.name,
+        checked: chosenServicesSet.has(s.serviceKey),
+        disabled: !s.isActive,
+      }));
+  }, [allServicesQuery.data, reviewDetailsQuery.data?.userChosenServices]);
 
   const { register, handleSubmit, reset } = useForm<ReviewQuotationFormValues>({
     defaultValues: {
@@ -112,11 +191,47 @@ export default function ReviewQutationDialog({
     }
   }, [open, reset, item?.negotiationId]);
 
-  const sym = "৳";
-  const userCounter = item?.pricing.userNewCounter ?? 4000;
-  const adminLast = item?.pricing.adminLastQuote ?? 6000;
+  React.useEffect(() => {
+    if (!open) {
+      return;
+    }
 
-  const gap = Math.max(0, adminLast - userCounter);
+    setOptional(optionalFromApi);
+  }, [open, optionalFromApi]);
+
+  React.useEffect(() => {
+    if (!open || !reviewDetailsQuery.data) {
+      return;
+    }
+
+    reset({
+      mandatoryFee: String(reviewDetailsQuery.data.previousQuote.mandatory),
+      optionalFee: String(reviewDetailsQuery.data.previousQuote.optional),
+    });
+  }, [open, reset, reviewDetailsQuery.data]);
+
+  const sym = "৳";
+  const userCounter =
+    reviewDetailsQuery.data?.userCounter.total ??
+    item?.pricing?.userNewCounter ??
+    0;
+  const adminLast =
+    reviewDetailsQuery.data?.previousQuote.total ??
+    item?.pricing?.adminLastQuote ??
+    0;
+  const userCounterMandatory = reviewDetailsQuery.data?.userCounter.mandatory ?? 0;
+  const userCounterOptional = reviewDetailsQuery.data?.userCounter.optional ?? 0;
+  const previousMandatory = reviewDetailsQuery.data?.previousQuote.mandatory ?? 0;
+  const previousOptional = reviewDetailsQuery.data?.previousQuote.optional ?? 0;
+  const receivedAtLabel =
+    reviewDetailsQuery.data?.userCounter.receivedAt
+      ? formatTimeAgo(reviewDetailsQuery.data.userCounter.receivedAt)
+      : "";
+
+  const gap = Math.max(
+    0,
+    reviewDetailsQuery.data?.priceGapAlert ?? adminLast - userCounter,
+  );
   const showGapAlert = gap > 0;
 
   const optionalCheckedCount = optional.filter(
@@ -135,8 +250,8 @@ export default function ReviewQutationDialog({
       toast.success("Counter-offer sent successfully.");
       onControl(false);
       onSuccessDialogOpen({
-        postId: `#${item?.post.id ?? ""}`,
-        sellerName: item?.seller.name ?? "",
+        postId: formatPostId(item?.post?.id),
+        sellerName: item?.seller?.name ?? "",
         mandatoryFee: variables.mandatoryFee,
         optionalFee: variables.optionalFee,
         currencySymbol: sym,
@@ -201,11 +316,11 @@ export default function ReviewQutationDialog({
           <p className="mt-1 text-xs font-semibold text-light-gray">
             Negotiating Post{" "}
             <span className="font-extrabold text-gray">
-              #{item?.post.id ?? "POST-1044"}
+              {formatPostId(item?.post?.id)}
             </span>{" "}
             with{" "}
             <span className="font-extrabold text-gray">
-              {item?.seller.name ?? "Mr. Rahman"}
+              {item?.seller?.name ?? ""}
             </span>
           </p>
         </div>
@@ -235,7 +350,7 @@ export default function ReviewQutationDialog({
                       Mandatory Fee
                     </p>
                     <p className="text-[11px] font-bold text-light-gray tabular-nums">
-                      {formatCurrency(sym, 2000)}
+                      {formatCurrency(sym, userCounterMandatory)}
                     </p>
                   </div>
                   <div className="mt-1 flex items-center justify-between">
@@ -243,12 +358,12 @@ export default function ReviewQutationDialog({
                       Optional Fee
                     </p>
                     <p className="text-[11px] font-bold text-light-gray tabular-nums">
-                      {formatCurrency(sym, 2000)}
+                      {formatCurrency(sym, userCounterOptional)}
                     </p>
                   </div>
 
                   <p className="mt-2 text-[11px] font-semibold text-[#ff3b30]">
-                    ● Received 2 hours ago
+                    {receivedAtLabel ? `● Received ${receivedAtLabel}` : ""}
                   </p>
                 </div>
               </div>
@@ -268,7 +383,7 @@ export default function ReviewQutationDialog({
                       Mandatory Fee
                     </p>
                     <p className="text-[11px] font-bold text-light-gray tabular-nums">
-                      {formatCurrency(sym, 3000)}
+                      {formatCurrency(sym, previousMandatory)}
                     </p>
                   </div>
                   <div className="mt-1 flex items-center justify-between">
@@ -276,7 +391,7 @@ export default function ReviewQutationDialog({
                       Optional Fee
                     </p>
                     <p className="text-[11px] font-bold text-light-gray tabular-nums">
-                      {formatCurrency(sym, 3000)}
+                      {formatCurrency(sym, previousOptional)}
                     </p>
                   </div>
                 </div>

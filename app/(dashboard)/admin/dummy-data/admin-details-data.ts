@@ -147,3 +147,16 @@ export const adminDetailsDemo: AdminDetailsStatic = {
     },
   ],
 };
+
+// DEPRECATION NOTICE
+// This file contains demo data only. Replace usages with live API calls.
+export const __IS_DEMO = true;
+
+export async function getLiveOrDemo(..._args: any[]): Promise<AdminDetailsStatic> {
+  if (typeof window !== "undefined") {
+    // client-side warning
+    // eslint-disable-next-line no-console
+    console.warn("[DEMO] Using adminDetailsDemo from admin-details-data.ts — replace with live API.");
+  }
+  return adminDetailsDemo;
+}

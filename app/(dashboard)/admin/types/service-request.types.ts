@@ -18,7 +18,6 @@ export type AgentLite = {
   role: string;
   phone: string;
   avatarUrl?: string | null;
-  isOnline?: boolean;
   startedAtLabel: string;
   lastActiveLabel: string;
 };
@@ -51,6 +50,7 @@ export type ServiceRequestOverview = {
 export type ServiceDeliverable = {
   fileName: string;
   meta: string; // e.g. "2.4 MB • PDF Document"
+  fileUrl?: string | null;
 };
 
 export type ServiceDetails = {
@@ -64,4 +64,8 @@ export type ServiceDetails = {
     | { kind: "file"; title: string; fileName: string; timeLabel: string }
   >;
   finalDeliverable: ServiceDeliverable;
+  lastFeedback?: {
+    message: string;
+    timeLabel: string;
+  } | null;
 };
