@@ -1,33 +1,33 @@
-// export type UnlockFeatureSummary = {
-//     id: string;
-//     unlockFeaturesAmount: string;
-//     createdAt: string;
-//     updatedAt: string;
-// }
+export type ApiResponse<T> = {
+  success?: boolean;
+  message?: string;
+  data: T;
+};
 
-type paymentMethod = {
-    code: string;
-    name: string;
-}
-export type UnlockFeatureSummary = {
-    success: boolean;
-    data:{
-        userId: string;
-        isLimited: boolean;
-        unlockFeaturesAmount: string;
-        paymentMethods: paymentMethod[];
-    }
-}
+export type UnlockPaymentMethod = {
+  code: string;
+  name: string;
+};
 
-export type PaymentStatusPayload ={
-    tranId: string;
-}
-export type CreateSessionResponse = {
-    paymentId: string;
-    tranId: string;
-    sessionKey: string;
-    gatewayUrl: string;
-    status: string;
-}
+export type UnlockFeaturesSummary = {
+  userId: string;
+  isLimited: boolean;
+  unlockFeaturesAmount: number;
+  paymentMethods: UnlockPaymentMethod[];
+};
 
-// export type UnlockFeaturesFinal
+export type UnlockFeaturesSummaryResponse =
+  ApiResponse<UnlockFeaturesSummary>;
+
+export type ConfirmUnlockFeaturesPayload = {
+  tranId: string;
+};
+
+export type UnlockFeaturesAccess = {
+  id: string;
+  userId: string;
+  isLimited: boolean;
+};
+
+export type UnlockFeaturesAccessResponse =
+  ApiResponse<UnlockFeaturesAccess>;
